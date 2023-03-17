@@ -774,8 +774,11 @@ public class GeneSet implements GenomeSet {
 					i = Sequence.parseSpec( lname );
 					if(i > 0 ) {
 						int u = lname.lastIndexOf('_');
-
-						contigstr = lname.substring(0, u);
+						if (u != -1) {
+							contigstr = lname.substring(0, u);
+						} else {
+							contigstr = lname;
+						}
 						origin = lname.substring(0, i - 1);
 						contloc = lname.substring(i);
 					}
