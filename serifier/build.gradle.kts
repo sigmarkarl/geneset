@@ -28,5 +28,5 @@ dependencies {
         exclude(group = "com.fasterxml.jackson")
     }
     implementation(project(":javafasta"))
-    implementation(project(":TreeDraw"))
+    implementation(project(":Treedraw"))
 }

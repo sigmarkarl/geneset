@@ -52,7 +52,7 @@ dependencies {
     implementation(project(":javafasta"))
     implementation(project(":serifier"))
     implementation(project(":spilling"))
-    implementation(project(":TreeDraw"))
+    implementation(project(":Treedraw"))
 
     runtimeOnly("io.grpc:grpc-netty:1.50.2")
     implementation("com.google.protobuf:protobuf-java:3.21.9")

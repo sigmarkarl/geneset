@@ -9,7 +9,7 @@ javafx {
 }
 
 dependencies {
-    implementation(project(":TreeDraw"))
+    implementation(project(":Treedraw"))
     implementation(group = "org.apache.poi", name = "poi", version = "5.2.3")
     implementation(group = "org.apache.poi", name = "poi-ooxml", version = "5.2.3")
     implementation(group = "org.ejml", name = "ejml-all", version = "0.41")
