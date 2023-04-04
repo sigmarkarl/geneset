@@ -5,6 +5,24 @@ plugins {
     id("application")
     id("com.google.protobuf")
     id("org.openjfx.javafxplugin")
+    id("maven-publish")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "org.simmi.geneset"
+            artifactId = "distann"
+            version = "1.0.0"
+
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri(layout.projectDirectory.dir("../repo"))
+        }
+    }
 }
 
 tasks {
@@ -44,7 +62,7 @@ protobuf {
 }
 
 javafx {
-    version = "19"
+    version = "20"
     modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.fxml", "javafx.swing", "javafx.web")
 }
 
@@ -63,9 +81,10 @@ dependencies {
 
     implementation(group = "org.apache.poi", name = "poi", version = "5.2.3")
     implementation(group = "org.apache.poi", name = "poi-ooxml", version = "5.2.3")
-    implementation(group = "commons-codec", name = "commons-codec", version = "1.11")
-    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.14")
+    implementation(group = "commons-codec", name = "commons-codec", version = "1.13")
+    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
     implementation(group = "org.apache.commons", name = "commons-vfs2", version = "2.2")
+    implementation(group = "com.google.code.gson", name = "gson", version = "2.10.1")
     //implementation group = "org.gorpipe", name = "gor-spark", version = "0.5.6"
 
     // https://mvnrepository.com/artifact/org.openjfx/javafx
@@ -84,19 +103,19 @@ dependencies {
 
     //implementation("com.github.fommil.netlib:all:1.1.2")
 
-    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.3.1") {
+    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.3.2") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.3.1") {
+    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.3.2") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.3.1") {
+    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.3.2") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.3.1") {
+    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.3.2") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }

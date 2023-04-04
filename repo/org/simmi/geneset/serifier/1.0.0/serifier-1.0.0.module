@@ -1,0 +1,263 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.simmi.geneset",
+    "module": "serifier",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.0.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 20,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "serifier-1.0.0.jar",
+          "url": "serifier-1.0.0.jar",
+          "size": 109294,
+          "sha512": "2f4d57d05b785671a6461710d7fc476c2d4be3d3ee9c7a5c5abe7c5f425e1f01fe74af98312999ac1f5e6a4eaf66801fa527fb9fa04f835f19260f57906238e1",
+          "sha256": "39bc8e20f67c441b2b1fc54b57a1131ef1f0456fbc3af2509cdf74572a0b6810",
+          "sha1": "f0bd5208d765a6bf832efa3011cfe7092fd2a54a",
+          "md5": "db9ff716e71453004c2e9e007c766ebd"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 20,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.openjfx",
+          "module": "javafx-base",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-base",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-graphics",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-graphics",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-controls",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-controls",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-fxml",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-fxml",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-media",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-media",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-swing",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-swing",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "org.openjfx",
+          "module": "javafx-web",
+          "version": {
+            "requires": "20"
+          },
+          "thirdPartyCompatibility": {
+            "artifactSelector": {
+              "name": "javafx-web",
+              "type": "jar",
+              "extension": "jar",
+              "classifier": "mac-aarch64"
+            }
+          }
+        },
+        {
+          "group": "commons-net",
+          "module": "commons-net",
+          "version": {
+            "requires": "3.7"
+          }
+        },
+        {
+          "group": "org.apache.commons",
+          "module": "commons-vfs2",
+          "version": {
+            "requires": "2.1"
+          }
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-core_2.13",
+          "version": {
+            "requires": "3.3.2"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-mllib_2.13",
+          "version": {
+            "requires": "3.3.2"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-sql_2.13",
+          "version": {
+            "requires": "3.3.2"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-kubernetes_2.13",
+          "version": {
+            "requires": "3.3.2"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.simmi.geneset",
+          "module": "javafasta",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "org.simmi.geneset",
+          "module": "Treedraw",
+          "version": {
+            "requires": "1.0.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "serifier-1.0.0.jar",
+          "url": "serifier-1.0.0.jar",
+          "size": 109294,
+          "sha512": "2f4d57d05b785671a6461710d7fc476c2d4be3d3ee9c7a5c5abe7c5f425e1f01fe74af98312999ac1f5e6a4eaf66801fa527fb9fa04f835f19260f57906238e1",
+          "sha256": "39bc8e20f67c441b2b1fc54b57a1131ef1f0456fbc3af2509cdf74572a0b6810",
+          "sha1": "f0bd5208d765a6bf832efa3011cfe7092fd2a54a",
+          "md5": "db9ff716e71453004c2e9e007c766ebd"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.simmi.geneset",
+    "module": "Treedraw",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.0.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 20,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "Treedraw-1.0.0.jar",
+          "url": "Treedraw-1.0.0.jar",
+          "size": 64326,
+          "sha512": "ee333a2c600a790799127810046f42de06030ed3ba7a1f58b9c28a54982b311931c6a6c8d6473ac178d2019131a5bfca88e4f8c7cab83fdd4e68908f6acdbd25",
+          "sha256": "90f282e3eaa5d43ed6f46cf795263c6fe5011ae8e73b08deacc5f04bd3af52ac",
+          "sha1": "bf2fcdb4ce7829e9dde437db526fb1caf8ee5f24",
+          "md5": "4acd40b8a030c2e2e44d2b1968d0ea60"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 20,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "Treedraw-1.0.0.jar",
+          "url": "Treedraw-1.0.0.jar",
+          "size": 64326,
+          "sha512": "ee333a2c600a790799127810046f42de06030ed3ba7a1f58b9c28a54982b311931c6a6c8d6473ac178d2019131a5bfca88e4f8c7cab83fdd4e68908f6acdbd25",
+          "sha256": "90f282e3eaa5d43ed6f46cf795263c6fe5011ae8e73b08deacc5f04bd3af52ac",
+          "sha1": "bf2fcdb4ce7829e9dde437db526fb1caf8ee5f24",
+          "md5": "4acd40b8a030c2e2e44d2b1968d0ea60"
+        }
+      ]
+    }
+  ]
+}

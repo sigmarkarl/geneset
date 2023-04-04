@@ -30,6 +30,7 @@ plugins {
     id("application")
     id("com.palantir.graal") version "0.9.0"
     id("org.openjfx.javafxplugin") version "0.0.13"
+    id("maven-publish")
     //id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -153,6 +154,9 @@ tasks.register("genset_build") {
 }
 
 subprojects {
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+
     repositories {
         //jcenter()
         mavenCentral()
