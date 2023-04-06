@@ -1163,7 +1163,7 @@ public class JSONObject {
         String       hhhh;
         int          i;
         int          len = string.length();
-        StringBuffer sb = new StringBuffer(len + 4);
+        StringBuilder sb = new StringBuilder(len + 4);
 
         sb.append('"');
         for (i = 0; i < len; i += 1) {
@@ -1200,7 +1200,7 @@ public class JSONObject {
                 if (c < ' ' || (c >= '\u0080' && c < '\u00a0') ||
                                (c >= '\u2000' && c < '\u2100')) {
                     hhhh = "000" + Integer.toHexString(c);
-                    sb.append("\\u" + hhhh.substring(hhhh.length() - 4));
+                    sb.append("\\u").append(hhhh.substring(hhhh.length() - 4));
                 } else {
                     sb.append(c);
                 }
@@ -1227,7 +1227,7 @@ public class JSONObject {
      * @return A simple JSON value.
      */
     public static Object stringToValue(String string) {
-        Double d;
+        double d;
         if (string.equals("")) {
             return string;
         }
@@ -1254,14 +1254,14 @@ public class JSONObject {
             try {
                 if (string.indexOf('.') > -1 ||
                         string.indexOf('e') > -1 || string.indexOf('E') > -1) {
-                    d = Double.valueOf(string);
-                    if (!d.isInfinite() && !d.isNaN()) {
+                    d = Double.parseDouble(string);
+                    if (!Double.isInfinite(d) && !Double.isNaN(d)) {
                         return d;
                     }
                 } else {
-                    Long myLong = new Long(string);
-                    if (myLong.longValue() == myLong.intValue()) {
-                        return new Integer(myLong.intValue());
+                    var myLong = Long.valueOf(string);
+                    if (myLong == myLong.intValue()) {
+                        return myLong.intValue();
                     } else {
                         return myLong;
                     }
