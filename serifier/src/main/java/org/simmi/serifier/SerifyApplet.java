@@ -46,7 +46,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.file.*;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -84,13 +83,12 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
+import org.simmi.Node;
+import org.simmi.NodeSet;
 import org.simmi.javafasta.DataTable;
 import org.simmi.javafasta.PGapRunner;
 import org.simmi.javafasta.shared.*;
 import org.simmi.javafasta.unsigned.JavaFasta;
-import org.simmi.treedraw.shared.TreeUtil;
-import org.simmi.treedraw.shared.TreeUtil.Node;
-import org.simmi.treedraw.shared.TreeUtil.NodeSet;
 import org.simmi.javafasta.unsigned.FlxReader;
 import org.simmi.javafasta.unsigned.NativeRun;
 
@@ -123,23 +121,23 @@ public class SerifyApplet {
 	//String 						globaluser = null;
 	NativeRun nrun = new NativeRun();
 	boolean 						noseq = false;
-	
+
 	Map<Path,Sequences> mseq = new HashMap<>();
-	
+
 	public String user;
 
 	Thread watcherThread = null;
 	Map<Path, Path> watchMap = new HashMap<>();
 	WatchService watcher = null;
 	Path filesInEdit = null;
-	
+
 	public SerifyApplet( FileSystem fs, boolean noseq ) {
 		this();
 		this.fs = fs;
 		this.root = fs.getPath("/");
 		this.noseq = noseq;
 	}
-	
+
 	public SerifyApplet() {
 		super();
 		serifier = new Serifier();
@@ -147,8 +145,8 @@ public class SerifyApplet {
 		fs = FileSystems.getDefault();
 		root = fs.getPath( System.getProperty("user.home") );
 	}
-	
-	public ObservableList<Sequences> initSequences() {		
+
+	public ObservableList<Sequences> initSequences() {
 		/*try {
 			JSObject js = JSObject.getWindow( SerifyApplet.this );
 			js.call( "getSequences", new Object[] {rowcount == 0} );
@@ -156,39 +154,39 @@ public class SerifyApplet {
 			e.printStackTrace();
 		}
 		/*String[] split = seqsStr.split("\n");
-		
+
 		for( String ss : split ) {
 			String[] s = ss.split("\t");
 			seqs.add( new Sequences(s[0], s[1], s[2], s[3], Integer.parseInt(s[4]) ) );
 		}*/
-		
+
 		return serifier.getSequencesList();
 	}
-	
+
 	public String getMachine() {
 		String hostinfo = "localhost\t1";
 		try {
 			String hostname = InetAddress.getLocalHost().getHostName();
 			int val = Runtime.getRuntime().availableProcessors();
-			
+
 			hostinfo = hostname + "\t" + val;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 		return hostinfo;
 	}
-	
+
 	private void initMachines() {
 		String hostname = "localhost";
 		int procs = 1;
-		
+
 		try {
 			hostname = InetAddress.getLocalHost().getHostName();
 			procs = Runtime.getRuntime().availableProcessors();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		
+
 		/*try {
 			JSObject js = JSObject.getWindow( SerifyApplet.this );
 			js.call( "initMachines", new Object[] {hostname, procs} );
@@ -196,13 +194,13 @@ public class SerifyApplet {
 			e.printStackTrace();
 		}*/
 	}
-	
+
 	/*public TableModel createModel( final List<?> datalist ) {
 		Class cls = null;
 		if( cls == null && datalist.size() > 0 ) cls = datalist.get(0).getClass();
 		return createModel( datalist, cls );
 	}
-	
+
 	public TableModel createModel( final List<?> datalist, final Class cls ) {
 		//System.err.println( cls );
 		return new TableModel() {
@@ -241,11 +239,11 @@ public class SerifyApplet {
 						} else {
 							System.err.println( datalist.size() );
 							if( datalist.size() > 0 ) System.err.println( datalist.get(0) );
-							
+
 							Object obj = datalist.get(rowIndex);
 							//System.err.println( obj );
 							ret = f.get( obj );
-							
+
 							/*if( ret != null && !ret.getClass().isInstance(f.getType()) ) {
 								System.err.println( ret.getClass() + "  " + f.getType() );
 								ret = null;
@@ -291,11 +289,11 @@ public class SerifyApplet {
 			}
 		};
 	}
-	
+
 	public void console( String log ) {
 		System.err.println( log );
 	}*/
-	
+
 	public void init() {
 		/*try {
 			JSObject jso = JSObject.getWindow( this );
@@ -303,15 +301,15 @@ public class SerifyApplet {
 		} catch( NoSuchMethodError | Exception e ) {
 			e.printStackTrace();
 		}
-		
+
 		//fs = FileSystems.getDefault();
 		//root = fs.getPath( System.getProperty("user.home") );
 		//fs.
-		
+
 		/*OutputStream o = new OutputStream() {
 			Object[]	objs = {""};
 			ByteArrayOutputStream	baos = new ByteArrayOutputStream();
-			
+
 			@Override
 			public void write(int b) throws IOException {
 				if( b == '\n' ) {
@@ -326,10 +324,10 @@ public class SerifyApplet {
 		PrintStream po = new PrintStream( o );
 		System.setOut( po );
 		System.setErr( po );*/
-		
+
 		init( null, null, System.getProperty("user.name") );
 	}
-	
+
 	public void browse( final String url ) {
 		try {
 			Desktop.getDesktop().browse( URI.create(url) );
@@ -338,23 +336,23 @@ public class SerifyApplet {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public Sequences getSequences( int i ) {
 		return serifier.getSequencesList().get(i);
 	}
-	
+
 	public void removeSequences( Sequences s ) {
 		serifier.getSequencesList().remove( s );
 	}
-	
+
 	public void removeAllSequences( Set<Sequences> ss ) {
 		serifier.getSequencesList().removeAll( ss );
 	}
-	
+
 	public void clearSequences() {
 		serifier.getSequencesList().clear();
 	}
-	
+
 	public void deleteSeqs() {
 		Set<String>	keys = new TreeSet<>();
 		Set<Sequences>	rselset = new TreeSet<>();
@@ -362,14 +360,14 @@ public class SerifyApplet {
 		for( Sequences seqs : lseqs ) {
 			rselset.add( seqs );
 			if( seqs.getKey() != null ) keys.add( seqs.getKey() );
-			
+
 			try {
 				Files.delete( seqs.getPath() );
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		boolean unsucc = false;
 		/*try {
 			JSObject js = JSObject.getWindow( SerifyApplet.this );
@@ -379,42 +377,42 @@ public class SerifyApplet {
 		} catch( NoSuchMethodError | Exception e1 ) {
 			unsucc = true;
 		}
-		
+
 		if( unsucc ) {
 			for( int r : rr ) {
 				int ind = table.convertRowIndexToModel( r );
 				rselset.add( getSequences(ind) );
 			}
 		}*/
-		
+
 		removeAllSequences( rselset );
 		//table.tableChanged( new TableModelEvent(table.getModel()) );
 	}
-	
+
 	public void deleteSequence( String key ) {
 		Sequences selseq = null;
 		for( Sequences s : serifier.getSequencesList() ) {
 			if( key.equals( s.getKey() ) ) selseq = s;
 		}
 		if( selseq != null ) {
-			removeSequences( selseq );		
+			removeSequences( selseq );
 			//okoktable.tableChanged( new TableModelEvent(table.getModel()) );
 		}
 	}
-	
+
 	public static void tagsplit( Map<String,String> tagmap, Sequences seqs, File dir, SerifyApplet applet ) {
 		try {
 			//File inf = new File( new URI(seqs.getPath() ) );
 			String name = seqs.getPath().getName(0).toString(); //inf.getName();
 			int ind = name.lastIndexOf('.');
-			
+
 			String sff = name;
 			String sf2 = "";
 			if( ind != -1 ) {
 				sff = name.substring(0, ind);
 				sf2 = name.substring(ind+1,name.length());
 			}
-			
+
 			Map<String,Path>		urlmap = new HashMap<String,Path>();
 			Map<String,FileWriter> fwmap = new HashMap<String,FileWriter>();
 			StringBuilder			include = new StringBuilder();
@@ -451,7 +449,7 @@ public class SerifyApplet {
 				} else {
 					include.append( line+"\n" );
 				}
-				
+
 				line = br.readLine();
 			}
 			br.close();
@@ -472,7 +470,7 @@ public class SerifyApplet {
 					break;
 				}
 			}
-			
+
 			for( String key : fwmap.keySet() ) {
 				FileWriter fw = fwmap.get( key );
 				fw.close();
@@ -482,7 +480,7 @@ public class SerifyApplet {
 					name = name.substring(0,ind);*/
 					applet.addSequences( name, urlmap.get( key ), null );
 				}
-			}					
+			}
 		} catch (URISyntaxException | IOException e1) {
 			e1.printStackTrace();
 		}
@@ -601,7 +599,7 @@ public class SerifyApplet {
 		   }
 	   }
 	}
-	
+
 	public static void rpsBlastRun( NativeRun nrun, StringBuffer query, String dbPath, Path resPath, String extrapar, JTable table, boolean homedir, final FileSystem fs, final String user, final String hostname, boolean headless ) throws IOException {
 		String userhome = System.getProperty("user.home");
 		Path selectedpath = null;
@@ -614,10 +612,10 @@ public class SerifyApplet {
 				if( !Files.isDirectory(selectedpath) ) selectedpath = selectedpath.getParent();
 			}
 		}
-		
+
 		String username = System.getProperty("user.name");
 		String cygpathstr = NativeRun.cygPath( userhome+"/genesetkey" );
-		
+
 		List<Object>	lscmd = new ArrayList<>();
 		if( table != null ) {
 			int[] rr = table.getSelectedRows();
@@ -626,20 +624,20 @@ public class SerifyApplet {
 				//String blastFile = "rpsblast+";
 				Path res = selectedpath.resolve(path.getFileName().toString()+".blastout");
 				int procs = Runtime.getRuntime().availableProcessors();
-				
+
 				List<String>	lcmd = new ArrayList<>();
 				String[] bcmds = { "rpsblast", "-db", dbPath, "-num_threads", Integer.toString(procs) };
 				String[] exts = extrapar.trim().split("[\t ]+");
-				
+
 				lcmd.addAll( Arrays.asList(bcmds) );
 				if( exts.length > 1 ) lcmd.addAll( Arrays.asList(exts) );
-				
+
 				lscmd.add( new Path[] {path, res, selectedpath} );
 				lscmd.add( lcmd );
 			}
 		} else {
 			int procs = Runtime.getRuntime().availableProcessors();
-			
+
 			String OS = System.getProperty("os.name").toLowerCase();
 			List<String>	lcmd = new ArrayList<String>();
 			String[] bcmds;
@@ -650,14 +648,14 @@ public class SerifyApplet {
 				bcmds = new String[] { "ssh", hostname, "rpsblast+"/*blastpath.resolve("blastp").toString()*/, "-db", dbPath, "-num_threads", Integer.toString(procs), "-num_alignments", "5", "-num_descriptions", "5", "-evalue", "0.01" };
 			}
 			String[] exts = extrapar.trim().split("[\t ]+");
-			
+
 			lcmd.addAll( Arrays.asList(bcmds) );
 			if( exts.length > 1 ) lcmd.addAll( Arrays.asList(exts) );
-			
+
 			lscmd.add( new Object[] {query.toString().getBytes(), resPath, selectedpath} );
 			lscmd.add( lcmd );
 		}
-		
+
 		final Object[] cont = new Object[3];
 		Runnable run = () -> {
             if( cont[0] != null ) {
@@ -672,7 +670,7 @@ public class SerifyApplet {
 		nrun.setRun( run );
 		nrun.runProcessBuilder( "Performing rpsblast", lscmd, cont, false, run, headless );
 	}
-	
+
 	public static void deltaBlastRun( NativeRun nrun, StringBuffer query, String dbPath, Path resPath, String extrapar, JTable table, boolean homedir, final FileSystem fs, final String user, final String hostname, boolean headless, boolean docker ) throws IOException {
 		String userhome = System.getProperty("user.home");
 		Path selectedpath = null;
@@ -685,10 +683,10 @@ public class SerifyApplet {
 				if( !Files.isDirectory(selectedpath) ) selectedpath = selectedpath.getParent();
 			}
 		}
-		
+
 		String username = System.getProperty("user.name");
 		String cygpathstr = NativeRun.cygPath( userhome+"/genesetkey" );
-		
+
 		List<Object>	lscmd = new ArrayList<>();
 		if( table != null ) {
 			int[] rr = table.getSelectedRows();
@@ -697,23 +695,23 @@ public class SerifyApplet {
 				//String blastFile = "rpsblast+";
 				Path res = selectedpath.resolve(path.getFileName().toString()+".blastout");
 				int procs = Runtime.getRuntime().availableProcessors();
-				
+
 				List<String>	lcmd = new ArrayList<>();
 				String[] bcmds = { "rpsblast", "-db", dbPath, "-num_threads", Integer.toString(procs) };
 				String[] exts = extrapar.trim().split("[\t ]+");
-				
+
 				lcmd.addAll( Arrays.asList(bcmds) );
 				if( exts.length > 1 ) lcmd.addAll( Arrays.asList(exts) );
-				
+
 				lscmd.add( new Path[] {path, res, selectedpath} );
 				lscmd.add( lcmd );
 			}
 		} else {
 			int procs = Runtime.getRuntime().availableProcessors();
-			
+
 			String OS = System.getProperty("os.name").toLowerCase();
 			String[] bcmds;
-			
+
 			if( docker ) {
 				bcmds = new String[] {OS.contains("mac") ? "/usr/local/bin/docker" : "docker", "run", "-i", "geneset", "/ncbi-blast-2.5.0+/bin/deltablast", "-db", dbPath, "-num_threads", Integer.toString(procs), "-num_alignments", "1", "-num_descriptions", "1", "-evalue", "0.01" };
 			} else {
@@ -728,11 +726,11 @@ public class SerifyApplet {
 
 			List<String> lcmd = new ArrayList<>(Arrays.asList(bcmds));
 			if( exts.length > 1 ) lcmd.addAll( Arrays.asList(exts) );
-			
+
 			lscmd.add( new Object[] {query.toString().getBytes(), resPath, selectedpath} );
 			lscmd.add( lcmd );
 		}
-		
+
 		final Object[] cont = new Object[3];
 		Runnable run = () -> {
             if( cont[0] != null ) {
@@ -747,7 +745,7 @@ public class SerifyApplet {
 		nrun.setRun( run );
 		nrun.runProcessBuilder( "Performing rpsblast", lscmd, cont, false, run, headless );
 	}
-	
+
 	public static void blastRun( NativeRun nrun, Path queryPath, Path dbPath, Path resPath, String dbType, String extrapar, TableView table, boolean homedir, final String user, final boolean headless ) throws IOException {
 		String userhome = System.getProperty("user.home");
 		Path selectedpath = null;
@@ -765,7 +763,7 @@ public class SerifyApplet {
 			blastp = new File( "c:\\\\Program files\\NCBI\\blast-2.2.28+\\bin\\blastp.exe" );
 		}
 		if( blastx.exists() ) {*/
-		//String dbPathFixed = nrun.fixPath( dbPath );	
+		//String dbPathFixed = nrun.fixPath( dbPath );
 		else {
 			DirectoryChooser fc = new DirectoryChooser();
 			File f = fc.showDialog( null );
@@ -774,7 +772,7 @@ public class SerifyApplet {
 				if( !Files.isDirectory(selectedpath) ) selectedpath = selectedpath.getParent();
 			}
 		}
-		
+
 		String command = "";
 		if( !headless ) {
 			command = "/usr/local/bin/";
@@ -784,7 +782,7 @@ public class SerifyApplet {
 		}
 		List<String> commandsplit = Arrays.asList(command.split("[ ]+"));
 		List<String> cmds = new ArrayList<>( commandsplit );
-		
+
 		String username = System.getProperty("user.name");
 		String cygpathstr = NativeRun.cygPath( userhome+"/genesetkey" );
 		List<Object>	lscmd = new ArrayList<>();
@@ -794,22 +792,22 @@ public class SerifyApplet {
 				for( Sequences seqs : lseqs ) {
 					Path	path = seqs.getPath();
 					String 	type = seqs.getType();
-					
+
 					//String blasttype = dbType.equals("nucl") ? type.equals("prot") ? "blastx" : "blastn" : "blastp";
 					String blastFile = dbType.equals("prot") ? type.equals("prot") ? "blastp" : "blastx" : "blastn";
-					
+
 					/*URL url = new URL( path );
 					String file = url.getFile();
 					String[] split = file.split("/");
 					String fname = split[ split.length-1 ];
 					split = fname.split("\\.");
 					final String title = split[0];
-					
+
 					final File infile = new File( dir, "tmp_"+fname );
-					
+
 					FileOutputStream fos = new FileOutputStream( infile );
 					InputStream is = url.openStream();
-					
+
 					byte[] bb = new byte[100000];
 					r = is.read(bb);
 					while( r > 0 ) {
@@ -818,18 +816,18 @@ public class SerifyApplet {
 					}
 					is.close();
 					fos.close();*/
-			
+
 					//Path p = Paths.get( URI.create(path) );
-					
+
 					//String queryPathFixed = nrun.fixPath( path.toAbsolutePath().toString() ).trim();
-					
+
 					//InputStream input = Files.newInputStream(path, StandardOpenOption.READ);
-					
+
 					//Path p = selectedfile.toPath();
 					Path res = selectedpath.resolve(path.getFileName().toString()+".blastout");
 					//OutputStream output = Files.newOutputStream(res, StandardOpenOption.CREATE);
 					//final String outPathFixed = nrun.fixPath( new File( selectedfile, path.getFileName().toString()+".blastout" ).getAbsolutePath() ).trim();
-					
+
 					List<String>	lcmd = new ArrayList<>( commandsplit );
 					int cmdsize = lcmd.size();
 					lcmd.set(cmdsize-1, cmds.get(cmdsize-1)+blastFile);
@@ -839,17 +837,17 @@ public class SerifyApplet {
 
 					lcmd.addAll( Arrays.asList(exts) );
 					//lcmd.addAll( Arrays.asList(nxst) );
-					
+
 					lscmd.add( new Path[] {path, res, selectedpath} );
 					lscmd.add( lcmd );
 				}
 			} else {
-				//Path res = Files.createTempFile("all", "blastout"); 
+				//Path res = Files.createTempFile("all", "blastout");
 				Path res = resPath != null ? resPath : selectedpath.resolve( "tmp.blastout.gz" ); //path.getFileName().toString()+".blastout");
-				
+
 				//OutputStream output = Files.newOutputStream(res, StandardOpenOption.CREATE);
 				//final String outPathFixed = nrun.fixPath( new File( selectedfile, path.getFileName().toString()+".blastout" ).getAbsolutePath() ).trim();
-				
+
 				List<String>	lcmd = new ArrayList<>();
 				List<String> rest = Arrays.asList("-db", dbPath.getFileName().toString());
 				List<String> 	bcmds = new ArrayList<>( commandsplit );
@@ -863,20 +861,20 @@ public class SerifyApplet {
 					else bcmds  = new String[] { "ssh", hostname, "blastp"/*blastpath.resolve("blastp").toString()*, "-db", dbPath.getFileName().toString(), "-num_threads", "32"}; //, "|", "gzip", "-c" };
 				}*/
 				String[] exts = extrapar.trim().split("[\t ]+");
-				
+
 				//String[] nxst = { "-out", outPathFixed };
 				lcmd.addAll( bcmds );
 				if( exts.length > 1 ) lcmd.addAll( Arrays.asList(exts) );
 				//lcmd.addAll( Arrays.asList(nxst) );
-				
+
 				lscmd.add( new Path[] {queryPath, res, selectedpath} );
 				lscmd.add( lcmd );
 			}
-			
-			final String start = new Date( System.currentTimeMillis() ).toString();								
+
+			final String start = new Date( System.currentTimeMillis() ).toString();
 			final Object[] cont = new Object[3];
 			/*Runnable run = new Runnable() {
-				public void run() {					
+				public void run() {
 					//infile.delete();
 					//System.err.println( "ok " + (cont[0] == null ? "null" : "something else" ) );
 					if( cont[0] != null ) {
@@ -904,9 +902,9 @@ public class SerifyApplet {
 		//}
 		//} else System.err.println( "no blast installed" );
 	}
-	
+
 	public void runBlastInApplet( final String extrapar, final Path dbPath, final String dbType ) {
-		AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+		/*AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 blastRun( nrun, dbPath, dbPath, null, dbType, extrapar, table, false, user, false );
             } catch( Exception e ) {
@@ -914,42 +912,42 @@ public class SerifyApplet {
             }
 
             return null;
-        });
+        });*/
 	}
-	
+
 	public void blastClusters( final BufferedReader is, final BufferedWriter os ) {
 		final JDialog		dialog = new JDialog();
 		final JProgressBar	pbar = new JProgressBar();
 		Runnable run = new Runnable() {
 			boolean interrupted = false;
-			
+
 			public void run() {
 				dialog.addWindowListener( new WindowListener() {
 					@Override
 					public void windowOpened(WindowEvent e) {}
-					
+
 					@Override
 					public void windowIconified(WindowEvent e) {}
-					
+
 					@Override
 					public void windowDeiconified(WindowEvent e) {}
-					
+
 					@Override
 					public void windowDeactivated(WindowEvent e) {}
-					
+
 					@Override
 					public void windowClosing(WindowEvent e) {}
-					
+
 					@Override
 					public void windowClosed(WindowEvent e) {
 						interrupted = true;
 					}
-					
+
 					@Override
 					public void windowActivated(WindowEvent e) {}
 				});
 				dialog.setVisible( true );
-				
+
 				if( !interrupted ) {
 					try {
 						List<Set<String>> total = new ArrayList<>();
@@ -962,25 +960,25 @@ public class SerifyApplet {
 		};
 		nrun.runProcess( "Blast clusters", run, dialog, pbar );
 	}
-	
+
 	public static class AvgProvider {
 		List<String>	joinset;
 		double			avg;
-		
+
 		public int count() {
 			return joinset.size();
 		}
-		
+
 		public AvgProvider( List<String> joinset, double avg ) {
 			 this.joinset = joinset;
 			 this.avg = avg;
 		}
 	};
-	
+
 	public final static class CountAverage implements Comparable<CountAverage> {
 		int count;
 		double avg;
-		
+
 		public CountAverage( int count, double avg ) {
 			this.count = count;
 			this.avg = avg;
@@ -993,16 +991,16 @@ public class SerifyApplet {
 			return res;
 		}
 	}
-	
+
 	public static void blastJoin( InputStream is, PrintStream ps ) throws IOException {
 		InputStreamReader 		fr = new InputStreamReader( is );
 		BufferedReader 	br = new BufferedReader( fr );
 		String line = br.readLine();
-		
+
 		//PrintStream ps = new PrintStream( os );
-		
+
 		Map<String,Map<String,Set<String>>>	specmap = new HashMap<>();
-		
+
 		String stuff = null;
 		String subject = null;
 		String length = null;
@@ -1010,7 +1008,7 @@ public class SerifyApplet {
 		String stop = null;
 		String score = null;
 		String strand = null;
-		
+
 		String thespec = null;
 		while( line != null ) {
 			if( line.startsWith("Query=") ) {
@@ -1030,7 +1028,7 @@ public class SerifyApplet {
 							contigmap = new HashMap<>();
 							specmap.put(spec, contigmap );
 						}
-						
+
 						Set<String>	hitmap;
 						if( contigmap.containsKey( subject ) ) {
 							hitmap = contigmap.get( subject );
@@ -1040,7 +1038,7 @@ public class SerifyApplet {
 						}
 						hitmap.add( stuff + " " + start + " " + stop + " " + score + " " + strand );
 					}
-					
+
 					subject = null;
 				}
 				stuff = line.substring(7).trim();
@@ -1064,7 +1062,7 @@ public class SerifyApplet {
 							contigmap = new HashMap<String,Set<String>>();
 							specmap.put(spec, contigmap );
 						}
-						
+
 						Set<String>	hitmap;
 						if( contigmap.containsKey( subject ) ) {
 							hitmap = contigmap.get( subject );
@@ -1085,7 +1083,7 @@ public class SerifyApplet {
 				stop = split[split.length-1];
 			} else if( length == null && subject != null ) {
 				subject += line;
-			} else if( line.startsWith(" Score") ) {				
+			} else if( line.startsWith(" Score") ) {
 				if( start != null ) {
 					int val = subject.indexOf('_');
 					boolean valid = true;
@@ -1102,7 +1100,7 @@ public class SerifyApplet {
 							contigmap = new HashMap<String,Set<String>>();
 							specmap.put(spec, contigmap );
 						}
-						
+
 						Set<String>	hitmap;
 						if( contigmap.containsKey( subject ) ) {
 							hitmap = contigmap.get( subject );
@@ -1119,17 +1117,17 @@ public class SerifyApplet {
 			} else if( line.startsWith(" Strand") ) {
 				strand = line;
 			}
-			
+
 			line = br.readLine();
 		}
 		fr.close();
-		
+
 		for( String spec : specmap.keySet() ) {
 			if( spec.contains( thespec ) ) {
 				ps.println( spec );
-				
+
 				List<List<String>>	sortorder = new ArrayList<List<String>>();
-				
+
 				Map<List<String>,List<Double>>	joinMap = new HashMap<List<String>,List<Double>>();
 				Map<String,Set<String>>	contigmap = specmap.get(spec);
 				for( String contig : contigmap.keySet() ) {
@@ -1140,39 +1138,39 @@ public class SerifyApplet {
 						for( int x = i+1; x < hitlist.size(); x++ ) {
 							String str1 = hitlist.get(i);
 							String str2 = hitlist.get(x);
-							
+
 							boolean left1 = str1.contains("left");
 							boolean left2 = str2.contains("left");
 							boolean minus1 = str1.contains("Minus");
 							boolean minus2 = str2.contains("Minus");
 							boolean all1 = str1.contains("all");
 							boolean all2 = str2.contains("all");
-							
+
 							if( (all1 || all2) || (left1 != left2 && minus1 == minus2) || (left1 == left2 && minus1 != minus2) ) {
 								String[] split1 = str1.split("[\t ]+");
 								String[] split2 = str2.split("[\t ]+");
-								
+
 								int start1 = Integer.parseInt( split1[1] );
 								int stop1 = Integer.parseInt( split1[2] );
 								int start2 = Integer.parseInt( split2[1] );
 								int stop2 = Integer.parseInt( split2[2] );
-								
+
 								if( start1 > stop1 ) {
 									int tmp = start1;
 									start1 = stop1;
 									stop1 = tmp;
 								}
-								
+
 								if( start2 > stop2 ) {
 									int tmp = start2;
 									start2 = stop2;
 									stop2 = tmp;
 								}
-								
+
 								if( (stop2-start2 > 50) && (stop1-start1 > 50) && ((start2 > start1-150 && start2 < stop1+150) || (stop2 > start1-150 && stop2 < stop1+150)) ) {
 									hitmap.add( str1 );
 									hitmap.add( str2 );
-									
+
 									int jfn = str1.indexOf("Score =");
 									int nxt = str1.indexOf("bits", jfn+8);
 									double scr1 = 0;
@@ -1181,7 +1179,7 @@ public class SerifyApplet {
 									} catch( Exception e ) {
 										System.err.println( str1 );
 									}
-									
+
 									jfn = str2.indexOf("Score =");
 									nxt = str2.indexOf("bits", jfn+8);
 									double scr2 = 0;
@@ -1190,32 +1188,32 @@ public class SerifyApplet {
 									} catch( Exception e ) {
 										System.err.println( str2 );
 									}
-									
+
 									int ind1 = str1.indexOf("_left");
 									if( ind1 == -1 ) ind1 = str1.indexOf("_right");
 									if( ind1 == -1 ) ind1 = str1.indexOf("_all");
 									String str1simple = str1.substring(0,ind1);
 									String str1compl = str1.substring(0, str1.indexOf(' ', ind1));
-									
+
 									int ind2 = str2.indexOf("_left");
 									if( ind2 == -1 ) ind2 = str2.indexOf("_right");
 									if( ind2 == -1 ) ind2 = str2.indexOf("_all");
 									String str2simple = str2.substring(0,ind2);
 									String str2compl = str2.substring(0, str2.indexOf(' ', ind2));
-									
+
 									/*if( minus1 != minus2 ) {
 										if( str1compl.compareTo( str2compl ) > 0 ) {
 											str1compl += " Minus";
 										} else str2compl += " Minus";
 									}*/
-									
+
 									if( !str2simple.equals(str1simple) ) {
 										List<String> joinset = new ArrayList<String>();
 										joinset.add( str1compl );
 										joinset.add( str2compl );
 										Collections.sort( joinset );
 										if( minus1 != minus2 ) joinset.set(1, joinset.get(1)+" Minus");
-										
+
 										List<Double>	cntList;
 										if( joinMap.containsKey( joinset ) ) {
 											cntList = joinMap.get(joinset);
@@ -1248,9 +1246,9 @@ public class SerifyApplet {
 					}
 					avg /= cnt;
 					CountAverage cntavg = new CountAverage(cnt,avg);
-					
-					if( joinset.get(0).contains("all") || joinset.get(1).contains("all") ) cnt -= 1000; 
-					
+
+					if( joinset.get(0).contains("all") || joinset.get(1).contains("all") ) cnt -= 1000;
+
 					if( reverseset.containsKey( cntavg ) ) {
 						List<AvgProvider>	joinlist = reverseset.get(cntavg);
 						joinlist.add( new AvgProvider( joinset, avg ) );
@@ -1260,21 +1258,21 @@ public class SerifyApplet {
 						reverseset.put( new CountAverage(cnt, avg), joinlist);
 					}
 				}
-				
+
 				for( CountAverage cnt : reverseset.keySet() ) {
 					List<AvgProvider>	joinlist = reverseset.get(cnt);
 					for( AvgProvider avgp : joinlist ) {
 						ps.println( avgp.joinset + " " + avgp.avg + ": " + cnt.count);
 					}
 				}
-					
+
 					for( CountAverage cnt : reverseset.keySet() ) {
 						List<AvgProvider>	joinlist = reverseset.get(cnt);
 						for( AvgProvider avgp : joinlist ) {
 							List<String>	joinset = avgp.joinset;
 							String str1 = joinset.get(0);
 							String str2 = joinset.get(1);
-							
+
 							/*for( String joinstr : joinset ) {
 								if( str1 == null ) str1 = joinstr;
 								else {
@@ -1282,7 +1280,7 @@ public class SerifyApplet {
 									break;
 								}
 							}*/
-							
+
 							boolean minus1 = str1.contains("Minus");
 							str1 = str1.replace(" Minus", "");
 							str2 = str2.replace(" Minus", "");
@@ -1291,9 +1289,9 @@ public class SerifyApplet {
 							//String str2simple = str1.substring(0,str2.lastIndexOf('_'));
 							String str1simple = str1.substring(0,str1.lastIndexOf('_'));
 							String str2simple = str2.substring(0,str2.lastIndexOf('_'));
-							
+
 									List<String>	seqlist1 = null;
-									List<String>	seqlist2 = null;								
+									List<String>	seqlist2 = null;
 									//boolean both = false;
 									for( List<String> sl : sortorder ) {
 										for( String seq : sl ) {
@@ -1301,7 +1299,7 @@ public class SerifyApplet {
 												seqlist1 = sl;
 												seqlist2 = sl;
 											} else*/
-											
+
 											if( seq.contains(str1simple) ) {
 												if( seqlist1 == null ) seqlist1 = sl;
 											} else if( seq.contains(str2simple) ) {
@@ -1310,7 +1308,7 @@ public class SerifyApplet {
 										}
 										if( seqlist1 != null && seqlist2 != null ) break;
 									}
-									
+
 									/*for( List<String> sl1 : sortorder ) {
 										for( List<String> sl2 : sortorder ) {
 											if( sl1 != sl2 ) {
@@ -1331,37 +1329,37 @@ public class SerifyApplet {
 											}
 										}
 									}
-									
+
 									int count = 0;
 									if( seqlist1 != null ) {
 										for( String s : seqlist1 ) {
 											if( s.contains("00006") ) count++;
 											else if( s.contains("00034") ) count++;
-											
+
 											if( count == 2 ) {
 												System.err.println();
 											}
 										}
 									}
-									
+
 									if( seqlist2 != null ) {
 										for( String s : seqlist2 ) {
 											if( s.contains("00006") ) count++;
 											else if( s.contains("00034") ) count++;
-											
+
 											if( count == 2 ) {
 												System.err.println();
 											}
 										}
 									}*/
-									
+
 									boolean left1 = str1.contains("left");
 									boolean left2 = str2.contains("left");
-									
+
 									if( seqlist1 == null && seqlist2 == null ) {
 										List<String> seqlist = new ArrayList<String>();
 										sortorder.add( seqlist );
-										
+
 										if( left1 ) {
 											if( left2 ) {
 												if( minus1 ) {
@@ -1403,34 +1401,34 @@ public class SerifyApplet {
 										List<String>	seqlist;
 										String selseq = null;
 										String noseq = null;
-										
+
 										int ind = -1;
 										if( seqlist1 == null ) {
 											seqlist = seqlist2;
 											selseq = str2;
 											noseq = str1;
-											
+
 											String seqf = seqlist.get(0);
 											String seql = seqlist.get( seqlist.size()-1 );
 											boolean bf = true; //(seqf.contains("left") && !seqf.contains("reverse")) || (!seqf.contains("left") && seqf.contains("reverse"));
 											boolean bl = true; //(seql.contains("left") && seql.contains("reverse")) || (!seql.contains("left") && !seql.contains("reverse"));
-											
+
  											if( seqf.contains(str2simple) && bf ) ind = 0;
 											else if( seql.contains(str2simple) && bl ) ind = seqlist.size()-1;
 										} else {
 											seqlist = seqlist1;
 											selseq = str1;
 											noseq = str2;
-											
+
 											String seqf = seqlist.get(0);
 											String seql = seqlist.get( seqlist.size()-1 );
 											boolean bf = true; //(seqf.contains("left") && !seqf.contains("reverse")) || (!seqf.contains("left") && seqf.contains("reverse"));
 											boolean bl = true; //(seql.contains("left") && seql.contains("reverse")) || (!seql.contains("left") && !seql.contains("reverse"));
-											
+
 											if( seqf.contains(str1simple) && bf ) ind = 0;
 											else if( seql.contains(str1simple) && bl ) ind = seqlist.size()-1;
 										}
-										
+
 										if( ind != -1 ) {
 											String tstr = seqlist.get(ind);
 											boolean leftbef = tstr.contains("left");
@@ -1438,10 +1436,10 @@ public class SerifyApplet {
 											boolean allaft = false;//selseq.contains("all");
 											boolean revbef = tstr.contains("reverse");
 											//boolean revaft = selseq.contains("reverse");
-											
+
 											boolean leftno = noseq.contains("left");
 											//boolean revno = selseq.contains("reverse");
-											
+
 											if( leftbef && revbef) {
 												if( leftaft ) {
 													if( ind == seqlist.size()-1 || allaft ) {
@@ -1481,7 +1479,7 @@ public class SerifyApplet {
 														else seqlist.add( 0, noseq );
 													}
 												}
-												
+
 												//if( leftno ) seqlist.add( 0, noseq+" reverse" );
 												//else seqlist.add( 0, noseq );
 											} else if( leftbef && !revbef ) {
@@ -1497,11 +1495,11 @@ public class SerifyApplet {
 														else seqlist.add( seqlist.size(), noseq+" reverse" );
 													}
 												}
-												
+
 												//if( leftno ) seqlist.add( 0, noseq+" reverse" );
 												//else seqlist.add( 0, noseq );
 											}
-											
+
 											/*if( selseq.contains(str1simple) ) {
 												if( selseq.contains("reverse ") ) {
 													if( left1 ) {
@@ -1567,7 +1565,7 @@ public class SerifyApplet {
 									} else if( seqlist1 != seqlist2 ) {
 										String selseq1 = null;
 										String selseq2 = null;
-										
+
 										int ind1 = -1;
 										if( seqlist1.get(0).contains(str1simple) ) {
 											ind1 = 0;
@@ -1576,7 +1574,7 @@ public class SerifyApplet {
 											ind1 = seqlist1.size()-1;
 											selseq1 = seqlist1.get( seqlist1.size()-1 );
 										}
-										
+
 										int ind2 = -1;
 										if( seqlist2.get(0).contains(str2simple) ) {
 											ind2 = 0;
@@ -1585,20 +1583,20 @@ public class SerifyApplet {
 											ind2 = seqlist2.size()-1;
 											selseq2 = seqlist2.get( seqlist2.size()-1 );
 										}
-										
+
 										boolean success = false;
-										
+
 										if( selseq1 == null || selseq2 == null ) {
 											System.err.println("bleh");
-										} else {											
+										} else {
 											System.err.println( "joining: " + seqlist1 );
 											System.err.println( "and: " + seqlist2 );
-										
+
 											boolean lef1 = selseq1.contains("left");
 											boolean lef2 = selseq2.contains("left");
 											boolean rev1 = selseq1.contains("reverse");
 											boolean rev2 = selseq2.contains("reverse");
-											
+
 											boolean bb = false;
 											if( bb ) {
 												System.err.println("subleh");
@@ -1610,7 +1608,7 @@ public class SerifyApplet {
 													if( rev1 && ind1 == seqlist1.size()-1 ) seqlist1.add( seqlist1.size(), str1+" reverse" );
 													else if( ind1 == 0 ) seqlist1.add( 0, str1 );
 												}
-												
+
 												if( lef2 && !left2 ) {
 													if( rev2 && ind2 == 0 ) seqlist2.add( 0, str2+" reverse" );
 													else if( ind2 == seqlist2.size()-1 ) seqlist2.add( seqlist2.size(), str2 );
@@ -1618,17 +1616,17 @@ public class SerifyApplet {
 													if( rev2 && ind2 == seqlist2.size()-1 ) seqlist2.add( seqlist2.size(), str2+" reverse" );
 													else if( ind2 == 0 ) seqlist2.add( 0, str2 );
 												}
-												
+
 												boolean left1beg = seqlist1.get(0).contains("left");
 												boolean rev1beg = seqlist1.get(0).contains("reverse");
 												boolean left1end = seqlist1.get(seqlist1.size()-1).contains("left");
 												boolean rev1end = seqlist1.get(seqlist1.size()-1).contains("reverse");
-												
+
 												boolean left2beg = seqlist2.get(0).contains("left");
 												boolean rev2beg = seqlist2.get(0).contains("reverse");
 												boolean left2end = seqlist2.get(seqlist2.size()-1).contains("left");
 												boolean rev2end = seqlist2.get(seqlist2.size()-1).contains("reverse");
-												
+
 												if( seqlist1.get(0).contains(str1simple) ) {
 													if( seqlist2.get(0).contains(str2simple) ) {
 														if( ((left1beg && !rev1beg) || (!left1beg && rev1beg)) && (((left2beg && !rev2beg) || (!left2beg && rev2beg))) ) {
@@ -1674,7 +1672,7 @@ public class SerifyApplet {
 														}
 													}
 												}
-												
+
 												if( success ) {
 													if( !sortorder.remove( seqlist2 ) ) {
 														System.err.println("no remove");
@@ -1697,7 +1695,7 @@ public class SerifyApplet {
 						//}
 					//}
 				}
-				
+
 				ps.println("join");
 				for( List<String> so : sortorder ) {
 					for( int i = 0; i < so.size(); i++ ) {
@@ -1724,11 +1722,11 @@ public class SerifyApplet {
 			}
 		}
 	}
-	
-	public int flankingFasta( InputStream is, OutputStream os ) throws IOException {        
+
+	public int flankingFasta( InputStream is, OutputStream os ) throws IOException {
         OutputStreamWriter 		fw = new OutputStreamWriter( os );
         BufferedWriter			bw = new BufferedWriter( fw );
-        
+
         int fasti = 60;
         int nseq = 0;
 		InputStreamReader fr = new InputStreamReader( is );
@@ -1766,11 +1764,11 @@ public class SerifyApplet {
 			} else {
 				seq.append( line );
 			}
-			
+
 			line = br.readLine();
 		}
 		fr.close();
-		
+
 		if( seqname != null ) {
 			if( seq.length() < 200 ) {
 				fw.write( seqname+"_all"+"\n" );
@@ -1791,13 +1789,13 @@ public class SerifyApplet {
 				nseq++;
 			}
 		}
-		
+
 		bw.flush();
 		fw.close();
-		
+
 		return nseq;
 	}
-		
+
 	public static void cutFasta( BufferedReader br, BufferedWriter bw, char ch ) throws IOException {
 		String line = br.readLine();
 		while( line != null ) {
@@ -1806,78 +1804,78 @@ public class SerifyApplet {
 			} else {
 				bw.write( line+"\n" );
 			}
-			
+
 			line = br.readLine();
 		}
 		br.close();
 		bw.flush();
 		bw.close();
 	}
-	
+
 	public static double correlateDistance(double[] dmat1, double[] dmat2) {
 		double ret = 0.0;
-		
+
 		for( int i = 0; i < dmat1.length; i++ ) {
 			double dif = dmat1[i]-dmat2[i];
 			ret += dif*dif;
 		}
-		
+
 		return Math.sqrt( ret );
 	}
-	
+
 	public void totalTrim( File dir, Object fset ) throws URISyntaxException, MalformedURLException, IOException {
 		Path path = null;
 		String type = null;
 		String trimname = null;
-		
+
 		int nseq = 0;
 		BufferedWriter bw = null;
 		List<Sequences> lseqs = table.getSelectionModel().getSelectedItems();
 		for( Sequences seqs : lseqs ) {
 			InputStream is = Files.newInputStream( seqs.getPath(), StandardOpenOption.READ );
-			
+
 			if( seqs.getPath().endsWith(".gz") ) {
 				is = new GZIPInputStream( is );
 			}
-			
+
 			if( bw == null ) {
 				String urlstr = path.toString();
 				String[] erm = urlstr.split("\\/");
 				String name = erm[ erm.length-1 ];
 				int ind = name.lastIndexOf('.');
-				
+
 				String sff = name;
 				String sf2 = "";
 				if( ind != -1 ) {
 					sff = name.substring(0, ind);
 					sf2 = name.substring(ind+1,name.length());
 				}
-				
+
 				trimname = sff+"_trimmed";
 				File f = new File( dir, trimname+"."+sf2 );
 				path = f.toPath();
 				type = seqs.getType();
 				FileWriter fw = new FileWriter(f);
-				
+
 				bw = new BufferedWriter( fw );
 			}
-			
+
 			nseq += serifier.trimFasta( new BufferedReader( new InputStreamReader( is ) ), bw, fset, false, false );
 		}
 		if( bw != null ) {
 			bw.flush();
 			bw.close();
 		}
-		
+
 		SerifyApplet.this.addSequences(trimname, type, path, nseq);
 	}
-	
+
 	public void loadSequencesInJavaFasta( JavaFasta jf ) {
 		Map<String, Sequence> contset = new HashMap<String, Sequence>();
 		List<Sequences> lseqs = table.getSelectionModel().getSelectedItems();
 		for ( Sequences seqs : lseqs ) {
 			if( lseqs.size() == 1 ) jf.setCurrentPath( seqs.getPath() );
-			
+
 			//int nseq = 0;
 			contset.putAll(serifier.appendSequenceInJavaFasta( seqs, lseqs.size() == 1 ));
 						/*Annotation a = jf.new Annotation(seq, contig, Color.red);
@@ -1896,7 +1894,7 @@ public class SerifyApplet {
 				Collections.sort(seq.getAnnotations());
 		}
 	}
-		
+
 	public void trim( File dir, String trim ) {
 		try {
 			Map<String,String> fset = serifier.makeFset( trim );
@@ -1907,7 +1905,7 @@ public class SerifyApplet {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public void load() {
 		Platform.runLater(() -> {
             JFrame frame = new JFrame();
@@ -1978,7 +1976,7 @@ public class SerifyApplet {
             frame.setVisible(true);
         });
 	}
-	
+
 	FileSystem 	fs;
 	Path		root;
 	/*
@@ -1986,10 +1984,10 @@ public class SerifyApplet {
 	AWST	Clostridium_sp-KLE-1755
 	AVKD	Clostridium_difficile-DA00256
 	ACIO	Clostridium_hathewayi-DSM-13479
-	
+
 	-evalue 0.00001 -num_alignments 1 -num_descriptions 1
 	*/
-	
+
 	public void doProdigal( Path dir, Container c, final Path fs, List<Path> urls ) {
 		//JFileChooser fc = new JFileChooser();
 		//fc.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
@@ -2112,7 +2110,7 @@ public class SerifyApplet {
         });
 		//infile.delete();
 	}
-	
+
 	public void doRnammer( Path dir, Container c, final Path fs, List<Path> urls ) {
 		SwingUtilities.invokeLater(() -> {
             JTextField host = new JTextField("localhost");
@@ -2373,18 +2371,18 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		watcherThread.setDaemon(true);
 		watcherThread.start();
 	}
-	
+
 	public void init( final Container c, final VBox vbox, String tuser ) {
 		nrun.cnt = c;
 		user = tuser;
-		
+
 		/*try {
 			JSObject js = JSObject.getWindow( SerifyApplet.this );
 			user = (String)js.call("getUser", new Object[] {});
 		} catch( NoSuchMethodError | Exception e ) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
 		} catch (ClassNotFoundException e) {
@@ -2396,21 +2394,21 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		
+
 		Window window = SwingUtilities.windowForComponent( c );
 		if (window instanceof JFrame) {
 			JFrame frame = (JFrame)window;
 			if (!frame.isResizable()) frame.setResizable(true);
 		}*/
-		
+
 		//final String[] 	columns = new String[] {"user", "name", "path", "type", "#seq"};
 		//final Class[]	types = new Class[] {String.class, String.class, String.class, String.class, Integer.class};
-		
+
 		//Color bgcolor = Color.white;
 		//SerifyApplet.this.getContentPane().setBackground(bgcolor);
 		//SerifyApplet.this.setBackground(bgcolor);
 		//SerifyApplet.this.getRootPane().setBackground(bgcolor);
-		
+
 		table = new TableView<>();
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.getSelectionModel().setSelectionMode( SelectionMode.MULTIPLE );
@@ -2433,7 +2431,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		TableColumn<Sequences, Integer> metadatacol = new TableColumn<>("Metadata");
 		metadatacol.setCellValueFactory( new PropertyValueFactory<>("metadata"));
 		table.getColumns().add( metadatacol );
-		
+
 		ObservableList<Sequences> sequences = initSequences();
 		initMachines();
 		serifier.setSequencesList( sequences );
@@ -2544,7 +2542,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 
 		//TableModel model = createModel( sequences, Sequences.class );
 		//table.setModel( model );
-		
+
 		/*Field[] odecl = Sequences.class.getDeclaredFields();
 		Set<TableColumn>			remcol = new HashSet<TableColumn>();
 		Enumeration<TableColumn>	taben = table.getColumnModel().getColumns();
@@ -2558,7 +2556,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		for( TableColumn tc : remcol ) {
 			table.removeColumn( tc );
 		}*/
-		
+
 		table.setOnMouseClicked(me -> {
             if( me.getClickCount() == 2 ) {
                 load();
@@ -2567,36 +2565,36 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			/*public void mousePressed( MouseEvent me ) {
 				if( me.getClickCount() == 2 ) {
 					load();
-					
+
 					/*int r = table.getSelectedRow();
 					String path = (String)table.getValueAt( r, 3 );
-					
+
 					JFrame frame = new JFrame();
 					frame.setSize(800, 600);
 					frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-					
+
 					JavaFasta jf = new JavaFasta( c instanceof JApplet ? (JApplet)c : null, serifier, null );
 					jf.initGui(frame);
 					jf.updateView();
 
 					frame.setVisible(true);
-					
+
 					/*try {
 						SerifyApplet.this.getAppletContext().showDocument( new URL(path) );
 					} catch (MalformedURLException e) {
 						e.printStackTrace();
 					}*
-					
+
 					//browse( path );
 				}
 			}
 
 			public void changed(ObservableValue<? extends Sequences> observable, Sequences oldValue, S newValue) {
 				// TODO Auto-generated method stub
-				
+
 			}*/
 		//});
-		
+
 		table.setOnKeyPressed(e -> {
             KeyCode keycode = e.getCode();
             if( keycode == KeyCode.DELETE ) {
@@ -2612,7 +2610,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
                 browse( path );
             }
         });
-		
+
 		MenuBar mb = new MenuBar();
 		Menu popup = new Menu("File");
 		Menu edit = new Menu("Edit");
@@ -2634,7 +2632,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			mb.add( popup );
 			ap.setJMenuBar( mb );
 		}*/
-		
+
 		MenuItem jgifetch = new MenuItem("JGI Fetch");
 		popup.getItems().add( jgifetch );
 		jgifetch.setOnAction(event -> {
@@ -3053,26 +3051,26 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			@Override
 			public void handle(ActionEvent e) {
 				try {
-					String userhome = System.getProperty("user.home");	
+					String userhome = System.getProperty("user.home");
 					File dir = new File( userhome );
-					
+
 					nrun.checkInstall( dir );
-						
+
 					Sequences seqs = table.getSelectionModel().getSelectedItem();
 					final String dbtype = seqs.getType();
 					final String path = seqs.getPath().toString();
 					URL url = new URL( path );
-					
+
 					String file = url.getFile();
 					String[] split = file.split("/");
 					String fname = split[ split.length-1 ];
 					split = fname.split("\\.");
-					final String title = split[0]; 
+					final String title = split[0];
 					final File infile = new File( dir, "tmp_"+fname );
-					
+
 					FileOutputStream fos = new FileOutputStream( infile );
 					InputStream is = url.openStream();
-					
+
 					byte[] bb = new byte[100000];
 					int r = is.read(bb);
 					while( r > 0 ) {
@@ -3081,35 +3079,35 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					}
 					is.close();
 					fos.close();
-					
+
 					DirectoryChooser fc = new DirectoryChooser();
 					File selectedfile = fc.showDialog( null );
 					if( selectedfile != null ) {
 						if( !selectedfile.isDirectory() ) selectedfile = selectedfile.getParentFile();
-						
+
 						final String outPath = nrun.fixPath( new File( selectedfile, title ).getAbsolutePath() );
 						final Object[] cont = new Object[3];
 						Runnable run = new Runnable() {
 							public void run() {
 								if( cont[0] != null ) {
 									infile.delete();
-								
+
 									/*if( cont[0] != null ) {
 										try {
 											JSObject js = JSObject.getWindow( SerifyApplet.this );
 											//js = (JSObject)js.getMember("document");
-										
+
 											String machineinfo = getMachine();
 											String[] split = machineinfo.split("\t");
 											js.call( "addDb", new Object[] {getUser(), title, dbtype, outPath, split[0], cont[1]} );
 										} catch( NoSuchMethodError | Exception e ) {
-											
+
 										}
 									}*/
 								}
 							}
 						};
-						
+
 						File makeblastdb = new File( "c:\\\\Program files\\NCBI\\blast-2.2.28+\\bin\\makeblastdb.exe" );
 						if( !makeblastdb.exists() ) makeblastdb = new File( "/opt/ncbi-blast-2.2.28+/bin/makeblastdb" );
 						if( makeblastdb.exists() ) {
@@ -3118,7 +3116,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							nrun.runProcessBuilder( "Creating database", Arrays.asList( cmds ), cont, false, run, false );
 						}
 					}
-					
+
 					//infile.delete();
 					//} else System.err.println( "no blast installed" );
 				} catch (MalformedURLException e1) {
@@ -3133,8 +3131,8 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		linkdatabase.setOnAction( new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				String userhome = System.getProperty("user.home");	
-					
+				String userhome = System.getProperty("user.home");
+
 				FileChooser fc = new FileChooser();
 				File selectedfile = fc.showOpenDialog(null);
 				if( selectedfile != null ) {
@@ -3143,7 +3141,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					int i = title.lastIndexOf('.');
 					if( i != -1 ) {
 						if( title.charAt(i+1) == 'n' ) dbtype = "nucl";
-						
+
 						int li = title.lastIndexOf('.', i-1);
 						if( li != -1 ) {
 							if( i-li == 3 ) {
@@ -3155,13 +3153,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							title = title.substring(0,i);
 						}
 					}
-					
+
 					final String outPath = nrun.fixPath( selectedfile.getParentFile().getAbsolutePath()+System.getProperty("file.separator")+title );
 					//String[] cmds = new String[] { makeblastdb.getAbsolutePath(), "-in", fixPath( infile.getAbsolutePath() ), "-out", outPath, "-title", title };
-					
+
 					//okokJSObject js = JSObject.getWindow( SerifyApplet.this );
 					//js = (JSObject)js.getMember("document");
-					
+
 					//String machineinfo = getMachine();
 					//String[] split = machineinfo.split("\t");
 					//js.call( "addDb", new Object[] {getUser(), title, dbtype, outPath, split[0], ""} );
@@ -3177,9 +3175,9 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				/*try {
 					String userhome = System.getProperty("user.home");
 					File dir = new File( userhome );
-					
+
 					//nrun.checkInstall( dir );
-						
+
 					//JSObject js = JSObject.getWindow( SerifyApplet.this );
 					//getParameters( js );
 					success = true;
@@ -3234,12 +3232,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					pane.setPreferredSize( dim );
 					pane.setSize( dim );
 					JTextField	tf = new JTextField();
-										
+
 					JOptionPane.showMessageDialog(c, new Object[] {"against: ", pane, "parameters: ", tf} );
-					
+
 					int i = table.getSelectedRow();
 					Sequences seqs = serifier.getSequencesList().get(i);
-					
+
 					Path filepath = seqs.getPath();
 					runBlastInApplet( tf.getText(), filepath, seqs.getType() ); //db.getText().contains(".p") ? "prot" : "nucl" );
 				}
@@ -3362,7 +3360,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						}
 					}
 				}
-				
+
 				/*try {
 					SerifyApplet.this.getAppletContext().showDocument( new URL(path) );
 				} catch (MalformedURLException e) {
@@ -3642,7 +3640,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		/*popup.add( new AbstractAction("Majority rule consensus tree") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 			}
 		});*/
 		MenuItem distmatcorr = new MenuItem("Gene evolution phylogeny (distance matrix correlation)");
@@ -4335,13 +4333,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
                 }
             }
         });
-		
+
 		//table.setComponentPopupMenu( popup );
 		//JScrollPane	scrollpane = new JScrollPane( table );
 		//scrollpane.setComponentPopupMenu( popup );
 		//scrollpane.setBackground( bgcolor );
 		//scrollpane.getViewport().setBackground( bgcolor );
-		
+
 		JScrollPane	scrollpane = new JScrollPane();
 		scrollpane.setTransferHandler( new TransferHandler() {
 			public int getSourceActions(JComponent c) {
@@ -4376,19 +4374,19 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 
 			public boolean importData(TransferHandler.TransferSupport support) {
 				Object obj = null;
-				
+
 				DataFlavor[] dflv = support.getDataFlavors();
 				for( DataFlavor df : dflv ) {
 					System.err.println( df );
 				}
-				
+
 				int b = Arrays.binarySearch( support.getDataFlavors(), DataFlavor.javaFileListFlavor, new Comparator<DataFlavor>() {
 					@Override
 					public int compare(DataFlavor o1, DataFlavor o2) {
 						return o1 == o2 ? 1 : 0;
 					}
 				});
-				
+
 				try {
 					obj = support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
 				} catch (UnsupportedFlavorException e) {
@@ -4396,7 +4394,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
+
 				if( obj == null ) {
 					try {
 						obj = support.getTransferable().getTransferData(DataFlavor.stringFlavor);
@@ -4406,7 +4404,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						e.printStackTrace();
 					}
 				}
-				
+
 				if( obj == null ) {
 					try {
 						obj = support.getTransferable().getTransferData( DataFlavor.getTextPlainUnicodeFlavor() );
@@ -4416,12 +4414,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						e.printStackTrace();
 					}
 				}
-				
+
 				try {
 					if( obj != null && obj instanceof List ) {
 						List<File> lf = (List<File>)obj;
 						FlxReader flx = new FlxReader();
-						
+
 						String comp = null;
 						List<Sequence> bb = null;
 						//byte[] bb = null;
@@ -4440,7 +4438,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 								Writer fw = Files.newBufferedWriter(dest, StandardOpenOption.CREATE);
 								flx.start( f.getParentFile().getAbsolutePath()+"/", f.getName(), false, fw, comp, bb);
 								fw.close();
-								
+
 								JavaFasta	jf = new JavaFasta(flx.serifier);
 								JFrame		frame = new JFrame();
 								frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -4448,18 +4446,18 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 								jf.initGui(frame);
 								jf.updateView();
 								frame.setVisible( true );
-								
+
 								System.err.println("about to add seqs " + f.getName());
-								
+
 								addSequences( f.getName(), dest, null );
 							} else {
-								
+
 								System.err.println("about to add seqs2 " + f.getName());
 								addSequences( f.getName(), f.toPath(), null );
 							}
 						}
 					} else if( obj instanceof Image ) {
-						
+
 					} else if( obj instanceof String ) {
 						//obj = support.getTransferable().getTransferData(DataFlavor.stringFlavor);
 						String filelistStr = (String)obj;
@@ -4479,7 +4477,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						}
 					} else if( obj instanceof Reader ) {
 						//obj = support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-						
+
 						CharArrayWriter	caw = new CharArrayWriter();
 						Reader rd = (Reader)obj;
 						char[] cbuf = new char[1024];
@@ -4488,10 +4486,10 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							caw.write( cbuf, 0, r );
 							r = rd.read(cbuf);
 						}
-						
+
 						String filelistStr = caw.toString();
 						String[] fileStr = filelistStr.split("\n");
-						
+
 						for( String fileName : fileStr ) {
 							Path val = Paths.get( fileName.trim() );
 							//String[] split = val.split("/");
@@ -4500,7 +4498,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					} else if( obj instanceof InputStream ) {
 						System.err.println("InputStream");
 						//obj = support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-						
+
 						CharArrayWriter	caw = new CharArrayWriter();
 						Reader rd = new InputStreamReader( (InputStream)obj );
 						char[] cbuf = new char[1024];
@@ -4509,10 +4507,10 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							caw.write( cbuf, 0, r );
 							r = rd.read(cbuf);
 						}
-						
+
 						String filelistStr = (String)caw.toString();
 						String[] fileStr = filelistStr.split("\n");
-						
+
 						for( String fileName : fileStr ) {
 							Path val = Paths.get( fileName.trim() );
 							//String[] split = val.split("/");
@@ -4536,7 +4534,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			VBox.setVgrow(table, Priority.ALWAYS);
 		}
 	}
-	
+
 	public void updateSequences( final String user, final String name, final String type, final Path path, final int nseq, final String key ) {
 		updateSequences(user,name,type,path,nseq,key,null);
 	}
@@ -4551,9 +4549,9 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		//serifier.sequences.add( seqs );
 		updateSequences(seqs);
 	}
-	
+
 	public void updateSequences( final Sequences seqs ) {
-		AccessController.doPrivileged((PrivilegedAction<String>) () -> {
+		/*AccessController.doPrivileged((PrivilegedAction<String>) () -> {
             new Thread(() -> {
 				try {
 					InputStream is = Files.newInputStream( seqs.getPath(), StandardOpenOption.READ );
@@ -4564,13 +4562,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 
 				/*if( succ ) {
 					table.tableChanged( new TableModelEvent( table.getModel() ) );
-				}*/
+				}*
 			}).start();
 
             return null;
-        });
+        });*/
 	}
-	
+
 	public void addSequences( Sequences seqs ) {
 		boolean unsucc = false;
 		/*try {
@@ -4579,13 +4577,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch( NoSuchMethodError | Exception e ) {
 			unsucc = true;
 		}*/
-		
+
 		if( unsucc ) {
-			updateSequences( seqs.getUser(), seqs.getName(), seqs.getType(), seqs.getPath(), seqs.getNSeq(), null ); 
+			updateSequences( seqs.getUser(), seqs.getName(), seqs.getType(), seqs.getPath(), seqs.getNSeq(), null );
 			//updateSequences( seqs );
 		}
 	}
-	
+
 	private void addSequences( String user, String name, String type, Path path, int nseq ) {
 		boolean unsucc = true;
 		/*try {
@@ -4594,7 +4592,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch( NoSuchMethodError | Exception e ) {
 			unsucc = true;
 		}*/
-		
+
 		if( unsucc ) {
 			updateSequences(user, name, type, path, nseq, null);
 		}
@@ -4603,7 +4601,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 	private void addSequences( String user, String name, String type, Path path, int nseq, String meta ) {
 		updateSequences(user, name, type, path, nseq, null, meta);
 	}
-	
+
 	public void addSequences( String name, BufferedReader rd, Path path, String replace ) throws URISyntaxException, IOException {
 		Map<String,BufferedReader> rds = new HashMap<>();
 		rds.put( name, rd );
@@ -4613,13 +4611,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 	public void addSequences( String name, Map<String,BufferedReader> rds, Path path, String replace ) throws URISyntaxException, IOException {
 		String type = "nucl";
 		int nseq = 0;
-		
+
 		Map<String,Stream<String>>	gbks = new HashMap<>();
 		for( String tag : rds.keySet() ) {
 			BufferedReader br = rds.get( tag );
 			//String path = paths.get( tag );
 			String line = br.readLine();
-		
+
 			if( line != null ) {
 				if( line.endsWith(":") ) {
 					DirectoryChooser	dirchooser = new DirectoryChooser();
@@ -4627,7 +4625,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					File dir = dirchooser.showDialog(null);
 					if( dir != null ) {
 						if( !dir.exists() ) dir.mkdirs();
-						
+
 						//Set<String>	curset = new HashSet<String>();
 						int idx = line.indexOf(']');
 						String[] split = null;
@@ -4636,7 +4634,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						}
 						String curname = line.substring( idx+1, Math.min( 128+idx+1, line.length()-1 ) ).replace(' ', '_');;
 						//curset.add( curname );
-						
+
 						List<FileWriter>	lfw = new ArrayList<>();
 						File subdir = new File( dir, "all" );
 						subdir.mkdir();
@@ -4650,17 +4648,17 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							FileWriter fw = new FileWriter( f );
 							lfw.add( fw );
 						}
-						
+
 						line = br.readLine();
 						while( line != null ) {
 							if( line.endsWith(":") ) {
 								for( FileWriter tfw : lfw ) tfw.close();
 								lfw.clear();
-								
+
 								addSequences( curname, f.toPath(), replace );
-								
+
 								//int val = 1;
-								
+
 								idx = line.indexOf(']');
 								if( idx >= 0 ) {
 									split = line.substring(1, idx).split(",");
@@ -4671,7 +4669,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 								String newcurname = curname;
 								//while( curset.contains(newcurname) ) newcurname = curname+"_"+(val++);
 								curname = newcurname;
-								
+
 								//f = new File( dir, curname+".fasta" );
 								//fw = new FileWriter( f );
 								subdir = new File( dir, "all" );
@@ -4689,12 +4687,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							} else {
 								for( FileWriter tfw : lfw ) tfw.write( line+"\n" );
 							}
-							
+
 							line = br.readLine();
 						}
 						for( FileWriter tfw : lfw ) tfw.close();
 						lfw.clear();
-						
+
 						addSequences( curname, f.toPath(), replace );
 					}
 				} else if( line.startsWith(">") ) {
@@ -4705,14 +4703,14 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							path = f.toPath();
 						}
 					}
-					
+
 					if( path != null ) {
 						boolean dirty = false;
 						while( line != null ) {
 							dirty |= line.contains("N") || line.contains("n");
 							if( line.startsWith(">") ) {
 								nseq++;
-								
+
 								if( nseq % 1000 == 0 ) System.err.println( "seq counting: "+nseq );
 							} else if( type.equals("nucl") && line.length() > 0 && !line.matches("^[acgtbdykhvrswmunxACGTBDYKHVRSWMUNX]+$") ) {
 								type = "prot";
@@ -4720,7 +4718,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							line = br.readLine();
 						}
 						dirty &= type.equals("nucl");
-						
+
 						if( nseq > 0 ) {
 							addSequences(name, type, path, nseq, dirty ? "N" : null);
 						} else System.err.println( "no sequences in file" );
@@ -4734,7 +4732,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					Stream<String> strstr = Stream.<String>builder().add(line).build();
 					Stream<String> gbff = Stream.concat(strstr, br.lines());
 					gbks.put(tag, gbff);
-					
+
 					//boolean amino = true;
 					//String[] annoarray = {"tRNA", "rRNA"};//{"CDS", "tRNA", "rRNA", "mRNA"};
 					//String[] annoarray = {"CDS"};
@@ -4742,33 +4740,33 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				//br.close();
 			}
 		}
-		
+
 		if( gbks.size() > 0 ) {
 			Map<String,Path>	map = new HashMap<>();
 			Path firsturi = path.getParent().resolve( path.getFileName()+".fna" ); //Paths.get( new URI(path+".fna") );
 			BufferedWriter out = Files.newBufferedWriter( firsturi, StandardOpenOption.CREATE );
-			
+
 			Path uri = path.getParent().resolve( path.getFileName()+".aa" );
 			//FileWriter out = new FileWriter( new File( uri ) );
 			map.put( "CDS", uri );
-			
+
 			uri = path.getParent().resolve( path.getFileName()+".trna" );
 			//out = new FileWriter( new File( uri ) );
 			map.put( "tRNA", uri );
-			
+
 			uri = path.getParent().resolve( path.getFileName()+".rrna" );
 			//out = new FileWriter( new File( uri ) );
 			map.put( "rRNA", uri );
-			
+
 			uri = path.getParent().resolve( path.getFileName()+".mrna" );
 			//out = new FileWriter( new File( uri ) );
 			map.put( "mRNA", uri );
-			
+
 			/*uri = new URI(path+".namemap");
 			map.put( "nameMap", uri );*/
-			
+
 			GBK2AminoFasta.handleText( gbks, map, out, path, replace, noseq );
-			
+
 			//+firsturi.toString().replace(name, "")
 
 			/*addSequences( name+".fna", firsturi, null );
@@ -4778,7 +4776,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			}*/
 		}
 	}
-	
+
 	public void addSequencesPath( String name, Map<String,Path> urimap, Path p, String replace ) throws URISyntaxException, IOException {
 		try {
 			Map<String,BufferedReader>	isrmap = new HashMap<>();
@@ -4795,7 +4793,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				p = uripath;
 			}
 			Path path = p;
-			
+
 			/*String uri = null;
 			for( String ur : urimap.keySet() ) {
 				uri = urimap.get( ur );
@@ -4814,7 +4812,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void addSequences( String name, Path path, String replace ) throws URISyntaxException, IOException {
 		//URI uri = path.toUri();
 
@@ -4835,7 +4833,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			//succ = false;
 			e.printStackTrace();
 		}
-		
+
 		if( br != null ) {
 			Map<String,BufferedReader>	isrmap = new HashMap<>();
 			isrmap.put( name.substring(0, name.lastIndexOf('.')), br);
@@ -4843,7 +4841,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			//FileReader	fr = new FileReader( f );
 		}
 	}
-	
+
 	public void addSequences( String name, String type, Path path, int nseq ) {
 		addSequences( getUser(), name, type, path, nseq );
 	}
@@ -4851,11 +4849,11 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 	public void addSequences( String name, String type, Path path, int nseq, String meta ) {
 		addSequences( getUser(), name, type, path, nseq, meta );
 	}
-	
+
 	public String getUser() {
 		return user;
 	}
-	
+
 	public static boolean inPath( Node leaf, Node n ) {
 		if( leaf == n ) return true;
 		else {
@@ -4866,17 +4864,17 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		}
 		return false;
 	}
-	
+
 	public void majorityRuleConsensus( double[] distmat, List<String> corrInd, boolean copybootstrap ) {
 		try {
 			Map<String,Node>	alltrees = new TreeMap<>();
-			TreeUtil treeutil = new TreeUtil();
-			Map<Set<String>,NodeSet> nmap = new HashMap<>();
+			org.simmi.shared.TreeUtil treeutil = new org.simmi.shared.TreeUtil();
+			Map<Set<String>, NodeSet> nmap = new HashMap<>();
 			//File dir = new File( "/home/sigmar/40genes/thermus/aligned/trees/" );
 			//File dir = new File( "/home/sigmar/thermusgenes/aligned/trees/" );
 			//File dir = new File( "/root/thermusgenes_transposed/trees/" );
 			File dir = new File( "/u0/serify/aligned/concrand/trees/" );
-			
+
 			File guidetreefile = new File( "/u0/guidetree.tre" );
 			FileReader fr = new FileReader( guidetreefile );
 			BufferedReader br = new BufferedReader( fr );
@@ -4889,8 +4887,8 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			br.close();
 			Node guidetree = treeutil.parseTreeRecursive( sb.toString(), false );
 			//n.nodeCalcMap( guideMap );
-			
-			
+
+
 			//File dir = new File( "c:/cygwin/home/simmi/thermusgenes_short/aligned/trees/" );
 			File[] ff = dir.listFiles();
 			for( File f : ff ) {
@@ -4913,16 +4911,16 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				//System.err.println( "about to process "+f.getName() );
 				n.nodeCalcMap( nmap );
 			}
-			
+
 			Node root = DataTable.majoRuleConsensus(treeutil, nmap, guidetree, copybootstrap);
-			
+
 			/*List<NodeSet>	nslist = new ArrayList<NodeSet>();
 			System.err.println( nmap.size() );
 			for( Set<String> nodeset : nmap.keySet() ) {
 				NodeSet count = nmap.get( nodeset );
 				nslist.add( count );
 			}s
-			
+
 			Collections.sort( nslist );
 			int c = 0;
 			for( NodeSet nodeset : nslist ) {
@@ -4930,7 +4928,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				c++;
 				if( c > 20 ) break;
 			}
-			
+
 			Map<Set<String>, Node>	nodemap = new HashMap<Set<String>, Node>();
 			Map<String, Node>		leafmap = new HashMap<String, Node>();
 			NodeSet	allnodes = nslist.get(0);
@@ -4942,7 +4940,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				//n.seth( 1.0 );
 				leafmap.put( nname, n );
 			}
-			
+
 			for( int i = 1; i < 100; i++ ) {
 				NodeSet	allsubnodes = nslist.get(i);
 				Node subroot = treeutil.new Node();
@@ -4951,7 +4949,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				} else {
 					subroot.setName( Double.toString( Math.round( (allsubnodes.getAverageBootstrap()*100.0) )/100.0 ) );
 				}
-				
+
 				Node vn = treeutil.getValidNode( allsubnodes.getNodes(), root );
 				if( treeutil.isValidSet( allsubnodes.getNodes(), vn ) ) {
 					while( allsubnodes.getNodes().size() > 0 ) {
@@ -4963,35 +4961,35 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 								current = newparent;
 								newparent = current.getParent();
 							}
-							
+
 							if( allsubnodes.getNodes().containsAll( current.getLeaveNames() ) ) {
 								Node parent = current.getParent();
 								parent.removeNode( current );
-								
+
 								double h = allsubnodes.getAverageHeight();
 								//double b = allsubnodes.getAverageBootstrap();
 								double lh = allsubnodes.getAverageLeaveHeight(nname);
-								
+
 								/*subroot.addNode( current, h );
 								if( lh != -1.0 ) parent.addNode( subroot, lh );
 								else parent.addNode( subroot, 1.0 );*
-								
+
 								parent.addNode( subroot, h );
-								
+
 								if( current.isLeaf() && lh != -1.0 ) {
 									System.err.println( "printing "+current.getName() + "  " + lh );
 									subroot.addNode( current, lh );
 								} else subroot.addNode( current, current.geth() );
-							
+
 								removeNames( allsubnodes.getNodes(), current );
 							} else allsubnodes.getNodes().clear();
-							
+
 							break;
 						}
 					}
 				}
 			}*/
-			
+
 			if( distmat != null ) {
 				if( root.getNodes().size() == 2 ) root = treeutil.removeRoot( root );
 				List<Node> nodes = treeutil.getLeaves( root );
@@ -4999,21 +4997,21 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				for( String s : corrInd ) {
 					int i = c;
 					while( !s.equals( nodes.get(i).getName() ) ) i++;
-					
+
 					Node tnode = nodes.get(c);
 					nodes.set( c, nodes.get(i) );
 					nodes.set( i, tnode );
-					
+
 					c++;
 				}
-				
+
 				List<Double> lad = new ArrayList<>();
 				for( int y = 0; y < corrInd.size()-1; y++ ) {
 					for( int x = y+1; x < corrInd.size(); x++ ) {
 						lad.add( distmat[y*corrInd.size()+x] );
 					}
 				}
-				
+
 				double[][] W = new double[lad.size()][lad.size()];
 				for( int y = 0; y < lad.size(); y++ ) {
 					for( int x = 0; x < lad.size(); x++ ) {
@@ -5027,7 +5025,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					W[count][count] = 1.0; //(dval*dval);
 					count++;
 				}
-				
+
 				List<Node> subnodes = treeutil.getSubNodes( root );
 				int nodecount = subnodes.size();
 				double[][] X = new double[ lad.size() ][ nodecount ];
@@ -5048,7 +5046,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					}
 					//for( int i = 0; i < lad.size(); i++ ) {}
 				}
-				
+
 				/**** okokok
 				RealMatrix dmat = new Array2DRowRealMatrix( d );
 				RealMatrix Xmat = new Array2DRowRealMatrix( X );
@@ -5061,13 +5059,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				RealMatrix invXX = new LUDecomposition( XWX ).getSolver().getInverse();
 				RealMatrix v = invXX.multiply( XW.multiply(dmat) );
 				******/
-				
+
 				/*int i = 0;
 				for( Node n : subnodes ) {
 					n.seth( v.getEntry(i++, 0) );
 				}*/
 			}
-			
+
 			List<Object[]>	sortlist = new ArrayList<>();
 			for( String name : alltrees.keySet() ) {
 				double dist = 0.0;
@@ -5087,13 +5085,13 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static String genePhylogenyNNI( Map<String,String> namePath, boolean treefiles ) {
 		String			treestr = null;
-		
+
 		List<Node>		lnode = new ArrayList<>();
 		List<String>	names = new ArrayList<>();
-		TreeUtil 		treeutil = new TreeUtil();
+		org.simmi.shared.TreeUtil 		treeutil = new org.simmi.shared.TreeUtil();
 		String			rootid = null;
 		try {
 			for( String name : namePath.keySet() ) {
@@ -5102,7 +5100,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				Node n = null;
 				if( !treefiles ) {
 					URL url = new URL( path );
-					
+
 					boolean mu = true;
 					String fstr = url.getFile();
 					int fi = fstr.lastIndexOf('/');
@@ -5132,15 +5130,15 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 							} else {
 								if( seq != null ) seq.append( line );
 							}
-							
+
 							line = br.readLine();
 						}
 						br.close();
-						
+
 						for( Sequence s : lseq ) {
 							s.checkLengths();
 						}
-					
+
 						/*if( lnode.size() > 0 && lnode.get(0).length != lseq.size()*lseq.size() ) {
 							System.err.println( lnode.size() + "  " + lseq.size() );
 							System.err.println( lseq.size()*lseq.size() + "  " + lnode.get(0).length );
@@ -5148,7 +5146,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						}*/
 						double[] dmat = new double[ lseq.size()*lseq.size() ];
 						Sequence.distanceMatrixNumeric(lseq, dmat, null, false, false, null, null);
-						
+
 						n = treeutil.neighborJoin(dmat, corrInd, null, false, true);
 					} else {
 						StringBuilder tree = new StringBuilder();
@@ -5176,7 +5174,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					treeutil.setLoc( 0 );
 					n = treeutil.parseTreeRecursive( tree.toString(), false );
 				}
-				
+
 				if( rootid == null ) rootid = n.firstLeaf().getId();
 				Node root = n.findNode( rootid );
 				if( root == null ) {
@@ -5189,41 +5187,41 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				//System.err.println( rootparent.getNodes().size() );
 				lnode.add( newroot );
 			}
-			
+
 			if( lnode.size() == namePath.size() ) treestr = treeDistTree( treeutil, lnode, names );
 		} catch( Exception e1 ) {
 			e1.printStackTrace();
 		}
-		
+
 		return treestr;
 	}
-	
-	public static String treeDistTree( TreeUtil treeutil, List<Node> lnode, List<String> names ) {
+
+	public static String treeDistTree( org.simmi.shared.TreeUtil treeutil, List<Node> lnode, List<String> names ) {
 		double[]	submat = new double[ lnode.size()*lnode.size() ];
 		for( int i = 0; i < lnode.size(); i++ ) {
 			submat[i*lnode.size()+i] = 0.0;
 		}
-		
+
 		Node nod = lnode.get(0);
 		double corri = treeutil.nDistance( nod, nod );
-		
+
 		for( int i = 0; i < lnode.size()-1; i++ ) {
 			for( int k = i+1; k < lnode.size(); k++ ) {
 				Node node1 = lnode.get(i);
 				Node node2 = lnode.get(k);
 				double corr = Math.exp( (treeutil.nDistance( node1, node2 ) - 2.0)*0.2 ) - 1.0;
-				
-				
+
+
 				/*if( (names.get(i).equals("transcription_elongation_factor_NusA") && names.get(k).equals("ABC_transporter_permease")) || (names.get(k).equals("transcription_elongation_factor_NusA") && names.get(i).equals("ABC_transporter_permease")) ) {
 					System.err.println( "corr" + corr );
 				}*/
 				if( corr == 0.0 ) System.err.println( names.get(i) + "  " + names.get(k) );
-				
+
 				submat[i*lnode.size()+k] = corr;
 				submat[k*lnode.size()+i] = corr;
 			}
 		}
-		
+
 		/*StringBuilder tree = new StringBuilder();
 		tree.append( "\t"+lnode.size()+"\n" );
 		int i = 0;
@@ -5234,17 +5232,17 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				tree.append( "\t"+submat[k] );
 			}
 			i = k;
-			
+
 			tree.append("\n");
 		}
 		FileWriter distm = new FileWriter("/home/sigmar/distm.txt");
 		distm.write( tree.toString() );
 		distm.close();*/
-		
+
 		Node node = treeutil.neighborJoin(submat, names, null, false, true);
 		return node.toString();
 	}
-	
+
 	private static double[] parseDistance( int len, String[] lines, List<String> names ) {
 		double[] dvals = new double[ len*len ];
 		int m = 0;
@@ -5255,11 +5253,11 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			if( !line.startsWith(" ") ) {
 				m++;
 				u = 0;
-				
+
 				//int si = ddstrs[0].indexOf('_');
 				//String name = si == -1 ? ddstrs[0] : ddstrs[0].substring( 0, si );
 				//console( "name: " + name );
-				
+
 				String name = ddstrs[0];
 				names.add( name );
 			}
@@ -5271,10 +5269,10 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				}
 			}
 		}
-		
+
 		return dvals;
 	}
-	
+
 	public void pyroSeq( Map<String,List<Double>>	specmap, Map<String,List<Double>>	specphmap ) {
 		File dir = new File("/home/sigmar/pyro/locs");
 		/*File[] ff = dir.listFiles( new FilenameFilter() {
@@ -5284,41 +5282,41 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				return false;
 			}
 		});*/
-		
+
 		File[] ff = { new File("/u0/all.fa") };
-		
+
 		try {
 			//Map<String,String> nameHitMap = mapNameHit( new FileInputStream( "/home/sigmar/snaedis/snaedis.blastout" ), 95, true );
 			Map<String,String> nameHitMap = serifier.mapNameHit( new FileInputStream( "/u0/all.blastout" ), -1, true );
 			/*System.err.println( nameHitMap.size() );
-			
+
 			for( String key : nameHitMap.keySet() ) {
 				System.err.println( key + "  " + nameHitMap.get(key) );
 				break;
 			}
-			
+
 			System.err.println( nameHitMap.get("HWBYD8R03DO0EO") );*/
-			
+
 			int countmissing = 0;
 			for( File f : ff ) {
 				//String loc = f.getName();
 				//loc = loc.substring(0, loc.length()-4);
-				
+
 				//double heat = snaedisheatmap.get( loc );
 				//double ph = snaedisphmap.get( loc );
-				
+
 				Path nf = new File( "/u0/all.blastout" ).toPath();//new File( dir, ""+f.getName()+".blastout" );
 				System.err.println( "about to parse " + nf.getFileName() );
 				List<Set<String>> cluster = new ArrayList<>();
 				serifier.makeBlastCluster( Files.newBufferedReader(nf), null, 1, 0.5f, 0.5f, null, cluster, null );
-				
+
 				Map<String,String> headset = new HashMap<>();
 				for( Set<String> cl : cluster ) {
 					Map<String,Integer> tegcount = new HashMap<>();
 					Map<String,Integer> tegpercmap = new HashMap<>();
 					Map<String,String> 	tegmap = new HashMap<>();
 					for( String c : cl ) {
-						String tegperc = nameHitMap.get(c);						
+						String tegperc = nameHitMap.get(c);
 						if( tegperc == null ) {
 							System.err.println( c );
 							countmissing++;
@@ -5333,7 +5331,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 								teg = tegperc;
 								perc = -1;
 							}
-							
+
 							for( String spec : specmap.keySet() ) {
 								if( teg.contains( spec ) ) {
 									List<Double> dvals = specmap.get(spec);
@@ -5343,7 +5341,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 									break;
 								}
 							}
-							
+
 							if( !tegcount.containsKey( teg ) ) {
 								tegmap.put( teg, c );
 								tegpercmap.put( teg, perc );
@@ -5368,7 +5366,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						else headset.put( c, teg+"_"+count );
 					}
 				}
-				
+
 				FileWriter fw = new FileWriter("/u0/ampliconnoise/"+f.getName().substring(0, f.getName().length()-4)+"_thermus.fna");
 				serifier.trimFasta( new BufferedReader( new FileReader(f) ), fw, headset, false, false );
 				fw.close();
@@ -5378,15 +5376,15 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		SerifyApplet sa = new SerifyApplet();
 		//sa.parseDistance(len, lines, names)( args );
-		
+
 		/*try {
 			Map<String,String> nameHitMapOld = mapNameHit( new FileInputStream( "/home/sigmar/snaedis/snaedis.blastout" ), 95, false );
 			Map<String,String> nameHitMapNew = mapNameHit( new FileInputStream( "/home/sigmar/snaedis/snaedis.blastout" ), 95, true );
-			
+
 			FileWriter	fw = new FileWriter("/home/sigmar/pyro_sim.fasta");
 			FileReader fr = new FileReader("/home/sigmar/pyro_alignment_new.fasta");
 			BufferedReader br = new BufferedReader( fr );
@@ -5400,7 +5398,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 						if( nameHitMapOld.containsKey( id ) ) {
 							String oldstr = nameHitMapOld.get(id).replace(' ', '_');
 							String newstr = nameHitMapNew.get(id).replace(' ', '_');
-							
+
 							line = line.replace(oldstr, newstr);
 						}
 					}
@@ -5413,7 +5411,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		/*try {
 			FileInputStream fis = new FileInputStream( "/scratch/sks17/"+args[0]+".blastout" );
 			FileOutputStream fos = new FileOutputStream( "/scratch/sks17/"+args[0]+"_unioncluster2.txt" );
@@ -5421,9 +5419,9 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}*/
-	
+
 		//sa.initMaps();
-		
+
 		/*try {
 			Path p = Paths.get( "/home/sigmar/thermusmeta.tre" );
 			byte[] bb = Files.readAllBytes( p );
@@ -5434,7 +5432,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}*
-		
+
 		Map<String,List<Double>>	specmap = new HashMap<String,List<Double>>();
 		specmap.put( "antranikianii", new ArrayList<Double>() );
 		specmap.put( "arciformis", new ArrayList<Double>() );
@@ -5442,7 +5440,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		specmap.put( "igniterrae", new ArrayList<Double>() );
 		specmap.put( "islandicus", new ArrayList<Double>() );
 		specmap.put( "scotoductus", new ArrayList<Double>() );
-		
+
 		Map<String,List<Double>>	specphmap = new HashMap<String,List<Double>>();
 		specphmap.put( "antranikianii", new ArrayList<Double>() );
 		specphmap.put( "arciformis", new ArrayList<Double>() );
@@ -5450,10 +5448,10 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		specphmap.put( "igniterrae", new ArrayList<Double>() );
 		specphmap.put( "islandicus", new ArrayList<Double>() );
 		specphmap.put( "scotoductus", new ArrayList<Double>() );
-		
+
 		//corr
 		//sa.corr();
-		
+
 		/*try {
 			File f = new File( "/home/sigmar/union_16.blastout" );
 			List<Set<String>> cluster = sa.makeBlastCluster( new FileInputStream( f ), null, false );
@@ -5464,34 +5462,34 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}*/
-		
+
 		//sa.pyroSeq( specmap, specphmap );
 		/*for( String key : specmap.keySet() ) {
 			List<Double> vals = specmap.get( key );
 			double mean = 0.0;
 			for( double val : vals ) mean += val;
 			mean /= vals.size();
-			
+
 			double var = 0.0;
 			for( double val : vals ) var += (val-mean)*(val-mean);
 			var /= vals.size();
 			double stdev = Math.sqrt( var );
-			
+
 			vals = specphmap.get( key );
 			double meanph = 0.0;
 			for( double val : vals ) meanph += val;
 			meanph /= vals.size();
-			
+
 			double varph = 0.0;
 			for( double val : vals ) varph += (val-meanph)*(val-meanph);
 			varph /= vals.size();
 			double stdevph = Math.sqrt( varph );
-			
+
 			System.err.println( key + "\t" +mean+"������"+stdev+"\t"+meanph+"������"+stdevph );
 		}*/
-		
+
 		//mapFiles();
-		
+
 		/*try {
 			FileReader fr = new FileReader("/home/sigmar/conc_40genes.dst");
 			List<String>	llines = new ArrayList<String>();
@@ -5506,12 +5504,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			int len = Integer.parseInt( lines[0].trim() );
 			List<String> names = new ArrayList<String>();
 			double[] dvals = parseDistance( len, lines, names );
-			
+
 			TreeUtil tu = new TreeUtil();
 			Node n = tu.neighborJoin(dvals, names, null, false, true);
 			System.err.println( dvals.length + " " + names.size() );
 			System.err.println( n );
-			
+
 			sa.majorityRuleConsensus(null, null, true);
 			//majorityRuleConsensus(dvals, names);
 		} catch (FileNotFoundException e) {
@@ -5519,7 +5517,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}*/
-		
+
 		/*try {
 			Map<String,String> mstr = mapNameHit( new FileInputStream("/u0/viggo_nt_10.blastout") );
 			for( String key : mstr.keySet() ) {
@@ -5530,12 +5528,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					int i = val.indexOf(' ');
 					int k = val.indexOf("strain");
 					if( k < 0 ) k = val.length();
-					
+
 					String newval = val.substring(i+1, k).trim().replace("Uncultured ", "");//.replace(' ', '_');
 					i = newval.indexOf(' ');
 					if( i > 0 ) newval = newval.substring(0,i);
 					newval = newval.substring(0, 1).toUpperCase()+newval.substring(1);
-					
+
 					mstr.put( key, newval );
 				}
 			}
@@ -5543,7 +5541,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch( IOException e ) {
 			e.printStackTrace();
 		}*/
-		
+
 		/*Map<String,String> nmap = new HashMap<String,String>();
 		File dir = new File( "/home/sigmar/thermusgenes_short/aligned/trees/" );
 		File[] ff = dir.listFiles();
@@ -5557,11 +5555,11 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			nodename = nodename.replace("'", "");
 			nmap.put( nodename, f.getAbsolutePath() );
 		}
-		
+
 		String tree = genePhylogenyNNI( nmap, true );
 		System.err.println( tree );*/
 		//majorityRuleConsensus();
-		
+
 		/*List<Set<String>>	total = new ArrayList<Set<String>>();
 		try {
 			joinBlastSets( new FileInputStream("/u0/retry.blastout"), "/u0/union_16S2.txt", true, total );
@@ -5572,7 +5570,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}*/
-		
+
 		/*try {
 			List<double[]>	ldmat = new ArrayList<double[]>();
 			File f = new File( "/root/ermermerm/dist/" );
@@ -5603,12 +5601,12 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				}
 				br.close();
 			}
-			
+
 			double[]	submat = new double[ ldmat.size()*ldmat.size() ];
 			for( int i = 0; i < ldmat.size(); i++ ) {
 				submat[i*ldmat.size()+i] = 0.0;
 			}
-			
+
 			double mincorr = Double.MAX_VALUE;
 			int mini = 0;
 			int mink = 0;
@@ -5627,7 +5625,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				}
 			}
 			System.err.println( mini + "  " + mink + "  " + mincorr );
-			
+
 			StringBuilder tree = new StringBuilder();
 			tree.append( "\t"+ldmat.size()+"\n" );
 			int i = 0;
@@ -5638,7 +5636,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					tree.append( "\t"+submat[k] );
 				}
 				i = k;
-				
+
 				tree.append("\n");
 			}
 			String treestr = tree.toString();
@@ -5650,8 +5648,8 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+
+
 		/*try {
 			List<String> names = new ArrayList<String>();
 			FileReader f = new FileReader( "/root/ermermerm/aligned/tree/erm.txt" );
@@ -5662,7 +5660,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				line = br.readLine();
 			}
 			br.close();
-			
+
 			f = new FileReader( "/root/ermermerm/aligned/tree/outfile" );
 			br = new BufferedReader( f );
 			line = br.readLine();
@@ -5693,14 +5691,14 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 			}
 			br.close();
 			f.close();
-			
+
 			FileWriter fw = new FileWriter("/home/sigmar/fwout.txt");
 			/*fw.write("\t"+403);
 			c = 0;
 			for( double d : dmat ) {
 				if( c % 403 == 0 ) fw.write( "\n"+names.get(c/403)+"\t"+d );
 				else fw.write( "\t"+d );
-				
+
 				c++;
 			}
 			fw.write("\n");*
@@ -5713,7 +5711,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			File f = new File( "/home/sigmar/thermus_union_cluster.txt" );
 			FileInputStream is = new FileInputStream("/home/sigmar/sandbox/distann/src/thermus_join.blastout");
@@ -5727,36 +5725,36 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}*/
-		
+
 		/*String[] lcmd = "/opt/ncbi-blast-2.2.25+/bin/blastp -query /home/horfrae/arciformis_3.aa -db /opt/db/nr  -num_alignments 1 -num_descriptions 1 -out /home/horfrae/arciformis_3.blastout".split("[ ]");
 		Runnable run = new Runnable() {
 			public void run() {
-				
+
 			}
 		};
 		Object[] cont = new Object[3];
-		
+
 		SerifyApplet a = new SerifyApplet();
 		try {
 			a.runProcessBuilder( "Performing blast", Arrays.asList(lcmd), run, cont );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		/*List<String>	largs = Arrays.asList( args );
 		int i = largs.indexOf("--split");
 		if( i != -1 ) {
 			String filename;
 			if( i == 0 ) filename = largs.get( largs.size()-1 );
 			else filename = largs.get( 0 );
-			
+
 			File f = new File( filename );
-			
+
 			int chunks = Integer.parseInt( largs.get(i+1) );
-			
+
 			String type = "nucl";
 			int nseq = 0;
-			
+
 			try {
 				FileReader fr = new FileReader( f );
 				BufferedReader br = new BufferedReader( fr );
@@ -5769,7 +5767,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 					line = br.readLine();
 				}
 				fr.close();
-				
+
 				if( nseq > 0 ) {
 					Sequences seqs = new Sequences( null, f.getName(), type, f.toURI().toString(), nseq );
 					splitit( chunks, seqs, f.getParentFile(), null );
@@ -5780,11 +5778,11 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 				e.printStackTrace();
 			}
 		}*/
-		
+
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		frame.setSize( 800, 600 );
-		
+
 		/*String[] cmds = new String[] { "c:\\\\Program files\\NCBI\\blast-2.2.25+\\bin\\makeblastdb.exe", "-in", "c:\\\\Documents and settings\\sigmar\\Desktop\\erm.fna", "-out", "c:\\\\Documents and settings\\sigmar\\sim", "-title", "sim" };
 		try {
 			String result = sa.runProcessBuilder( "Something", Arrays.asList( cmds ), null, null );
@@ -5792,7 +5790,7 @@ Files.copy( path, infile, StandardCopyOption.REPLACE_EXISTING );*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}*/
-		
+
 		sa.init( frame, null, System.getProperty("user.name") );
 		frame.setVisible( true );
 	}

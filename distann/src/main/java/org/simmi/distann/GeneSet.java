@@ -24,75 +24,27 @@ import java.util.zip.GZIPInputStream;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-import com.google.common.collect.Iterators;
-import javafx.stage.Stage;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.api.java.function.MapPartitionsFunction;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.python.Py4JServer;
-import org.apache.spark.ml.feature.PCA;
-import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.VectorUDT;
-import org.apache.spark.ml.linalg.Vectors;
-import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.api.java.UDF0;
-import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
-import org.apache.spark.sql.catalyst.encoders.RowEncoder;
-import org.apache.spark.sql.execution.command.DDLUtils;
-import org.apache.spark.sql.expressions.UserDefinedAggregateFunction;
-import org.apache.spark.sql.types.*;
 import org.simmi.ann.ANIResult;
 import org.simmi.javafasta.shared.*;
 import org.simmi.serifier.SerifyApplet;
-import org.simmi.treedraw.shared.*;
+import org.simmi.shared.TreeUtil;
 import org.simmi.javafasta.unsigned.JavaFasta;
 import org.simmi.javafasta.unsigned.NativeRun;
-import org.simmi.treedraw.shared.TreeUtil.Node;
 
 import flobb.ChatServer;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.embed.swing.JFXPanel;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.EventHandler;
-import javafx.geometry.Side;
-import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.PieChart;
-import javafx.scene.chart.PieChart.Data;
-import javafx.scene.chart.ScatterChart;
-import javafx.scene.chart.StackedBarChart;
-import javafx.scene.chart.XYChart;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.WritableImage;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.HBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
-import scala.Function1;
-import scala.Function2;
-import scala.Tuple2;
-
-import static org.apache.spark.sql.types.DataTypes.*;
 import static org.simmi.distann.StaticMethods.*;
 
 public class GeneSet implements GenomeSet {
 	static SerifyApplet currentSerify = null;
 	static Map<String,String> keggMap = new HashMap<>();
 	static {}
-	
+
 	public static String user;
 	public String projectname = "geneset";
 	public boolean noseq = false;
@@ -250,7 +202,7 @@ public class GeneSet implements GenomeSet {
 			gene.dbcan = cazyset.substring(1,cazyset.length()-1);
 		}
 	}
-	
+
 	public void loadcazymap( Map<String,String> cazymap, Reader rd ) throws IOException {
 		BufferedReader br = new BufferedReader( rd );
 		String line = br.readLine();
@@ -264,7 +216,7 @@ public class GeneSet implements GenomeSet {
 					addCazy(id, hit + "("+evalue+")");
 				}
 				String[] split = line.split("[\t ]+");
-				
+
 				//int k = line.lastIndexOf('[');
 				id = split[1]; //line.substring( k+1, line.indexOf(']', k+1) ).trim()+"_"+split[1].trim();
 				line = br.readLine();
@@ -272,7 +224,7 @@ public class GeneSet implements GenomeSet {
 					id += line;
 					line = br.readLine();
 				}
-				
+
 				if( id.contains("..") ) {
 					line = br.readLine();
 					int k = line.indexOf('[');
@@ -280,9 +232,9 @@ public class GeneSet implements GenomeSet {
 						int u = line.indexOf(']',k+1);
 						String spec = line.substring(k+1,u);
 						id = spec+"_"+id;
-					} //else id = 
+					} //else id =
 				}
-				
+
 				hit = null;
 				evalue = 0.01;
 			} else if( hit != null && line.contains("Expect =") ) {
@@ -306,10 +258,10 @@ public class GeneSet implements GenomeSet {
 				hit = line.substring( 2);
 				hit = hit.split("\\|")[1];
 			}
-			
+
 			line = br.readLine();
 		}
-		
+
 		if( hit != null && id != null ) {
 			cazymap.put( id, hit );
 			addCazy(id, hit + "("+evalue+")");
@@ -465,10 +417,10 @@ public class GeneSet implements GenomeSet {
 			addPhaster(id, hit + "("+evalue+")");
 		}*/
 	}
-	
+
 	public Map<String,Cog> loadcogmap(Reader rd, Map<String,String> cogidmap, boolean pfam ) throws IOException {
 		Map<String,Cog>	map = new HashMap<>();
-		
+
 		BufferedReader br = new BufferedReader( rd );
 		String line = br.readLine();
 		String current = null;
@@ -483,12 +435,12 @@ public class GeneSet implements GenomeSet {
 				}
 				current = current.trim();
 				String lname = current;
-				
+
 				int i = lname.lastIndexOf('[');
 				if( i == -1 ) {
 					//i = lname.indexOf("contig");
 					//if( i == -1 ) i = lname.indexOf("scaffold");
-					
+
 					int u = lname.indexOf(' ');
 					if( u == -1 ) u = lname.length();
 					id = lname.substring(0,u);
@@ -506,26 +458,26 @@ public class GeneSet implements GenomeSet {
 					line = br.readLine();
 				}
 				val = val.trim();
-				
+
 				int i = current.lastIndexOf('[');
 				int n = current.indexOf(']', i+1);
-				
+
 				if( i == -1 || n == -1 ) {
 					n = current.indexOf(" ");
 					if( n == -1 ) n = current.length();
 				}
-				
+
 				/*if( i == -1 || n == -1 ) {
 					System.err.println( val );
 				}*/ //Write materials and methods, insert new genomes into preexisting zip file, laga annoteringu (JGI vs NCBI).
-				
+
 				String spec = current.substring(i+1, n);
 				int k = spec.indexOf("_contig");
 				if( k == -1 ) {
 					k = spec.indexOf("_uid");
 					k = spec.indexOf('_', k+4);
 				}
-				
+
 				if( k == -1 ) {
 					k = spec.indexOf('_');
 					k = spec.indexOf('_', k+1);
@@ -578,13 +530,13 @@ public class GeneSet implements GenomeSet {
 			line = br.readLine();
 		}
 		//fr.close();
-		
+
 		return map;
 	}
-	
+
 	public Map<String,String> loadnamemap( BufferedReader br, Map<String,String> namemap ) throws IOException {
 		Map<String,String>	map = namemap == null ? new HashMap<>() : namemap;
-		
+
 		//BufferedReader br = new BufferedReader( rd );
 		String line = br.readLine();
 		while( line != null ) {
@@ -592,13 +544,13 @@ public class GeneSet implements GenomeSet {
 			map.put( split[0], split[1] );
 			line = br.readLine();
 		}
-		
+
 		return map;
 	}
 
 	public Map<String,String> loadunresolvedmap( Reader rd ) throws IOException {
 		Map<String,String>	map = new HashMap<>();
-		
+
 		BufferedReader br = new BufferedReader( rd );
 		String line = br.readLine();
 		StringBuilder current;
@@ -622,13 +574,13 @@ public class GeneSet implements GenomeSet {
 					val.append(line);
 					line = br.readLine();
 				}
-				
+
 				br.readLine();
 				line = br.readLine();
 				int e = line.indexOf("Expect =");
 				int n = line.indexOf(',', e);
 				double eval = Double.parseDouble( line.substring(e+9, n).trim() );
-				
+
 				if( eval < 10 ) {
 					val = new StringBuilder(val.toString().trim());
 					n = val.toString().indexOf(']');
@@ -640,10 +592,10 @@ public class GeneSet implements GenomeSet {
 			line = br.readLine();
 		}
 		//fr.close();
-		
+
 		return map;
 	}
-	
+
 	public String getGeneName( String selectedItem, Gene gene ) {
 		if( selectedItem.equals("Default names") ) {
 			String genename = gene.getName();
@@ -652,7 +604,7 @@ public class GeneSet implements GenomeSet {
 		} else if( selectedItem.equals("Group names") ) {
 			String genename = gene.getGeneGroup() != null ? gene.getGeneGroup().getName() : "";
 			//if( genename.contains("_") ) genename = gene.getGeneGroup().getCommonName();
-			
+
 			return genename.contains("hypothetical") ? "hth-p" : genename;
 		} else if( selectedItem.equals("Species") ) {
 			gene.getSpecies();
@@ -669,7 +621,7 @@ public class GeneSet implements GenomeSet {
 		}
 		return "";
 	}
-	
+
 	public String idFix( String id, String contigstr ) {
 		if( id.contains("..") ) {
 			int k = id.lastIndexOf('_');
@@ -726,14 +678,14 @@ public class GeneSet implements GenomeSet {
 			go = ngo;
 		}
 	}
-	
+
 	private void loci2aaseq( List<Set<String>> lclust, Map<String,Annotation> refmap, Map<String,String> designations ) {
 		for( Set<String> clust : lclust ) {
 			for( String line : clust ) {
 				/*if( line.contains("scotoductus2101_scaffold00007") ) {
 					count++;
 				}*/
-				
+
 				String cont = line;
 				String[] split = cont.split("#");
 				String lname = split[0].trim().replace(".fna", "");
@@ -741,7 +693,7 @@ public class GeneSet implements GenomeSet {
 				int start = 0;
 				int stop = -1;
 				int dir = 0;
-				
+
 				boolean succ = false;
 				int i = 0;
 				while( !succ && i+3 < split.length ) {
@@ -757,18 +709,18 @@ public class GeneSet implements GenomeSet {
 					}
 					i++;
 				}
-				
+
 				String contigstr = null;
 				String contloc = null;
-				
+
 				String origin;
 				String id;
 				String name;
-				
+
 				if( lname.contains("RAST") ) {
 					System.err.println();
 				}
-				
+
 				i = lname.lastIndexOf('[');
 				if( i == -1 ) {
 					i = Sequence.parseSpec( lname );
@@ -792,14 +744,14 @@ public class GeneSet implements GenomeSet {
 					contigstr = lname.substring(i+1, n);
 					int u = lname.indexOf(' ');
 					id = lname.substring(0, u);
-					
+
 					//String spec = lname.substring(i+1, n);
 					id = idFix( id, contigstr );
-					
+
 					name = lname.substring(u+1, i).trim();
-					
+
 					u = Sequence.specCheck( contigstr );
-					
+
 					if( u == -1 ) {
 						u = Sequence.parseSpec( contigstr );
 						if( u > 0 ) {
@@ -827,7 +779,7 @@ public class GeneSet implements GenomeSet {
 						}
 					}
 				}
-				
+
 				String addname = "";
 				String newid = id;
 				//String neworigin = origin;
@@ -851,7 +803,7 @@ public class GeneSet implements GenomeSet {
 						name = name.substring(0, ids);
 					}
 				}
-				
+
 				if( !refmap.containsKey(id) ) {
 					Tegeval tv = new Tegeval();
 					Sequence contig = null;
@@ -865,10 +817,10 @@ public class GeneSet implements GenomeSet {
 					//ac.setName( lname );
 					//tv.setAlignedSequence( ac );
 					aas.put( lname, tv );
-					
+
 					//System.err.println( "erm " + start + "   " + stop + "   " + contig.toString() );
 					if( contig != null ) contig.addAnnotation( tv );
-					
+
 					String newname = (addname.length() == 0 ? name : addname.substring(1)); //name+addname
 					Gene gene = new Gene( null, id, newname );
 					//tv.teg = origin;
@@ -881,10 +833,10 @@ public class GeneSet implements GenomeSet {
 						ecgo(gene, idstr);
 					}
 					refmapPut( id, tv );
-					
+
 					tv.setGene( gene );
 					//tv.setTegund( origin );
-					
+
 					gene.setTegeval(tv);
 				} else {
 					Annotation a = refmap.get(id);
@@ -1248,7 +1200,7 @@ public class GeneSet implements GenomeSet {
 		if (tv.getLength() > 0 && lname != null) {
 			String contigstr = null;
 			String contloc = null;
-			
+
 			String origin = null;
 			String id;
 			String name;
@@ -1274,7 +1226,7 @@ public class GeneSet implements GenomeSet {
 				id = lname.substring(0, u);
 				id = idFix( id, contigstr );
 				name = lname.substring(u+1, i).trim();
-				
+
 				u = Sequence.specCheck( contigstr );
 				if( u == -1 ) {
 					u = Sequence.parseSpec( contigstr );
@@ -1305,7 +1257,7 @@ public class GeneSet implements GenomeSet {
 			//int li = lname.lastIndexOf('_');
 			//contigstr = lname.substring(0, li);
 			//contloc = lname.substring(fi+1,lname.length());//qsplit[0] + "_" + qsplit[1 + k]; // query.substring(first+1,sec);
-			
+
 			String addname = "";
 			String newid = id;
 			String neworigin = origin;
@@ -1319,7 +1271,7 @@ public class GeneSet implements GenomeSet {
 				if( n != -1 ) addname = ":" + map.substring(l+1,n).trim();
 				if( e != -1 ) neworigin = map.substring(n+1,e).trim();
 			}
-			
+
 			if( !refmap.containsKey(id) ) {
 				Sequence contig = null;
 				if( contigstr != null ) {
@@ -1329,15 +1281,15 @@ public class GeneSet implements GenomeSet {
 						 contig = new Contig( contigstr );
 					}*/
 				}
-				
+
 				((Tegeval)tv).init(lname.toString(), contig, start, stop, dir );
 				tv.setName( prevline.substring(1) );
 				//tv.setAlignedSequence( ac );
 				aas.put(lname.toString(), tv );
-				
+
 				if( contig != null ) contig.addAnnotation( tv );
 				// aass.add( new Aas(name, ac, start, stop, dir) );
-				
+
 				String newname = addname.length() == 0 ? name : addname.substring(1);
 				Gene gene = new Gene( null, id, newname);
 				tv.designation = designations != null ? designations.get( id ) : null;
@@ -1345,14 +1297,14 @@ public class GeneSet implements GenomeSet {
 				gene.allids = new HashSet<>();
 				gene.allids.add( newid );
 				refmapPut(id, tv);
-				
+
 				tv.setGene( gene );
 				//tv.setTegund( origin );
 				gene.setTegeval(tv);
 			}
 		}
 	}
-	
+
 	public void sortLoci() {
 		for( String cstr : contigmap.keySet() ) {
 			Sequence ct = contigmap.get( cstr );
@@ -1365,7 +1317,7 @@ public class GeneSet implements GenomeSet {
 	}
 
 	Set<String>	plasmids = new HashSet<>();
-	private List<String> loadcontigs(BufferedReader br, String filename) throws IOException {		
+	private List<String> loadcontigs(BufferedReader br, String filename) throws IOException {
 		String line = br.readLine();
 		String name = null;
 		StringBuilder ac = new StringBuilder();
@@ -1393,7 +1345,7 @@ public class GeneSet implements GenomeSet {
 						ctlist = new ArrayList<>();
 						speccontigMap.put( spec, ctlist );
 					}
-					
+
 					boolean cont = false;
 					for( Sequence c : ctlist ) {
 						if( c.getName().equals(name) ) {
@@ -1430,11 +1382,11 @@ public class GeneSet implements GenomeSet {
 			}
 			line = br.readLine();
 		}
-		
+
 		if (ac.length() > 0) {
 			Sequence contig = new Contig( name, ac );
 			contigmap.put( name, contig );
-			
+
 			List<Sequence>	ctlist;
 			String spec = contig.getSpec();
 			if( spec == null ) {
@@ -1447,14 +1399,14 @@ public class GeneSet implements GenomeSet {
 				}
 				contig.setGroup(spec);
 			}
-			
+
 			if( speccontigMap.containsKey( spec ) ) {
 				ctlist = speccontigMap.get( spec );
 			} else {
 				ctlist = new ArrayList<>();
 				speccontigMap.put( spec, ctlist );
 			}
-			
+
 			boolean cont = false;
 			for( Sequence c : ctlist ) {
 				if( c.getName().equals(name) ) {
@@ -1528,7 +1480,7 @@ public class GeneSet implements GenomeSet {
 
 		ImageIO.write(img, "png", new File(str));
 	}
-	
+
 	public BufferedImage animatrix( Collection<String> species1, Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap, String designation, Collection<GeneGroup> allgg, boolean skipplasmid ) {
 		List<String> specset;// = new ArrayList<String>(species1);
 		if( designation != null && designation.length() > 0 ) {
@@ -1540,7 +1492,7 @@ public class GeneSet implements GenomeSet {
 			}
 			specset = new ArrayList<>( sset );
 		} else specset = new ArrayList<>(species1);
-		
+
 		Set<String>	d1 = new HashSet<>();
 		Set<String>	d2 = new HashSet<>();
 
@@ -1549,7 +1501,7 @@ public class GeneSet implements GenomeSet {
 		int where = 0;
 		for (String spec1 : specset) {
 			int wherex = 0;
-			
+
 			//String spc1 = nameFix( spec1 );
 			for (String spec2 : specset) {
 				if( where != wherex ) {
@@ -1562,7 +1514,7 @@ public class GeneSet implements GenomeSet {
 							Teginfo ti2 = gg.species.get(spec2);
 							//if( ti1.tset.size() == 1 && ti2.tset.size() == 1 ) {
 								//double bval = 0.0;
-							
+
 							int score = 0;
 							int tscore = 1;
 							for( Annotation tv1 : ti1.tset ) {
@@ -1646,7 +1598,7 @@ public class GeneSet implements GenomeSet {
 							}
 							totalscore += score;
 							totaltscore += tscore;
-								
+
 								/*if( bval > 0 ) {
 									ani += bval;
 									count++;
@@ -1662,15 +1614,15 @@ public class GeneSet implements GenomeSet {
 			}
 			where++;
 		}
-		
+
 		TreeUtil tu = new TreeUtil();
 		corrInd.clear();
 		for( String spec : specset ) {
 			corrInd.add( nameFix( spec ) );
 		}
-		Node n = tu.neighborJoin(aniResult.corrarr, corrInd, null, false, false);
-		
-		Comparator<Node>	comp = (o1, o2) -> {
+		org.simmi.Node n = tu.neighborJoin(aniResult.corrarr, corrInd, null, false, false);
+
+		Comparator<org.simmi.Node>	comp = (o1, o2) -> {
 			int c1 = o1.countLeaves();
 			int c2 = o2.countLeaves();
 
@@ -1684,9 +1636,9 @@ public class GeneSet implements GenomeSet {
 		List<String> ordInd = n.traverse();
 		System.err.println( "ordind " + ordInd );
 		System.err.println( "tree " + n );
-	
+
 		BufferedImage bi = JavaFasta.showRelation( ordInd, aniResult, true );
-		
+
 		System.err.println( d1.size() + "  " + d2.size() );
 		if( d1.size() > d2.size() ) {
 			d1.removeAll( d2 );
@@ -1703,7 +1655,7 @@ public class GeneSet implements GenomeSet {
 		BufferedImage bi = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2 = (Graphics2D) bi.getGraphics();
 		int mstrw = 0;
-		
+
 		Collection<String> specset = species1;
 		if( designation.length() > 0 ) {
 			specset = new TreeSet<>();
@@ -1713,7 +1665,7 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}
-		
+
 		for (String spc : specset) {
 			int tstrw = g2.getFontMetrics().stringWidth(spc);
 			if (tstrw > mstrw)
@@ -1745,14 +1697,14 @@ public class GeneSet implements GenomeSet {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
-		
+
 		Map<String,Set<Gene>>		geneMap = new HashMap<String,Set<Gene>>();
 		Map<String,Set<GeneGroup>>	ggMap = new HashMap<String,Set<GeneGroup>>();
 		if( designation.length() > 0 ) {
 			for( Gene g : genelist ) {
 				if( g.getTegeval().designation != null && g.getTegeval().designation.equals(designation) ) {
 					String spec = g.getSpecies();
-					
+
 					if( geneMap.containsKey( spec ) ) {
 						geneMap.get( spec ).add( g );
 					} else {
@@ -1760,7 +1712,7 @@ public class GeneSet implements GenomeSet {
 						set.add( g );
 						geneMap.put( spec, set );
 					}
-					
+
 					if( ggMap.containsKey( spec ) ) {
 						ggMap.get( spec ).add( g.getGeneGroup() );
 					} else {
@@ -1770,7 +1722,7 @@ public class GeneSet implements GenomeSet {
 					}
 				}
 			}
-			
+
 			int where = 0;
 			for (String spec1 : specset) {
 				Set<GeneGroup> specset1 = ggMap.get(spec1);
@@ -1778,7 +1730,7 @@ public class GeneSet implements GenomeSet {
 				int wherex = 0;
 				for (String spec2 : specset) {
 					Set<GeneGroup> specset2 = ggMap.get(spec2);
-					
+
 					if( where == wherex ) {
 						double hh = (double) specset1.size() / (double) geneMap.get(spec1).size();
 						if (hh > maxh)
@@ -1803,20 +1755,20 @@ public class GeneSet implements GenomeSet {
 							maxs = ss;
 						if (ss < mins)
 							mins = ss;
-	
+
 						int rs = specset1.size();
 						if (rs > maxrs)
 							maxrs = rs;
 						if (rs < minrs)
 							minrs = rs;
-						
+
 						double rr = (double)rs / (double)ss;
 						if (rr > maxr)
 							maxr = rr;
 						if (rr < minr)
 							minr = rr;
 					}
-					
+
 					wherex++;
 				}
 				where++;
@@ -1828,7 +1780,7 @@ public class GeneSet implements GenomeSet {
 				//String spc1 = nameFix( spec1 );
 				for (String spec2 : specset) {
 					//String spc2 = nameFix( spec2 );
-					
+
 					int spc1tot = 0;
 					int spc2tot = 0;
 					int totot = 0;
@@ -1905,25 +1857,25 @@ public class GeneSet implements GenomeSet {
 				//where++;
 			}
 		}
-	
+
 		int where = 0;
 		for (String spc1 : specset) {
 			String spec1 = nameFix( spc1 );
 			int strw = g2.getFontMetrics().stringWidth(spec1);
-			
+
 			g2.setColor(Color.black);
 			g2.drawString(spec1, mstrw - strw, mstrw + 47 + where * 72);
 			g2.rotate(Math.PI / 2.0, mstrw + 47 + where * 72, mstrw - strw);
 			g2.drawString(spec1, mstrw + 42 + where * 72, mstrw - strw);
 			g2.rotate(-Math.PI / 2.0, mstrw + 47 + where * 72, mstrw - strw);
-			
+
 			int wherex = 0;
 			if( designation.length() == 0 ) {
 				for (String spc2 : specset) {
 					int spc1tot = 0;
 					int spc2tot = 0;
 					int totot = 0;
-	
+
 					int spc1totwocore = 0;
 					int spc2totwocore = 0;
 					int tototwocore = 0;
@@ -1937,42 +1889,42 @@ public class GeneSet implements GenomeSet {
 									Set<String> hset = sm.get(spc1);
 									if( hset != null ) tototwocore += hset.size();
 								}
-	
+
 								if (set.contains(spc2)) {
 									spc2totwocore += erm.size();
 								}
-	
+
 								if (spc2totwocore > spc1totwocore)
 									System.err.println("okoko " + spc1totwocore + " " + spc2totwocore);
 							}
-	
+
 							spc1tot += erm.size();
 							for (Map<String, Set<String>> sm : erm) {
 								Set<String> hset = sm.get(spc1);
 								if( hset != null ) totot += hset.size();
 							}
-	
+
 							if (set.contains(spc2)) {
 								spc2tot += erm.size();
 							}
 						}
 					}
-	
+
 					if (where == wherex) {
 						double dval = (double) spc1tot / (double) totot;
 						int cval = (int) (200.0 * (maxr - dval) / (maxr - minr));
 						g2.setColor(new Color(255, cval, cval));
 						g2.fillRoundRect(mstrw + 10 + wherex * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = spc1tot + "";
 						int nstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw / 2, mstrw + 47 + where * 72 - 15);
-	
+
 						str = totot + "";
 						nstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw / 2, mstrw + 47 + where * 72);
-	
+
 						ps.printf("%.1f%s", (float) (dval * 100.0), "%");
 						str = baos.toString();
 						baos.reset();
@@ -1983,7 +1935,7 @@ public class GeneSet implements GenomeSet {
 						int cval = (int) (200.0 * (maxhwoc - dval) / (maxhwoc - minhwoc));
 						g2.setColor(new Color(cval, 255, cval));
 						g2.fillRoundRect(mstrw + 10 + wherex * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = spc2totwocore + "";
 						int nstrw2 = g2.getFontMetrics().stringWidth(str);
@@ -1992,7 +1944,7 @@ public class GeneSet implements GenomeSet {
 						str = spc1totwocore + "";
 						int nstrw1 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw1 / 2, mstrw + 47 + where * 72);
-	
+
 						double hlut = 100.0 * ((double) spc2totwocore / (double) spc1totwocore);
 						ps.printf("%.1f%s", (float) hlut, "%");
 						str = baos.toString();
@@ -2000,19 +1952,19 @@ public class GeneSet implements GenomeSet {
 						int pstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - pstrw / 2, mstrw + 47 + where * 72 + 15);
 					}
-	
+
 					if (wherex == 0) {
 						int dval = totot;
 						int cval = (int) (200.0 * (maxs - dval) / (maxs - mins));
 						g2.setColor(new Color(cval, cval, 255));
 						g2.fillRoundRect(mstrw + 10 + specset.size() * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = dval + "";
 						int nstrw2 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + specset.size() * 72 - nstrw2 / 2, mstrw + 47 + where * 72);
 						// int nstrw2 = g2.getFontMetrics().stringWidth( str );
-	
+
 						dval = spc1tot;
 						cval = (int) (200.0 * (maxrs - dval) / (maxrs - minrs));
 						g2.setColor(new Color(cval, cval, 255));
@@ -2022,10 +1974,10 @@ public class GeneSet implements GenomeSet {
 						int nstrw1 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + where * 72 - nstrw1 / 2, mstrw + 47 + specset.size() * 72);
 					}
-	
+
 					wherex++;
 				}
-	
+
 				//System.err.println();
 				where++;
 			} else {
@@ -2037,16 +1989,16 @@ public class GeneSet implements GenomeSet {
 						int cval = (int) (200.0 * (maxr - dval) / (maxr - minr));
 						g2.setColor(new Color(255, cval, cval));
 						g2.fillRoundRect(mstrw + 10 + wherex * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = specset1.size() + "";
 						int nstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw / 2, mstrw + 47 + where * 72 - 15);
-	
+
 						str = geneMap.get(spc1).size() + "";
 						nstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw / 2, mstrw + 47 + where * 72);
-	
+
 						ps.printf("%.1f%s", (float) (dval * 100.0), "%");
 						str = baos.toString();
 						baos.reset();
@@ -2062,7 +2014,7 @@ public class GeneSet implements GenomeSet {
 						int cval = (int) (200.0 * (maxhwoc - dval) / (maxhwoc - minhwoc));
 						g2.setColor(new Color(cval, 255, cval));
 						g2.fillRoundRect(mstrw + 10 + wherex * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = count + "";
 						int nstrw2 = g2.getFontMetrics().stringWidth(str);
@@ -2071,7 +2023,7 @@ public class GeneSet implements GenomeSet {
 						str = specset1.size() + "";
 						int nstrw1 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - nstrw1 / 2, mstrw + 47 + where * 72);
-	
+
 						double hlut = 100.0 * ((double) count / (double) specset1.size());
 						ps.printf("%.1f%s", (float) hlut, "%");
 						str = baos.toString();
@@ -2079,19 +2031,19 @@ public class GeneSet implements GenomeSet {
 						int pstrw = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + wherex * 72 - pstrw / 2, mstrw + 47 + where * 72 + 15);
 					}
-	
+
 					if (wherex == 0) {
 						int dval = geneMap.get(spc1).size();
 						int cval = (int) (200.0 * (maxs - dval) / (maxs - mins));
 						g2.setColor(new Color(cval, cval, 255));
 						g2.fillRoundRect(mstrw + 10 + specset.size() * 72, mstrw + 10 + where * 72, 64, 64, 16, 16);
-	
+
 						g2.setColor(Color.white);
 						String str = dval + "";
 						int nstrw2 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + specset.size() * 72 - nstrw2 / 2, mstrw + 47 + where * 72);
 						// int nstrw2 = g2.getFontMetrics().stringWidth( str );
-	
+
 						dval = specset1.size();
 						cval = (int) (200.0 * (maxrs - dval) / (maxrs - minrs));
 						g2.setColor(new Color(cval, cval, 255));
@@ -2101,13 +2053,13 @@ public class GeneSet implements GenomeSet {
 						int nstrw1 = g2.getFontMetrics().stringWidth(str);
 						g2.drawString(str, mstrw + 42 + where * 72 - nstrw1 / 2, mstrw + 47 + specset.size() * 72);
 					}
-	
+
 					wherex++;
 				}
 				where++;
 			}
 		}
-		
+
 		g2.setColor(Color.gray);
 		g2.fillRoundRect(mstrw + 10 + specset.size() * 72, mstrw + 10 + specset.size() * 72, 64, 64, 16, 16);
 
@@ -2117,7 +2069,7 @@ public class GeneSet implements GenomeSet {
 		if( designation.length() == 0 ) {
 			for (Set<String> set : clusterMap.keySet()) {
 				Set<Map<String, Set<String>>> setmap = clusterMap.get(set);
-	
+
 				if( !Collections.disjoint(set, specset) ) pan += setmap.size();
 				if (set.containsAll(specset))
 					core += setmap.size();
@@ -2131,13 +2083,13 @@ public class GeneSet implements GenomeSet {
 				panset.addAll( ggSet );
 				break;
 			}
-			
+
 			for( String spec : ggMap.keySet() ) {
 				Set<GeneGroup> ggSet = ggMap.get( spec );
 				coreset.retainAll( ggSet );
 				panset.addAll( ggSet );
 			}
-			
+
 			pan = panset.size();
 			core = coreset.size();
 		}
@@ -2157,7 +2109,7 @@ public class GeneSet implements GenomeSet {
 	private static void intersectSets(Set<String> all, List<Set<String>> total) {
 		// Set<Set<String>> rem = new HashSet<Set<String>>();
 		// int i = 0;
-		
+
 		List<Set<String>> newtotal = new ArrayList<Set<String>>();
 		for (Set<String> check : total) {
 			Set<String> cont = new HashSet<String>();
@@ -2195,11 +2147,11 @@ public class GeneSet implements GenomeSet {
 		 * for( Set<String> erm : rem ) { int ind = -1; int count = 0; for(
 		 * Set<String> ok : total ) { if( ok.size() == erm.size() &&
 		 * ok.containsAll(erm) ) { ind = count; break; } count++; }
-		 * 
+		 *
 		 * if( ind != -1 ) { total.remove( ind ); } }
-		 * 
+		 *
 		 * rem.clear(); if( cont == null ) total.add( all );
-		 * 
+		 *
 		 * Set<String> erm = new HashSet<String>(); System.err.println( "erm " +
 		 * total.size() ); for( Set<String> ss : total ) { for( String s : ss )
 		 * { if( erm.contains( s ) ) { System.err.println( "buja " + s ); break;
@@ -2350,7 +2302,7 @@ public class GeneSet implements GenomeSet {
 
 		return total;
 	}
-	
+
 	private static List<Set<String>> loadUClusters(Reader rd) throws IOException {
 		// FileReader fr = new FileReader( file );
 		BufferedReader br = new BufferedReader(rd);
@@ -2367,7 +2319,7 @@ public class GeneSet implements GenomeSet {
 			if( !line.startsWith("C") && prevset != null ) {
 				prevset.add( split[8] );
 			}
-			
+
 			line = br.readLine();
 		}
 		br.close();
@@ -2405,11 +2357,11 @@ public class GeneSet implements GenomeSet {
 						int s = trimline.indexOf('[', v);
 						int e = trimline.indexOf(']', v);
 						v = Math.min(s, e);
-						
+
 						if( trimline.charAt(v) == ']' ) c--;
 						else c++;
 					}*/
-					
+
 					//String[] subsplit = trimline.substring(1, trimline.length() - 1).split(", ");
 					Set<String> trset = new TreeSet<>();
 					int s = 1;
@@ -2425,7 +2377,7 @@ public class GeneSet implements GenomeSet {
 							String loc =  trimline.substring(u+1, k == -1 ? trimline.length()-1: k).trim();
 							trset.add( loc );
 						} else trset.add( trimline.substring(s, /*i*/k == -1 ? trimline.length()-1: k).trim() );
-					
+
 						if( k == -1 ) {
 							i = -1;
 						} else {
@@ -2433,7 +2385,7 @@ public class GeneSet implements GenomeSet {
 							i = trimline.indexOf('#', s);
 						}
 					}
-					
+
 					if (prevset != null) {
 						prevset.addAll(trset);
 					}
@@ -2558,7 +2510,7 @@ public class GeneSet implements GenomeSet {
 
 		writeBlastAnalysis(clusterMap, specList);
 	}
-	
+
 	public List<String> getSpecies() {
 		return specList;
 	}
@@ -2649,10 +2601,10 @@ public class GeneSet implements GenomeSet {
 		 * for( Set<String> sc : total ) { if( sc.size() > max ) max =
 		 * sc.size(); System.err.println( "\tcluster size: " + sc.size() ); }
 		 * System.err.println( "maxsize: " + max );
-		 * 
+		 *
 		 * int[] ia = new int[max]; for( Set<String> sc : total ) {
 		 * ia[sc.size()-1]++; }
-		 * 
+		 *
 		 * for( int i : ia ) { System.err.println( "hist: " + i ); }
 		 */
 	}
@@ -2943,7 +2895,7 @@ public class GeneSet implements GenomeSet {
 		 * gline != null ) { int li = gline.lastIndexOf(','); String gkey =
 		 * gline.substring(0, li); if( giid.containsKey( gkey ) ) { String gi =
 		 * gline.substring(li+1);
-		 * 
+		 *
 		 * giid.put( gkey, gi ); idtax.put( gi, new StrCont() ); } gline =
 		 * gbr.readLine(); } gfr.close();
 		 */
@@ -3273,13 +3225,13 @@ public class GeneSet implements GenomeSet {
 						 * "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id="
 						 * +split[1]+"&retmode=xml" ); InputStream stream =
 						 * url.openStream();
-						 * 
+						 *
 						 * StringBuilder sb = new StringBuilder(); try { byte[]
 						 * bb = new byte[1024]; int r = stream.read( bb );
 						 * while( r > 0 ) { sb.append( new String(bb,0,r) ); r =
 						 * stream.read( bb ); } } catch( Exception e ) {
 						 * e.printStackTrace(); } stream.close();
-						 * 
+						 *
 						 * String gbstart = "<GBSeq_taxonomy>"; int lind =
 						 * sb.indexOf(gbstart); String sub = "not found"; if(
 						 * lind > 0 ) { int lend =
@@ -3530,7 +3482,7 @@ public class GeneSet implements GenomeSet {
             }
         });*/
 	}
-	
+
 	public void viggo( String fastapath, String qualpath, String blastoutpath, String resultpath ) throws IOException {
 		/*
 		 * String base = "/vg454flx/viggo/viggo/"; int num = 16; int seqcount =
@@ -3543,11 +3495,11 @@ public class GeneSet implements GenomeSet {
 		 * k); inc = true; seqcount++; } else { if( inc && (line.indexOf('N') !=
 		 * -1 || line.indexOf('n') != -1) ) inc = false; } line = br.readLine();
 		 * } br.close();
-		 * 
+		 *
 		 * if( inc && current != null ) { included.add( current ); }
-		 * 
+		 *
 		 * System.err.println( seqcount + "  " + included.size() );
-		 * 
+		 *
 		 * int sum = 0; int sumc = 0; fr = new
 		 * FileReader(base+"reads/"+num+".TCA.454Reads.qual"); br = new
 		 * BufferedReader( fr ); line = br.readLine(); current = null; while(
@@ -3557,9 +3509,9 @@ public class GeneSet implements GenomeSet {
 		 * 0; sumc = 0; } else { String[] split = line.split("[ ]+"); for(
 		 * String s : split ) { int i = Integer.parseInt(s.trim()); sum += i;
 		 * sumc++; } } line = br.readLine(); } br.close();
-		 * 
+		 *
 		 * System.err.println( seqcount + "  " + included.size() );
-		 * 
+		 *
 		 * Map<String,Integer> freqmap = loadFrequency( new
 		 * FileReader(base+""+num+".blastout"), included ); for( String val :
 		 * freqmap.keySet() ) { int fv = freqmap.get(val); System.err.println(
@@ -3643,7 +3595,7 @@ public class GeneSet implements GenomeSet {
 		public StrId(String teg, int len) {
 			name = teg;
 			this.len = len;
-			
+
 			if( teg.contains("thermophilus") || teg.contains("composti") ) {
 				color = "small_blue";
 			} else if( teg.contains("scotoductus") || teg.contains("antrani") || teg.contains("yunnan") || teg.contains("rehai")  ) {
@@ -3702,7 +3654,7 @@ public class GeneSet implements GenomeSet {
 		sparkSession = SparkSession.builder().master("local[*]").getOrCreate();
 		initPy4jServer();
 	}
-	
+
 	public static void main(String[] args) {
 		if( args.length > 1 && args[0].endsWith(".zip") ) {
 			GeneSet	gs = new GeneSet();
@@ -3720,14 +3672,14 @@ public class GeneSet implements GenomeSet {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} /*finally {
-				
+
 			}*/
 		} else {
 			//Serifier.main(args);
 		}
 
 		//SplashScreen.getSplashScreen().
-		
+
 		/*if( args.length == 0 ) {
 			GeneSet	gs = new GeneSet();
 			GeneSetHead gsh = new GeneSetHead( gs );
@@ -3736,11 +3688,11 @@ public class GeneSet implements GenomeSet {
 			double[] dd = { 0.0, 17.0, 21.0, 27.0, 17.0, 0.0, 12.0, 18.0, 21.0, 12.0, 0.0, 14.0, 27.0, 18.0, 14.0, 0.0 };
 			TreeUtil treeutil = new TreeUtil();
 			treeutil.neighborJoin( dd, 4, corrInd );*
-			
+
 			JFrame frame = new JFrame(); frame.setDefaultCloseOperation(
 			JFrame.EXIT_ON_CLOSE );
-			frame.setSize(800, 600); 
-			
+			frame.setSize(800, 600);
+
 			gsh.init( frame, null, null, null, null, null, null, null );
 			frame.setVisible( true );
 		} else if( args[0].endsWith(".zip") ) {
@@ -3755,7 +3707,7 @@ public class GeneSet implements GenomeSet {
 		} else {
 			Serifier.main(args);
 		}*/
-		 
+
 
 		// System.err.println( Runtime.getRuntime().availableProcessors() );
 
@@ -3768,9 +3720,9 @@ public class GeneSet implements GenomeSet {
 		//try {
 			//List<Set<String>> sc = loadSimpleClusters( Files.newBufferedReader( Paths.get("/Users/sigmar/clusters.txt") ) );
 			//System.err.println( sc.size() );
-				
+
 			//ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/gene_association.goa_uniprot.gz
-			
+
 	//FileInputStream fi = new FileInputStream( "/root/goa_uniprot_all.gaf.gz" );
 	//GZIPInputStream gi = new GZIPInputStream( fi );
 	//funcMappingStatic( new InputStreamReader( gi ) );
@@ -3779,7 +3731,7 @@ public class GeneSet implements GenomeSet {
 	//FileInputStream fi = new FileInputStream( "/Users/sigmar/gene_association.goa_uniprot.gz" );
 	//GZIPInputStream gi = new GZIPInputStream( fi );
 	//funcMappingStatic( new InputStreamReader( gi ) );
-			
+
 			/*Map<String,String>	sp2ko = new HashMap<String,String>();
 			FileReader fr = new FileReader("/vg454flx/sp2ko.txt");
 			BufferedReader br = new BufferedReader( fr );
@@ -3790,7 +3742,7 @@ public class GeneSet implements GenomeSet {
 				line = br.readLine();
 			}
 			fr.close();
-			
+
 			FileWriter fw = new FileWriter("/vg454flx/ko2go.txt");
 			InputStreamReader isr = new InputStreamReader( new GZIPInputStream( new FileInputStream("/vg454flx/sp2go.txt.gz") ) );
 			br = new BufferedReader( isr );
@@ -3803,22 +3755,22 @@ public class GeneSet implements GenomeSet {
 			}
 			isr.close();
 			fw.close();*/
-			
+
 			//simmi();
-			
+
 			/*Map<String,String>							all = new TreeMap<String,String>();
 			Map<String, Map<String,Integer>> 			map = new TreeMap<String, Map<String,Integer>>();
-			
+
 			FileReader fw = new FileReader("/home/sigmar/meta/cogmeta14.blastout");
 			gs.cogCalc( "MET14", fw, all, map );
 			fw.close();
 			fw = new FileReader("/home/sigmar/meta/cogmeta567.blastout");
 			gs.cogCalc( "MET567", fw, all, map );
 			fw.close();
-			
+
 			StringWriter sw = gs.writeCog( all, map );
 			System.out.println( sw );*/
-			
+
 			//dummy();
 			//SerifyApplet.blastJoin(new FileInputStream("/home/horfrae/peter/stuff.blastout"), System.out);
 
@@ -3865,29 +3817,29 @@ public class GeneSet implements GenomeSet {
 			 * "/home/sigmar/parc_thermus_accs.txt" );//new FileReader(
 			 * "/home/horfrae/new.txt" ); BufferedReader br = new
 			 * BufferedReader( fr );
-			 * 
+			 *
 			 * Set<String> accset = new HashSet<String>(); String line =
 			 * br.readLine(); while( line != null ) { /*if(
 			 * line.contains("acc:") ) { int k = line.indexOf(":"); if( k != -1
 			 * ) { String acc = line.substring(k+1).trim(); accset.add( acc ); }
 			 * }* accset.add( line ); line = br.readLine(); } br.close();
-			 * 
+			 *
 			 * fr = new FileReader( "/home/sigmar/noname.fasta" );//new
 			 * FileReader( "/home/horfrae/new.txt" ); br = new BufferedReader(
 			 * fr );
-			 * 
+			 *
 			 * Set<String> accset2 = new HashSet<String>(); line =
 			 * br.readLine(); while( line != null ) { if( line.startsWith(">") )
 			 * { /*if( line.contains("acc:") ) { int k = line.indexOf(":"); if(
 			 * k != -1 ) { String acc = line.substring(k+1).trim(); accset.add(
 			 * acc ); } }* String[] split = line.split("[ ]+"); accset2.add(
 			 * split[ split.length-1 ] ); } line = br.readLine(); } br.close();
-			 * 
+			 *
 			 * accset.removeAll( accset2 ); System.err.println( "accsize " +
 			 * accset.size() );
-			 * 
+			 *
 			 * for( String erm : accset ) { System.err.println( erm ); }
-			 * 
+			 *
 			 * //trimFasta(
 			 * "/media/3cb6dcc1-0069-4cb7-9e8e-db00bf300d96/movies/ssu-parc.fasta"
 			 * ,
@@ -4064,10 +4016,10 @@ public class GeneSet implements GenomeSet {
 
 		return ret;
 	}
-	
+
 	public Map<String,String> loadDesignations( InputStreamReader id, Set<String> deset ) throws IOException {
 		Map<String,String>	ret = new TreeMap<>();
-		
+
 		BufferedReader br = new BufferedReader( id );
 		String line = br.readLine();
 		while (line != null) {
@@ -4076,45 +4028,45 @@ public class GeneSet implements GenomeSet {
 				ret.put( split[0], split[1] );
 				deset.add( split[1] );
 			}
-			
+
 			line = br.readLine();
 		}
 		//br.close();
-		
+
 		return ret;
 	}
-	
+
 	public Set<String> loadPlasmids( InputStreamReader id ) throws IOException {
 		Set<String>	ret = new HashSet<>();
-		
+
 		BufferedReader br = new BufferedReader( id );
 		String line = br.readLine();
 		while (line != null) {
 			ret.add( line );
-			
+
 			line = br.readLine();
 		}
 		//br.close();
-		
+
 		return ret;
 	}
-	
+
 	public Map<String,String> ko2nameMapping( InputStreamReader id ) throws IOException {
 		Map<String,String>	ko2name = new HashMap<>();
-		
+
 		BufferedReader br = new BufferedReader( id );
 		String line = br.readLine();
 		while (line != null) {
 			String[] split = line.split("\t");
 			if( split.length > 1 ) ko2name.put( split[0], split[1] );
-			
+
 			line = br.readLine();
 		}
 		//br.close();
-		
+
 		return ko2name;
 	}
-	
+
 	public void loadSmap( Reader rd, Map<String,Gene> unimap ) throws IOException {
 		BufferedReader br = new BufferedReader( rd );
 		String line = br.readLine();
@@ -4127,7 +4079,7 @@ public class GeneSet implements GenomeSet {
 			line = br.readLine();
 		}
 	}
-	
+
 	public void uni2symbol( Reader rd, BufferedWriter bw, Map<String,Gene> unimap ) throws IOException {
 		BufferedReader br = new BufferedReader(rd);
 		String line = br.readLine();
@@ -4136,7 +4088,7 @@ public class GeneSet implements GenomeSet {
 			if( unimap.containsKey( split[0] ) ) {
 				Gene g = unimap.get( split[0] );
 				g.symbol = split[1];
-				
+
 				bw.write(line+"\n");
 			}
 			line = br.readLine();
@@ -4167,11 +4119,11 @@ public class GeneSet implements GenomeSet {
 		String last = "";
 		while (line != null) {
 			i++;
-			
+
 			if( i%1000000 == 0 ) {
 				System.err.println( "reading line " + i );
 			}
-			
+
 			String[] split = line.split("\t");
 			if (split.length > ind) {
 				if (!split[secind].equals(last)) {
@@ -4220,7 +4172,7 @@ public class GeneSet implements GenomeSet {
 							Gene gene = gimap.get(gid);
 							gene.uniid = split[secind];
 							unimap.put(gene.uniid, gene);
-							
+
 							gene.allids.add(split[secind]);
 							tone = true;
 						}
@@ -4230,7 +4182,7 @@ public class GeneSet implements GenomeSet {
 							Gene gene = genmap.get(genid);
 							gene.uniid = split[secind];
 							unimap.put(gene.uniid, gene);
-							
+
 							gene.allids.add(split[secind]);
 							tone = true;
 						}
@@ -4246,13 +4198,13 @@ public class GeneSet implements GenomeSet {
 							gene.koname = split[15];
 							//if( gene.koname.startsWith("dna") ) System.err.println( gene.koname );
 						}
-						
+
 						gene.allids.add(genid);
 						String gi = "GI"+split[6];
 						gene.allids.add(gi);
-						
+
 						gimap.put( gi, gene );
-						
+
 						tone = true;
 					}
 				}
@@ -4287,7 +4239,7 @@ public class GeneSet implements GenomeSet {
 		}
 		list.clear();
 		//br.close();
-		
+
 		final Map<String,Set<String>> keggidpath = new HashMap<>();
 		for( Path root : zipfilesystem.getRootDirectories() ) {
 			try {
@@ -4353,12 +4305,12 @@ public class GeneSet implements GenomeSet {
 						if( ref2pdb.containsKey(id) ) {
 							g.pdbid = ref2pdb.get(id);
 						}
-						
+
 						if( ref2ko.containsKey(id) ) {
 							String koid = ref2ko.get(id);
 							g.koid = koid;
 						}
-						
+
 						if( ref2cog.containsKey(id) ) {
 							String cogid = ref2cog.get(id);
 							g.cog = new Cog( cogid, null, null, null );
@@ -4394,7 +4346,7 @@ public class GeneSet implements GenomeSet {
 				Gene gene = genids.get(split[1]);
 				if (gene.funcentries == null)
 					gene.funcentries = new HashSet<>();
-				
+
 				Function func;
 				if( !funcmap.containsKey( split[2] ) ) {
 					func = new Function( split[2] );
@@ -4419,9 +4371,9 @@ public class GeneSet implements GenomeSet {
 	public void funcMappingUni(BufferedReader br, Map<String, Gene> uniids, BufferedWriter bw ) throws IOException {
 		// FileReader fr = new FileReader( sp2go );
 		//BufferedReader br = new BufferedReader(rd);
-		
+
 		int i = 0;
-		
+
 		System.err.println( uniids.keySet() );
 		String line = br.readLine();
 		while (line != null) {
@@ -4430,7 +4382,7 @@ public class GeneSet implements GenomeSet {
 				Gene gene = uniids.get(split[0].trim());
 				if (gene.funcentries == null)
 					gene.funcentries = new HashSet<>();
-				
+
 				for( String erm : split[1].trim().split("[\t ]+") ) {
 					Function func;
 					if( !funcmap.containsKey( erm ) ) {
@@ -4443,22 +4395,22 @@ public class GeneSet implements GenomeSet {
 			}
 
 			i++;
-			
+
 			if( i%1000000 == 0 ) System.err.println("funcmapping line "+i);
-			
+
 			line = br.readLine();
 		}
 		//br.close();
 	}
-	
+
 	public void scrollToSelection( TableView table ) {
 		table.scrollTo( table.getSelectionModel().getSelectedIndex() );
 	}
-	
+
 	/*public Set<String> getSelspec( Component comp, final List<String>	specs ) {
 		return getSelspec( comp, specs, null );
 	}*/
-	
+
 	public int containmentCount( Set<String> set1, Set<String> set2 ) {
 		int r = 0;
 		for( String s1 : set1 ) {
@@ -4500,10 +4452,10 @@ public class GeneSet implements GenomeSet {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public Serifier getConcatenatedSequences( boolean proximityJoin, Map<GeneGroup,Integer> genegroups, Set<String> specset, boolean namefix ) {
 		Map<String,Map<Sequence,String>>	smap = new HashMap<>();
-		
+
 		//List<Sequence>	seqs = new ArrayList<Sequence>();
 		/*Map<String>	specset = new HashMap<String,Integer>();
 		for( GeneGroup ggroup : genegroups ) {
@@ -4516,27 +4468,27 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}*/
-		
+
 		Map<String,Set<Tegeval>>	donetvs = new HashMap<>();
 		for( GeneGroup ggroup : genegroups.keySet() ) {
 			int len = genegroups.get( ggroup );
 			for( String spec : specset ) {
 				List<Annotation> ltv = ggroup.getTegevals(spec);
-				
+
 				/*if( selspec.contains("hermus") ) spec = selspec;
 				else {
-					Matcher m = Pattern.compile("\\d").matcher(selspec); 
+					Matcher m = Pattern.compile("\\d").matcher(selspec);
 					int firstDigitLocation = m.find() ? m.start() : 0;
 					if( firstDigitLocation == 0 ) spec = "Thermus_" + selspec;
 					else spec = "Thermus_" + selspec.substring(0,firstDigitLocation) + "_" + selspec.substring(firstDigitLocation);
 				}*/
-				
+
 				if( !proximityJoin ) {
 					Map<Sequence,String> seqs;
 					if( smap.containsKey( spec ) ) {
 						seqs = smap.get( spec );
 						Map<Sequence,String> addseqs = new HashMap<>();
-					
+
 						for( Sequence seq : seqs.keySet() ) {
 							String loc = seqs.get( seq );
 							boolean first = true;
@@ -4548,7 +4500,7 @@ public class GeneSet implements GenomeSet {
 										addseqs.put( tseq, loc );
 										tseq.append( seq.getSequence().subSequence(0, seq.length()-len) );
 									} else tseq = seq;
-									
+
 									//seqs.add( tseq );
 
 									Sequence alignedSequence = tv.getAlignedSequence();
@@ -4573,12 +4525,12 @@ public class GeneSet implements GenomeSet {
 						seqs.putAll( addseqs );
 					} else {
 						seqs = new HashMap<>();
-						
+
 						if( ltv != null && ltv.size() > 0 ) {
 							for( Annotation tv : ltv ) {
 								Sequence seq = new Sequence( namefix ? nameFix(spec) : spec, null );
 								seqs.put( seq, tv.getContshort().getName() );
-								
+
 								Sequence aseq = tv.getAlignedSequence();
 								StringBuilder seqstr = aseq != null ? aseq.getStringBuilder() : null;
 								if( seqstr != null && seqstr.length() > 0 ) {
@@ -4595,7 +4547,7 @@ public class GeneSet implements GenomeSet {
 						/*for( Tegeval tv : ltv ) {
 							Sequence seq = new Sequence( spec, null );
 							seqs.add( seq );
-							
+
 							StringBuilder seqstr = tv.getAlignedSequence().getStringBuilder();
 							if( seqstr != null && seqstr.length() > 0 ) {
 								seq.append( seqstr );
@@ -4607,7 +4559,7 @@ public class GeneSet implements GenomeSet {
 					}
 				} else {
 					Map<Sequence,String> 		seqs;
-					
+
 					Set<Tegeval>	tvals;
 					if( donetvs.containsKey(spec) ) {
 						tvals = donetvs.get( spec );
@@ -4615,12 +4567,12 @@ public class GeneSet implements GenomeSet {
 						tvals = new HashSet<>();
 						donetvs.put( spec, tvals );
 					}
-					
+
 					if( smap.containsKey( spec ) ) {
 						seqs = smap.get( spec );
 						Map<Sequence,String> 	addseqs = new HashMap<>();
 						Set<Annotation>			accountedfor = new HashSet<>();
-						
+
 						for( Sequence seq : seqs.keySet() ) {
 							String loc = seqs.get( seq );
 							boolean first = true;
@@ -4645,23 +4597,23 @@ public class GeneSet implements GenomeSet {
 								//}
 							}
 						}
-						
+
 						for( Sequence seq : seqs.keySet() ) {
 							if( !addseqs.containsKey( seq ) ) {
 								for( int i = 0; i < len; i++ ) seq.append( "-" );
 								addseqs.put( seq, seqs.get(seq) );
 							}
-							
+
 									/*boolean check = false;
 									for( Sequence sseq : seqs.keySet() ) {
 										String sloc = seqs.get( sseq );
-										
+
 										if( sloc == null || tv.getContshort().getName().equals(sloc) ) {
 											check = true;
 											break;
 										}
 									}
-									
+
 									if( !check ) {
 										Sequence tseq;
 										if( !first ) {
@@ -4673,10 +4625,10 @@ public class GeneSet implements GenomeSet {
 											addseqs.put( tseq, loc );
 											for( int i = 0; i < len; i++ ) tseq.append( "-" );
 											//tseq.append( seq.sb.subSequence(0, seq.length()-len) );
-											
+
 											//tseq = seq;
 										}
-										
+
 										//for( int i = 0; i < len; i++ ) tseq.append( "-" );
 									}/* else {
 										Sequence tseq = new Sequence( spec, null );
@@ -4685,7 +4637,7 @@ public class GeneSet implements GenomeSet {
 										tseq.append( seq.sb.subSequence(0, seq.length()-len) );
 									}
 								}*/
-								
+
 								/*if( first ) {
 									Sequence tseq;
 									if( !first ) {
@@ -4693,16 +4645,16 @@ public class GeneSet implements GenomeSet {
 										addseqs.put( tseq, loc );
 										tseq.append( seq.sb.subSequence(0, seq.length()-len) );
 									} else tseq = seq;
-									
+
 									for( int i = 0; i < len; i++ ) tseq.append( "-" );
 								}*/
 						}
-						
+
 						Sequence seq = null;
 						for( Sequence tseq : seqs.keySet() ) {
 							seq = tseq;
 						}
-						
+
 						for( Annotation tv : ltv ) {
 							//if( tvals.add( tv ) ) {
 								if( !accountedfor.contains(tv) ) {
@@ -4727,7 +4679,7 @@ public class GeneSet implements GenomeSet {
 								//if( tvals.add( tv ) ) {
 									Sequence seq = new Sequence( namefix ? nameFix(spec) : spec, null );
 									seqs.put( seq, tv.getContshort().getName() );
-									
+
 									StringBuilder seqstr = tv.getAlignedSequence().getStringBuilder();
 									if( seqstr != null && seqstr.length() > 0 ) {
 										seq.append( seqstr );
@@ -4746,7 +4698,7 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}
-		
+
 		Serifier			serifier = new Serifier();
 		for( String spec : smap.keySet() ) {
 			Map<Sequence,String> seqs = smap.get( spec );
@@ -4757,16 +4709,16 @@ public class GeneSet implements GenomeSet {
 		}
 		return serifier;
 	}
-	
+
 	boolean isthermus = true;
 	public String nameFix( String spec ) {
 		return Sequence.nameFix( spec, isthermus );
 	}
-	
+
 	public void cogCalc( String filename, BufferedReader br, Map<String,Map<String,Integer>> map, Set<String> selspec, boolean contigs ) throws IOException {
 		String line = br.readLine();
 		String current = null;
-		
+
 		int count = 0;
 		while( line != null ) {
 			if( line.startsWith("Query=") ) {
@@ -4785,54 +4737,54 @@ public class GeneSet implements GenomeSet {
 					line = br.readLine();
 				}
 				val = val.trim();
-				
+
 				String spec = null;
 				if( filename != null ) {
 					spec = filename;
 				} else {
 					int i = current.lastIndexOf('[');
 					int n = current.indexOf(']', i+1);
-					
+
 					if( i == -1 || n == -1 ) {
 						n = current.indexOf(" ");
 					}
-					
+
 					String specval = current.substring(i+1, n);
-					
+
 					for( String nspec : selspec ) {
 						if( specval.contains( nspec ) ) {
 							spec = nspec;
-							
+
 							String name = null;//names[i];
 							if( contigs ) {
 								name = nspec;
 								/*if( nspec.contains("hermus") ) name = nspec;
 								else {
-									Matcher m = Pattern.compile("\\d").matcher(nspec); 
+									Matcher m = Pattern.compile("\\d").matcher(nspec);
 									int firstDigitLocation = m.find() ? m.start() : 0;
 									if( firstDigitLocation == 0 ) name = "Thermus_" + nspec;
 									else name = "Thermus_" + nspec.substring(0,firstDigitLocation) + "_" + nspec.substring(firstDigitLocation);
 								}*/
-								
+
 								int k = Sequence.parseSpec(name);
 								if( k == -1 ) {
 									name = spec;
 								} else {
-									name = name.substring(k);						
+									name = name.substring(k);
 								}
 							} else {
 								int k = nspec.lastIndexOf('_');
-								if( k == -1 ) k = nspec.length(); 
+								if( k == -1 ) k = nspec.length();
 								name = nspec.substring( 0, k );
 								/*if( nspec.contains("hermus") ) name = nspec.substring( 0, nspec.lastIndexOf('_') );
 								else {
-									Matcher m = Pattern.compile("\\d").matcher(nspec); 
+									Matcher m = Pattern.compile("\\d").matcher(nspec);
 									int firstDigitLocation = m.find() ? m.start() : 0;
 									if( firstDigitLocation == 0 ) name = "Thermus_" + nspec;
 									else name = "Thermus_" + nspec.substring(0,firstDigitLocation) + "_" + nspec.substring(firstDigitLocation);
 								}*/
 							}
-							
+
 							spec = name;
 							break;
 						}
@@ -4843,7 +4795,7 @@ public class GeneSet implements GenomeSet {
 						k = spec.indexOf("_uid");
 						k = spec.indexOf('_', k+4);
 					}
-					
+
 					if( k == -1 ) {
 						k = spec.indexOf('_');
 						k = spec.indexOf('_', k+1);
@@ -4853,7 +4805,7 @@ public class GeneSet implements GenomeSet {
 						System.err.println();
 					}*/
 				}
-				
+
 				if( spec != null ) {
 					int i = val.lastIndexOf('[');
 					int n = val.indexOf(']', i+1);
@@ -4869,14 +4821,14 @@ public class GeneSet implements GenomeSet {
 					}
 					cog = cog.trim();
 					String coglong = cog;
-					
+
 					/*int ki = coglong.indexOf(' ');
 					ki = ki == -1 ? coglong.length() : ki;
 					int ui = coglong.indexOf(',');
 					ui = ui == -1 ? coglong.length() : ui;
 					int ci = coglong.indexOf('-');
 					ci = ci == -1 ? coglong.length() : ci;
-					
+
 					if( ui != -1 && ui < ki ) {
 						ki = ui;
 					}
@@ -4887,10 +4839,10 @@ public class GeneSet implements GenomeSet {
 						if( ki != -1 ) {
 							ki = coglong.indexOf(' ', ki+1);
 						}
-					}					
+					}
 					ki = ki == -1 ? coglong.length() : ki;
 					cog = coglong.substring(0,ki);*/
-					
+
 					Map<String,Integer> cogmap;
 					if( map.containsKey( spec ) ) {
 						cogmap = map.get(spec);
@@ -4898,18 +4850,18 @@ public class GeneSet implements GenomeSet {
 						cogmap = new HashMap<>();
 						map.put( spec, cogmap );
 					}
-					
+
 					String cogchar = Cog.cogchar.get( coglong );
 					if( cogchar == null ) {
 						System.err.print( coglong );
 						System.err.println();
 					}
-					
+
 					count++;
 					if( cogmap.containsKey( cogchar ) ) {
 						cogmap.put( cogchar, cogmap.get(cogchar)+1 );
 					} else cogmap.put( cogchar, 1 );
-					
+
 					//all.put( cog, coglong );
 				} else {
 					System.err.println("no hit");
@@ -4920,13 +4872,13 @@ public class GeneSet implements GenomeSet {
 		}
 		System.out.println( "count " + count );
 	}
-	
-	public void assignGain( Node n, Map<Node,List<GeneGroup>> gainMap, PrintStream ps ) {
+
+	public void assignGain( org.simmi.Node n, Map<org.simmi.Node,List<GeneGroup>> gainMap, PrintStream ps ) {
 		Set<String>	specs = n.getLeaveNames();
-		
+
 		List<GeneGroup> lgg = ggSpecMap.get( specs );
 		gainMap.put( n, lgg );
-		
+
 		ps.println( specs );
 		if( lgg != null ) for( GeneGroup gg : lgg ) {
 			/*Set<String>	nset = new HashSet<String>();
@@ -4935,21 +4887,21 @@ public class GeneSet implements GenomeSet {
 			}*/
 			ps.println( "\t" + gg.getName() );
 		}
-		
-		List<Node> nodes = n.getNodes();
+
+		List<org.simmi.Node> nodes = n.getNodes();
 		if( nodes != null ) {
-			for( Node node : nodes) {
+			for( org.simmi.Node node : nodes) {
 				assignGain( node, gainMap, ps );
 			}
 		}
 	}
-	
-	public void assignLoss( Node n, Map<Node,List<GeneGroup>> lossMap, PrintStream ps ) {
+
+	public void assignLoss( org.simmi.Node n, Map<org.simmi.Node,List<GeneGroup>> lossMap, PrintStream ps ) {
 		//Set<String>	specs = n.getLeaveNames();
-		
+
 		/*List<GeneGroup> lgg = ggSpecMap.get( specs );
 		gainMap.put( n, lgg );
-		
+
 		ps.println( specs );
 		if( lgg != null ) for( GeneGroup gg : lgg ) {
 			Set<String>	nset = new HashSet<String>();
@@ -4958,10 +4910,10 @@ public class GeneSet implements GenomeSet {
 			}
 			ps.println( "\t" + nset );
 		}*/
-		
-		List<Node> nodes = n.getNodes();
+
+		List<org.simmi.Node> nodes = n.getNodes();
 		if( nodes != null ) {
-			for( Node node : nodes) {
+			for( org.simmi.Node node : nodes) {
 				Set<String> loss = node.getLeaveNames();
 				List<GeneGroup> lgg = null;
 				for( Set<String> specs : ggSpecMap.keySet() ) {
@@ -4978,7 +4930,7 @@ public class GeneSet implements GenomeSet {
 					}
 				}
 				//ps.println( loss );
-				if( lgg != null ) for( Node nnode : nodes ) {
+				if( lgg != null ) for( org.simmi.Node nnode : nodes ) {
 					if( nnode != node ) {
 						ps.println( nnode.getLeaveNames() );
 						for( GeneGroup gg : lgg ) {
@@ -4995,19 +4947,19 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 	}
-	
+
 	public Teginfo getGroupTes( GeneGroup gg, String spec ) {
 		Teginfo teginfo = gg.species.get( spec );
 		//System.err.println( gg.species + "  " + teginfo + "  " + spec );
 		return teginfo;
 	}
-	
-	public final class StackBarData {		
+
+	public final class StackBarData {
 		String 				name;
 		String				oname;
 		Map<String,Integer> b = new HashMap<>();
 	}
-	
+
 	//refmap, genelist, funclist, iclusterlist, uclusterlist, specset
 	Map<String, Gene> genemap;
 	List<Gene> genelist = new ArrayList<>();
@@ -5015,7 +4967,7 @@ public class GeneSet implements GenomeSet {
 	List<Set<String>> iclusterlist;
 	List<Set<String>> uclusterlist;
 	Map<Set<String>, ShareNum> specset;
-	
+
 	Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap;
 	Map<String,Function> funcmap = new HashMap<>();
 
@@ -5043,7 +4995,7 @@ public class GeneSet implements GenomeSet {
 					f = new Function( go );
 					funcmap.put( go, f );
 				} else f = funcmap.get( go );
-				
+
 				if (fw != null && gofilter.containsKey(f)) {
 					fw.write("[Term]\n");
 					on = true;
@@ -5102,7 +5054,7 @@ public class GeneSet implements GenomeSet {
 			this.genum = genum;
 		}
 	}
-	
+
 	public void loadtransm( Set<String> tmids, BufferedReader r ) throws IOException {
 		String line = r.readLine();
 		String current = null;
@@ -5116,7 +5068,7 @@ public class GeneSet implements GenomeSet {
 			line = r.readLine();
 		}
 	}
-	
+
 	public void loadsignalp( Set<String> spids, BufferedReader r ) throws IOException {
 		String line = r.readLine();
 		while( line != null ) {
@@ -5127,10 +5079,10 @@ public class GeneSet implements GenomeSet {
 			line = r.readLine();
 		}
 	}
-	
+
 	public int loadrnas( Map<String,GeneGroup>	ggmap, Reader reader, int groupIndex, String tag ) throws IOException {
 		//List<Gene> genelist = new ArrayList<Gene>();
-		
+
 		BufferedReader 			br = new BufferedReader( reader );
 		String 					line = br.readLine();
 		while( line != null ) {
@@ -5138,10 +5090,10 @@ public class GeneSet implements GenomeSet {
 			if( trim.startsWith(">") ) {
 				int i = trim.indexOf(' ');
 				int k = trim.indexOf('[');
-				
+
 				String loc = trim.substring(1,i);
 				if( i+1 < 0 || k-1 < 0 || i+1 > trim.length() || k-1 > trim.length() ) {
-					
+
 					System.err.println();
 				}
 				String name = trim.substring(i+1, k-1);
@@ -5149,7 +5101,7 @@ public class GeneSet implements GenomeSet {
 				String spec;
 				String contshort;
 				int u = Sequence.specCheck( cont );
-				
+
 				if( u == -1 ) {
 					u = Sequence.parseSpec(cont);
 					if( u > 0 ) {
@@ -5164,7 +5116,7 @@ public class GeneSet implements GenomeSet {
 					spec = cont.substring( 0, l );
 					contshort = cont.substring( l+1);
 				}
-				
+
 				String[] split;
 				boolean rev = false;
 				if( loc.startsWith("comp") ) {
@@ -5173,10 +5125,10 @@ public class GeneSet implements GenomeSet {
 					int e = loc.indexOf(')');
 					split = loc.substring(s+1, e).split("\\.\\.");
 				} else split = loc.split("\\.\\.");
-				
+
 				int start = Integer.parseInt( split[0] );
 				int stop = Integer.parseInt( split[1] );
-				
+
 				String idstr = null;
 				int ids = name.lastIndexOf('(');
 				if( ids != -1 ) {
@@ -5186,7 +5138,7 @@ public class GeneSet implements GenomeSet {
 						name = name.substring(0, ids);
 					}
 				}
-				
+
 				if( tag.contains("rrna") ) {
 					String namel = name.toLowerCase();
 					if( namel.contains("23s") || namel.contains("lsu") ) name = "23S rRNA";
@@ -5194,7 +5146,7 @@ public class GeneSet implements GenomeSet {
 					else if( namel.contains("5s") || namel.contains("tsu") ) name = "5S rRNA";
 					//name = namel;
 				}
-				
+
 				GeneGroup 	gg;
 				if( ggmap.containsKey( name ) ) {
 					gg = ggmap.get( name );
@@ -5204,7 +5156,7 @@ public class GeneSet implements GenomeSet {
 				}
 				Gene g = new Gene( gg, name, name );
 				g.setIdStr( idstr );
-				
+
 				Sequence contig = contigmap.get( cont );
 				Tegeval tegeval = new Tegeval( g, 0.0, trim.substring(1,trim.length()-1), contig, start, stop, rev ? -1 : 1 );
 				tegeval.type = tag;
@@ -5213,13 +5165,13 @@ public class GeneSet implements GenomeSet {
 			}
 			line = br.readLine();
 		}
-		
+
 		return groupIndex;
 	}
-	
+
 	public int loadRrnas( Map<String,GeneGroup>	ggmap, Reader reader, int groupIndex ) throws IOException {
 		//List<Gene> genelist = new ArrayList<Gene>();
-		
+
 		BufferedReader 			br = new BufferedReader( reader );
 		String 					line = br.readLine();
 		while( line != null ) {
@@ -5227,7 +5179,7 @@ public class GeneSet implements GenomeSet {
 			if( trim.startsWith(">") ) {
 				int i = trim.indexOf("DIR");
 				int b = trim.lastIndexOf('_', i-2);
-				
+
 				String loc = trim.substring(b+1, i-1);
 				String cont = trim.substring(6, b).replace(".fna", "");
 				int end = cont.indexOf("_contig");
@@ -5243,28 +5195,28 @@ public class GeneSet implements GenomeSet {
 				}
 				if( end == -1 ) end = cont.length();
 				String spec = cont.substring(0,end);
-				
+
 				int bil = trim.indexOf(' ', i+15);
 				String name = trim.substring(i+15, bil);
-				
+
 				String namel = name.toLowerCase();
 				if( namel.contains("23s") || namel.contains("lsu") ) name = "23S rRNA";
 				else if( namel.contains("16s") || namel.contains("ssu") ) name = "16S rRNA";
 				else if( namel.contains("5s") || namel.contains("tsu") ) name = "5S rRNA";
 				//name = namel;
-				
+
 				boolean rev = trim.charAt(i+3) == '-';
 				String[] split = loc.split("-");
 				int start = Integer.parseInt( split[0] );
 				int stop = Integer.parseInt( split[1] );
-				
+
 		/*		int i = trim.indexOf(' ');
 				int k = trim.indexOf('[');
-				
+
 				String loc = trim.substring(1,i);
 				String name = trim.substring(i+1, k-1);
 				String spec = trim.substring(k+1, trim.length()-1);
-				
+
 				String[] split;
 				boolean rev = false;
 				if( loc.startsWith("comp") ) {
@@ -5273,10 +5225,10 @@ public class GeneSet implements GenomeSet {
 					int e = loc.indexOf(')');
 					split = loc.substring(s+1, e).split("\\.\\.");
 				} else split = loc.split("\\.\\.");
-				
+
 				int start = Integer.parseInt( split[0] );
 				int stop = Integer.parseInt( split[1] );*/
-				
+
 				GeneGroup 	gg;
 				if( ggmap.containsKey( name ) ) {
 					gg = ggmap.get( name );
@@ -5285,7 +5237,7 @@ public class GeneSet implements GenomeSet {
 					ggmap.put( name, gg );
 				}
 				Gene g = new Gene( gg, cont+"_"+loc, name );
-				
+
 				Sequence contig = contigmap.get( cont );
 				/*Sequence contig = null;
 				if( spec.contains("SG0") ) {
@@ -5353,7 +5305,7 @@ public class GeneSet implements GenomeSet {
 					for( String c : contigmap.keySet() ) {
 						if( c.contains( id ) ) {
 							contig = contigmap.get( c );
-				
+
 							break;
 						}
 					}
@@ -5407,7 +5359,7 @@ public class GeneSet implements GenomeSet {
 					}
 				}
 				else if( spec.contains("RLM") ) spec = "t.RLM";*/
-				
+
 				Tegeval tegeval = new Tegeval( g, 0.0, trim.substring(6, i+4), contig, start, stop, rev ? -1 : 1 );
 				tegeval.type = "rrna";
 				g.setTegeval( tegeval );
@@ -5415,11 +5367,11 @@ public class GeneSet implements GenomeSet {
 			}
 			line = br.readLine();
 		}
-		
+
 		return groupIndex;
 		//br.close();
 	}
-		
+
 	public int loadTrnas( Map<String,GeneGroup>	ggmap, Reader reader, int groupIndex ) throws IOException {
 		BufferedReader br = new BufferedReader( reader );
 		String line = br.readLine();
@@ -5574,10 +5526,10 @@ public class GeneSet implements GenomeSet {
 				line = br.readLine();
 			}
 		}
-		
+
 		return groupIndex;
 	}
-	
+
 	public void proxPreserve( Map<String, Gene> locgene ) {
 		int count = 0;
 		System.err.println( "blehehe " + genelist.size() );
@@ -5615,7 +5567,7 @@ public class GeneSet implements GenomeSet {
 		}
 		locgene.clear();
 	}
-	
+
 	/*private Map<String,String> loadCog() {
 		Map<String,String>	cogmap = new HashMap<String,String>();
 		FileReader fr = new FileReader("/vg454flx/cogthermus.blastout");
@@ -5632,12 +5584,12 @@ public class GeneSet implements GenomeSet {
 					line = br.readLine();
 				}
 				current = current.trim();
-				
+
 				String lname = current;
 				int i = lname.lastIndexOf('[');
 				if( i == -1 ) {
 					id = lname;
-				} else {		
+				} else {
 					int n = lname.indexOf(']', i+1);
 					int u = lname.indexOf(' ');
 					id = lname.substring(0, u);
@@ -5651,26 +5603,26 @@ public class GeneSet implements GenomeSet {
 					line = br.readLine();
 				}
 				val = val.trim();
-				
+
 				int i = current.lastIndexOf('[');
 				int n = current.indexOf(']', i+1);
-				
+
 				if( i == -1 || n == -1 ) {
 					n = current.indexOf(" ");
 				}
-				
+
 				/*if( i == -1 || n == -1 ) {
 					System.err.println( val );
 				}*
-				
+
 				String spec = current.substring(i+1, n);
-				
+
 				int k = spec.indexOf("_contig");
 				if( k == -1 ) {
 					k = spec.indexOf("_uid");
 					k = spec.indexOf('_', k+4);
 				}
-				
+
 				if( k == -1 ) {
 					k = spec.indexOf('_');
 					k = spec.indexOf('_', k+1);
@@ -5679,7 +5631,7 @@ public class GeneSet implements GenomeSet {
 				if( !spec.contains("_") ) {
 					System.err.println();
 				}
-				
+
 				i = val.indexOf('[');
 				n = val.indexOf(']', i+1);
 				/*if( i == -1 || n == -1 ) {
@@ -5694,7 +5646,7 @@ public class GeneSet implements GenomeSet {
 					erm = cog.replace("  ", " ");
 				}
 				cog = cog.trim();
-				
+
 				Map<String,Integer> cogmap;
 				if( map.containsKey( spec ) ) {
 					cogmap = map.get(spec);
@@ -5702,25 +5654,25 @@ public class GeneSet implements GenomeSet {
 					cogmap = new HashMap<String,Integer>();
 					map.put( spec, cogmap );
 				}
-				
+
 				if( cogmap.containsKey( cog ) ) {
 					cogmap.put( cog, cogmap.get(cog)+1 );
 				} else cogmap.put( cog, 1 );
-				
+
 				all.add( cog );
 			}
 			line = br.readLine();
 		}
 		fr.close();
-		
+
 		return cogmap;
 	}*/
-	
+
 	Map<String, Annotation> 	refmap = new HashMap<>();
 	Map<String, Gene> 			genmap = new HashMap<>();
 	Map<String, Gene> 			unimap = new HashMap<>();
 	Map<String, Gene> 			gimap = new HashMap<>();
-	
+
 	Map<String, String> 		allgenes = new HashMap<>();
 	Map<String, Set<String>> 	geneset = new HashMap<>();
 	Map<String, Set<String>> 	geneloc = new HashMap<>();
@@ -5731,7 +5683,7 @@ public class GeneSet implements GenomeSet {
 
 	Map<String,GeneGroup>		trna = new HashMap<>();
 	Map<String,GeneGroup>		rrna = new HashMap<>();
-	
+
 	Path		zippath;
 	//File		zipfile;
 	FileSystem	zipfilesystem;
@@ -5739,7 +5691,7 @@ public class GeneSet implements GenomeSet {
 	Map<String,String>	ko2name;
 	Map<String,String>	designations = new HashMap<>();
 	Set<String>			deset = new HashSet<>();
-	
+
 	Map<String, Set<String>> 				pathwaymap = new TreeMap<>();
 	Map<String, Set<String>> 				pathwaykomap = new TreeMap<>();
 	List<String> 							corrInd;
@@ -5769,7 +5721,7 @@ public class GeneSet implements GenomeSet {
 	Map<String,String>						cazyplmap = new HashMap<>();
 
 	Map<String,Set<String>>					biosystemsmap = new HashMap<>();
-	
+
 	Map<String, Set<String>> 				ko2go = new TreeMap<>();
 
 	public BufferedReader getResource(String res) {
@@ -5777,11 +5729,11 @@ public class GeneSet implements GenomeSet {
 		InputStreamReader isr = is != null ? new InputStreamReader(is) : null;
 		return isr != null ? new BufferedReader(isr) : null;
 	}
-	
+
 	public void refmapPut(String key, Annotation gene) {
 		refmap.put(key,gene);
 	}
-	
+
 	public void loadStuff( Path zipp ) throws IOException {
 		Map<String,String> env = new HashMap<>();
 		zippath = zipp;
@@ -5789,7 +5741,7 @@ public class GeneSet implements GenomeSet {
 		String uristr = "jar:" + zippath.toUri();
 		zipuri = URI.create( uristr /*.replace("file://", "file:")*/ );
 		zipfilesystem = FileSystems.newFileSystem( zipuri, env );
-		
+
 		Path nf = zipfilesystem.getPath("/unresolved.blastout");
 		if( Files.exists( nf ) ) unresolvedmap = loadunresolvedmap( new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ) );
 		nf = zipfilesystem.getPath("/namemap.txt");
@@ -5806,7 +5758,7 @@ public class GeneSet implements GenomeSet {
 		String uristr = "jar:" + path.toUri();
 		zipuri = URI.create( uristr /*.replace("file://", "file:")* );
 		zipfilesystem = FileSystems.newFileSystem( zipuri, env );*/
-		
+
 		nf = zipfilesystem.getPath("/allthermus.fna");
 		if( Files.exists( nf ) ) {
 			specList = loadcontigs( Files.newBufferedReader(nf), "" );
@@ -5894,14 +5846,14 @@ public class GeneSet implements GenomeSet {
 		nf = zipfilesystem.getPath("/genes.faa");
 		if( Files.exists( nf ) ) loci2aasequence( Files.newBufferedReader(nf), refmap, designations, "" );
 		//else {
-		
+
 		/*for( String id : refmap.keySet() ) {
 			Gene g = refmap.get( id );
 			if( g.getSpecies().contains("MAT4685") ) {
 				System.err.println();
 			}
 		}*/
-		
+
 		for( Path root : zipfilesystem.getRootDirectories() ) {
 			Files.list(root).filter(t -> {
                 String filename = t.getFileName().toString();
@@ -5947,14 +5899,14 @@ public class GeneSet implements GenomeSet {
 
 		//}
 		//}
-		
+
 		/*int tot = 0;
 		int mot = 0;
 		for( String cstr : contigmap.keySet() ) {
 			Sequence ctg = contigmap.get( cstr );
 			if( ctg.tlist != null ) for( Tegeval tv : ctg.tlist ) {
 				Gene gn = tv.getGene();
-				
+
 				if( gn.getGeneGroup() != null ) {
 					tot++;
 				} else mot++;
@@ -5963,14 +5915,14 @@ public class GeneSet implements GenomeSet {
 		System.err.println( tot + "  " + mot );
 		tot = 0;
 		mot = 0;
-		for( Gene gn : genelist ) {	
+		for( Gene gn : genelist ) {
 			if( gn.getGeneGroup() != null ) {
 				tot++;
 			} else mot++;
 		}
 		System.err.println( tot + "  " + mot );
 		System.err.println();*/
-		
+
 		nf = zipfilesystem.getPath("/clusters.txt");
 		if( Files.exists( nf ) ) {
 			uclusterlist = loadSimpleClusters( Files.newBufferedReader(nf) );
@@ -6072,10 +6024,10 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 		System.err.println();*/
-		
-		
-		
-		
+
+
+
+
 		/*int zcount = 0;
 		while( zcount < 3 ) {
 			zipm = new ZipInputStream( new ByteArrayInputStream( zipf ) );
@@ -6096,7 +6048,7 @@ public class GeneSet implements GenomeSet {
 				} else if( zname.endsWith(".cazy") ) {
 					loadcazymap( cazymap, new InputStreamReader( zipm ) );
 				}
-				
+
 			/*int size = (int)ze.getSize();
 			byte[] bb = new byte[ size ];
 			//ByteArrayOutputStream baos = new ByteArrayOutputStream( size );
@@ -6123,8 +6075,8 @@ public class GeneSet implements GenomeSet {
 			if(g!=null) genemap.put(key,g);
 		}
 		//loadCog();
-		
-		//specList = loadcontigs( new InputStreamReader( new ByteArrayInputStream( mop.remove("allthermus.fna") ) ) );			
+
+		//specList = loadcontigs( new InputStreamReader( new ByteArrayInputStream( mop.remove("allthermus.fna") ) ) );
 		//loci2aasequence( new InputStreamReader( new ByteArrayInputStream( mop.remove("allthermus.aa") ) ), refmap );
 		//List<Set<String>> uclusterlist = loadSimpleClusters( new InputStreamReader( new ByteArrayInputStream( mop.remove("clusters.txt") ) ) );
 		/*try {
@@ -6137,7 +6089,7 @@ public class GeneSet implements GenomeSet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		//InputStream is = GeneSet.class.getResourceAsStream("/all.aa");
 		is = GeneSet.class.getResourceAsStream("/allthermus.aa");
 		// InputStream is = GeneSet.class.getResourceAsStream("/arciformis.aa");
@@ -6163,10 +6115,10 @@ public class GeneSet implements GenomeSet {
 		//is = GeneSet.class.getResourceAsStream("/thermus_unioncluster.txt");
 		//is = GeneSet.class.getResourceAsStream("/allthermus_unioncluster2.txt");
 		//is = GeneSet.class.getResourceAsStream("/thomas1.clust");
-		
+
 		//is = GeneSet.class.getResourceAsStream("/allthermus_new.clust");
 		//List<Set<String>> uclusterlist = loadSimpleClusters( new InputStreamReader(is) );
-		
+
 		//is = GeneSet.class.getResourceAsStream("/results.uc");
 		//List<Set<String>> uclusterlist = loadUClusters( new InputStreamReader(is) );
 
@@ -6182,15 +6134,15 @@ public class GeneSet implements GenomeSet {
 		}*/
 
 		//is = GeneSet.class.getResourceAsStream("/thermus_nr.blastout");
-		//panCoreFromNRBlast( new InputStreamReader(is), "c:/sandbox/distann/src/thermus_nr_short.blastout", refmap, allgenes, geneset, geneloc, locgene, poddur, uclusterlist ); 
+		//panCoreFromNRBlast( new InputStreamReader(is), "c:/sandbox/distann/src/thermus_nr_short.blastout", refmap, allgenes, geneset, geneloc, locgene, poddur, uclusterlist );
 		//is = GeneSet.class.getResourceAsStream("/thermus_nr_short.blastout");
 		//is = new FileInputStream( "/home/sigmar/thermus_nr_short.blastout" );
 		//is = new FileInputStream( "/home/sigmar/thermus_nr_ftp_short.blastout" );
-		
+
 		//is = GeneSet.class.getResourceAsStream("/thermus_nr_ftp_short.blastout");
-		//is = GeneSet.class.getResourceAsStream("/ncbithermus_short.blastout");		
+		//is = GeneSet.class.getResourceAsStream("/ncbithermus_short.blastout");
 		//InputStream nis = GeneSet.class.getResourceAsStream("/exp.blastout");
-		
+
 		/*is = GeneSet.class.getResourceAsStream("/thermus_ncbi_short.blastout");
 		InputStream nis = null;//GeneSet.class.getResourceAsStream("/exp_short.blastout");
 		Blast blast = new Blast();
@@ -6200,11 +6152,11 @@ public class GeneSet implements GenomeSet {
 		allgenes.clear();
 		geneset.clear();
 		poddur.clear();
-		
+
 		/*FileReader fr = new FileReader("/vg454flx/cogthermus.blastout");
 		cogmap = loadcogmap( fr );
 		fr.close();*/
-		
+
 		// Map<String,Gene> refmap = new TreeMap<String,Gene>();
 		for (String genedesc : refmap.keySet()) {
 			Annotation a = refmap.get(genedesc);
@@ -6217,7 +6169,7 @@ public class GeneSet implements GenomeSet {
 				gene.index = genelist.size();
 				genelist.add(gene);
 			}
-			
+
 			/*if( gene.species.size() == 4 ) {
 				if( gene.species.containsKey("t.oshimai") && gene.species.containsKey("mt.silvanus") ) {
 					System.err.println( gene.index );
@@ -6276,12 +6228,12 @@ public class GeneSet implements GenomeSet {
 		List<GeneGroup>	ggList = new ArrayList<>();
 		int i = 0;
 		Set<String> gs = new HashSet<>();
-		
+
 		int countclust = 0;
 		if( uclusterlist != null ) for (Set<String> cluster : uclusterlist) {
 			//ss.clear();
 			gs.clear();
-			
+
 			/*if( cluster.size() == 1 ) {
 				String s = "";
 				for( String u : cluster ) s = u;
@@ -6295,7 +6247,7 @@ public class GeneSet implements GenomeSet {
 				if( b != -1 ) {
 					int u = cont.indexOf(']', b+1);
 					int k = cont.indexOf(' ');
-					
+
 					/*int n = cont.lastIndexOf('#');
 					if( n != -1 ) {
 						int m = cont.lastIndexOf(';', n+1);
@@ -6308,9 +6260,9 @@ public class GeneSet implements GenomeSet {
 					gid = idFix( gid, cont.substring(b+1, u) );
 
 					String scont = cont.substring(b+1, u);
-					
+
 					int l = Sequence.specCheck( scont );
-					
+
 					if( l == -1 ) {
 						l = scont.indexOf("contig");
 						//spec = scont.substring(0, l-1);
@@ -6325,12 +6277,12 @@ public class GeneSet implements GenomeSet {
 					int k = cont.indexOf('#');
 					if( k == -1 ) k = cont.length();
 					gid = cont.substring(0, k).trim();
-					
+
 					//int k = cont.indexOf("contig");
 					//spec = cont.substring(0, k-1);
 				}
 				//String[] split = cont.split("_");
-				
+
 				//ss.add( spec );
 				if(gid.equals("WP_012844264.1")) {
 					System.err.println();
@@ -6350,7 +6302,7 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 
-			int val = gset.size();	
+			int val = gset.size();
 			/*int len = 20; //16
 			if (val == len && ss.size() == len) {
 				corrList.put(cluster, new double[20*20]);
@@ -6361,7 +6313,7 @@ public class GeneSet implements GenomeSet {
 			//gg.addSpecies( ss );
 			gg.setGroupCount( val );
 			//gg.setGroupGeneCount( gs.size() );
-			
+
 			if( gset.size() == 0 ) {
 				System.err.println();
 			}
@@ -6371,7 +6323,7 @@ public class GeneSet implements GenomeSet {
 				g.groupCoverage = ss.size();
 				g.groupGenCount = gs.size();
 				g.groupCount = val;*/
-				
+
 				//gg.addGene( g );
 			}
 
@@ -6380,7 +6332,7 @@ public class GeneSet implements GenomeSet {
 			// ClusterInfo cInfo = new ClusterInfo(id++,ss.size(),gs.size());
 			// clustInfoMap.put( cluster, cInfo);
 		}// else {
-		
+
 		for(Map.Entry<String,Annotation> me : refmap.entrySet() ) {
 			Annotation a = me.getValue();
 			Gene g = a.getGene();
@@ -6439,7 +6391,7 @@ public class GeneSet implements GenomeSet {
 			else mu++;
 		}
 		System.err.println( me + "  " + mu );
-		
+
 		final Map<String,GeneGroup>	rnamap = new HashMap<>();
 		//is = GeneSet.class.getResourceAsStream("/rrna.fasta");
 		//InputStream tis = //GeneSet.class.getResourceAsStream("/trna.txt"); //GeneSet.class.getResourceAsStream("/trna_sub.txt");
@@ -6455,11 +6407,11 @@ public class GeneSet implements GenomeSet {
 			} else if( ze.getName().equals("allthermus.rrna") || ze.getName().equals("allglobus.rrna") ) {
 				i = loadrnas( rnamap, new InputStreamReader( zipin ), i, "rrna" );
 			}
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();*/
-		
+
 		nf = zipfilesystem.getPath("/trnas.txt");
 		//loadcazymap( cazymap, new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ) );
 		if( Files.exists( nf ) ) i  = loadTrnas( rnamap, new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ), i );
@@ -6482,7 +6434,7 @@ public class GeneSet implements GenomeSet {
                 });
 			}
 		}
-		
+
 		nf = zipfilesystem.getPath("/allthermus.trna");
 		if( Files.exists( nf ) ) i = loadrnas( rnamap, new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ), i, "trna" );
 		else {
@@ -6502,7 +6454,7 @@ public class GeneSet implements GenomeSet {
                 });
 			}
 		}
-		
+
 		nf = zipfilesystem.getPath("/allthermus.rrna");
 		if( Files.exists( nf ) ) i = loadrnas( rnamap, new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ), i, "rrna" );
 		else {
@@ -6523,23 +6475,23 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 		//zipfilesystem.close();
-		
+
 		//loadRrnas( new InputStreamReader(is), new InputStreamReader(tis), i );
 		for( String ggname : rnamap.keySet() ) {
 			GeneGroup gg = rnamap.get( ggname );
 			ggList.add( gg );
-			
+
 			for( Annotation a : gg.genes ) {
 				refmapPut( a.getId(), a );
 				Gene g = a.getGene();
 				if(g != null) genelist.add( g );
-				
+
 				//gg.addSpecies( g.species );
 			}
 		}
-		
-		
-		
+
+
+
 		/*for( String cstr : contigmap.keySet() ) {
 			Sequence c = contigmap.get(cstr);
 			if( c.annset != null ) for( Annotation a : c.annset ) {
@@ -6549,9 +6501,9 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 		System.err.println();*/
-		
-		
-		
+
+
+
 		final Set<String>	spids = new HashSet<>();
 		for( Path root : zipfilesystem.getRootDirectories() ) {
 			Files.list(root).filter(t -> {
@@ -6576,7 +6528,7 @@ public class GeneSet implements GenomeSet {
 				g.signalp = true;
 			}
 		}
-		
+
 		final Set<String>	tmids = new HashSet<>();
 		for( Path root : zipfilesystem.getRootDirectories() ) {
 			Files.list(root).filter(t -> {
@@ -6598,7 +6550,7 @@ public class GeneSet implements GenomeSet {
 				g.transm = true;
 			}
 		}
-		
+
 		ggSpecMap = new HashMap<>();
 		for( GeneGroup gg : ggList ) {
 			List<GeneGroup>	speclist;
@@ -6611,14 +6563,14 @@ public class GeneSet implements GenomeSet {
 			}
 			speclist.add( gg );
 		}
-		
+
 		specGroupMap = new HashMap<>();
 		int ind = 0;
 		for( GeneGroup gg : ggList ) {
 			/*if( gg.genes.size() == 0 ) {
 				System.err.println();
 			}*/
-			
+
 			for( String spec : gg.species.keySet() ) {
 				Set<GeneGroup>	ggset;
 				if( !specGroupMap.containsKey( spec ) ) {
@@ -6634,54 +6586,54 @@ public class GeneSet implements GenomeSet {
 			gg.setIndex( ind++ );
 		}
 		allgenegroups = ggList;
-		
+
 		for( Gene g : genelist ) {
 			if( g.getGeneGroup() != null ) me++;
 			else mu++;
 		}
-		
+
 		/*if( rnamap != null ) for( String ggname : rnamap.keySet() ) {
 			GeneGroup gg = rnamap.get( ggname );
 			List<Tegeval> tegevals = gg.getTegevals();
-			
+
 			/*for( Tegeval te : tegevals ) {
 				Sequence contig = te.getContshort();
-									
+
 				//if( contig.getName().contains("antrani") && contig.getName().contains("contig00006") ) {
 				//	System.err.println( contig.getAnnotationCount() );
 				//}
-				
+
 				if( contig != null ) {
 					contig.add( te );
-					
+
 					if( te.getGene().getName().contains("Met") ) {
 						System.err.println( contig.getName() + "  " + te.getGene().getName() + "  " + contig.getTegevalsList().indexOf( te ) + "  " + contig.getAnnotationCount() );
 					}
 					/*Tegeval ste = check( contig );
-					
+
 					if( ste != null ) {
 						while( te.start < ste.start ) {
 							Tegeval prev = ste.getPrevious();
 							if( prev == null ) break;
 							else ste = prev;
-						}	
+						}
 						while( te.start > ste.start ) {
 							Tegeval next = ste.getNext();
 							if( next == null ) break;
 							else ste = next;
 						}
- 						
+
 						if( te.start < ste.start ) {
 							Tegeval prevprev = ste.setPrevious( te );
 							if( prevprev != null ) {
 								//prevprev.setNext( te );
 								te.setPrevious( prevprev );
-								
+
 								System.err.println( prevprev.getGene().getName() );
 							} else {
 								contig.start = te;
 							}
-							
+
 							te.setNum( ste.getNum() );
 							Tegeval next = te.getNext();
 							while( next != null ) {
@@ -6693,12 +6645,12 @@ public class GeneSet implements GenomeSet {
 							te.setPrevious( ste );
 							if( prevnext != null ) {
 								prevnext.setPrevious( te );
-								
+
 								System.err.println( prevnext.getGene().getName() );
 							} else {
 								contig.end = te;
 							}
-							
+
 							te.setNum( ste.getNum()+1 );
 							Tegeval next = te.getNext();
 							while( next != null ) {
@@ -6715,7 +6667,7 @@ public class GeneSet implements GenomeSet {
 			}*
 		}*/
 		sortLoci();
-		
+
 		for( String spec : speccontigMap.keySet() ) {
 			System.err.println( spec );
 			List<Sequence> ctgs = speccontigMap.get( spec );
@@ -6735,11 +6687,11 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}
-		
+
 		for( String ggname : rnamap.keySet() ) {
 			GeneGroup gg = rnamap.get( ggname );
 			List<Annotation> tegevals = gg.getTegevals();
-			
+
 			/*for( Tegeval te : tegevals ) {
 				Sequence contig = te.getContshort();
 				if( te.getGene().getName().contains("Met") ) {
@@ -6747,7 +6699,7 @@ public class GeneSet implements GenomeSet {
 				}
 			}*/
 		}
-		
+
 		System.err.println("starting ......................................");
 		for( String str : speccontigMap.keySet() ) {
 			List<Sequence> cts = speccontigMap.get(str);
@@ -6770,7 +6722,7 @@ public class GeneSet implements GenomeSet {
 				i = 0;
 				int ni1 = line.indexOf('/', i+1);
 				int ni2 = line.indexOf('\\', i+1);
-				ni1 = ni1 == -1 ? line.length() : ni1; 
+				ni1 = ni1 == -1 ? line.length() : ni1;
 				ni2 = ni2 == -1 ? line.length() : ni2;
 				int n = Math.min( ni1, ni2 );
 				String spec = null;
@@ -6779,14 +6731,14 @@ public class GeneSet implements GenomeSet {
 					char c = line.charAt(i);
 					String ctgn = line.substring(i+1, n);
 					Sequence ctg = contigmap.get( ctgn );
-					
+
 					if( ctg != null ) {
 						spec = ctg.getSpec();
 						//List<Sequence> splct = speccontigMap.get( spec );
 						if( c == '\\' ) ctg.setReverse( true );
 						if( prevctg != null ) {
 							prevctg.setConnection( ctg, ctg.isReverse(), !prevctg.isReverse() );
-							
+
 							//splct.remove( ctg );
 							//int k = splct.indexOf( prevctg );
 							//splct.add( k+1, ctg );
@@ -6803,7 +6755,7 @@ public class GeneSet implements GenomeSet {
 						}*/
 					}
 					newlist.add(ctg);
-					
+
 					i = n;
 					ni1 = line.indexOf('/', i+1);
 					ni2 = line.indexOf('\\', i+1);
@@ -6829,14 +6781,14 @@ public class GeneSet implements GenomeSet {
 			}
 			br.close();
 		}
-		
+
 		System.err.println("starting ......................................");
 		for( String str : speccontigMap.keySet() ) {
 			List<Sequence> cts = speccontigMap.get(str);
 			System.err.println( str + "  " + cts.size() );
 		}
 		System.err.println("ending ......................................");
-		
+
 		/*FileWriter fw = null; // new FileWriter("all_short.blastout");
 		//is = GeneSet.class.getResourceAsStream("/all_short.blastout");
 		is = GeneSet.class.getResourceAsStream("/all_short.blastout");
@@ -6894,7 +6846,7 @@ public class GeneSet implements GenomeSet {
 			line = br.readLine();
 		}
 		br.close();
-		// if( fw != null ) fw.close();*/		
+		// if( fw != null ) fw.close();*/
 
 		double davg = 1.0 / corr16sArray.length;
 		for (Set<String> cluster : corrList.keySet()) {
@@ -6964,42 +6916,42 @@ public class GeneSet implements GenomeSet {
 		//Map<String, Gene> unimap = null;
 		//Map<String, Gene> genmap = null;
 		//Map<String, Gene> gimap = new HashMap<String,Gene>();
-		
+
 		nf = zipfilesystem.getPath("/gene2refseq_short.txt");
 		if( Files.exists( nf ) ) genmap = idMapping(new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ), null, 5, 1, refmap, null, gimap);
 		//loadcazymap( cazymap, new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) ) );
-		
+
 		/*zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 		ze = zipin.getNextEntry();
 		while( ze != null ) {
 			if( ze.getName().equals("gene2refseq_short.txt") ) genmap = idMapping(new InputStreamReader(zipin), null, 5, 1, refmap, genmap, gimap);
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();*/
-		
+
 		//is = GeneSet.class.getResourceAsStream("/gene2refseq_short.txt");
 		//is = new GZIPInputStream( new FileInputStream("/data/gene2refseq.gz") );
 		//genmap = idMapping(new InputStreamReader(is), "/home/sigmar/gene2refseq_short.txt", 5, 1, refmap, genmap, gimap);
 		//is = GeneSet.class.getResourceAsStream("/gene2go_short.txt");
 		//is = new GZIPInputStream( new FileInputStream("/home/sigmar/gene2go.gz") );
 		//funcMapping(new InputStreamReader(is), genmap, "/home/sigmar/thermus/gene2go_short.txt");
-		
+
 		/*zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 		ze = zipin.getNextEntry();
 		while( ze != null ) {
 			if( ze.getName().equals("idmapping_short.dat") ) unimap = idMapping(new InputStreamReader(zipin), null, 2, 0, refmap, genmap, gimap);
 			else if( ze.getName().equals("ko2name.txt") ) ko2name = ko2nameMapping( new InputStreamReader(zipin) );
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();*/
-		
+
 		nf = zipfilesystem.getPath("/idmapping_short.dat");
 		if( Files.exists( nf ) ) {
 			unimap = idMapping(new InputStreamReader(Files.newInputStream(nf, StandardOpenOption.READ)), null, 2, 0, refmap, genmap, gimap);
 		}
-		
+
 		nf = zipfilesystem.getPath("/smap_short.txt");
 		if( Files.exists( nf ) && !unimap.isEmpty() ) loadSmap( new InputStreamReader(Files.newInputStream(nf, StandardOpenOption.READ)), unimap );
 
@@ -7009,7 +6961,7 @@ public class GeneSet implements GenomeSet {
 					String name = ko2name.get( g.koid );
 					if( name.startsWith("E") ) {
 						int k = name.indexOf(',');
-						if( k == -1 ) k = name.length(); 
+						if( k == -1 ) k = name.length();
 						else ko2name.put( g.koid, name.substring(k+1).trim() );
 						g.ecid = name.substring(1, k);
 					} else if( name.contains(",") ) {
@@ -7026,12 +6978,12 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}
-		
+
 		//is = GeneSet.class.getResourceAsStream("/idmapping_short.dat"); // ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
 		//is = new GZIPInputStream( new FileInputStream("/data/idmapping.dat.gz") );
 		//is = new FileInputStream("/u0/idmapping_short.dat");
 		//unimap = idMapping(new InputStreamReader(is), "/home/sigmar/idmapping_short.dat", 2, 0, refmap, genmap, gimap);
-		
+
 		if( unimap != null ) {
 			/*zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 			ze = zipin.getNextEntry();
@@ -7053,19 +7005,19 @@ public class GeneSet implements GenomeSet {
 					}
 				}
 				//else if( ze.getName().equals("gene2refseq_short.txt") ) genmap = idMapping(new InputStreamReader(zipin), null, 5, 1, refmap, true);
-				
+
 				ze = zipin.getNextEntry();
 			}
 			zipin.close();*/
 			//is = GeneSet.class.getResourceAsStream("/sp2go_short.txt");
 			//is = new GZIPInputStream( new FileInputStream( "/data/sp2go.txt.gz" ) );
 			//funcMappingUni(new InputStreamReader(is), unimap, "/home/sigmar/sp2go_short.txt");
-			
+
 			nf = zipfilesystem.getPath("/sp2go_short.txt");
 			if( Files.exists( nf ) ) {
 				funcMappingUni( new BufferedReader( new InputStreamReader( Files.newInputStream(nf, StandardOpenOption.READ) )), unimap, null );
 			}
-			
+
 			nf = zipfilesystem.getPath("/ko2go.txt");
 			if( Files.exists(nf) ) {
 				BufferedReader br = new BufferedReader( new InputStreamReader(Files.newInputStream(nf, StandardOpenOption.READ)) );
@@ -7083,7 +7035,7 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 		if( genmap != null ) genmap.clear();
-		
+
 		Map<Function, Set<Gene>> totalgo = new HashMap<>();
 		for (Gene g : genelist) {
 			if (g.funcentries != null) {
@@ -7099,21 +7051,21 @@ public class GeneSet implements GenomeSet {
 				}
 			}
 		}
-		
+
 		/*zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 		ze = zipin.getNextEntry();
 		while( ze != null ) {
 			if( ze.getName().equals("go_short.obo") ) readGoInfo( new InputStreamReader(zipin), totalgo, null);
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();*/
 		BufferedReader br = getResource("/go.obo");
-		//Map<String,Function> funcmap = 
+		//Map<String,Function> funcmap =
 		if( br != null ) {
 			readGoInfo( br, totalgo, null ); // "/home/sigmar/MAT/go_short.obo");
 		}
-		
+
 		//is = GeneSet.class.getResourceAsStream("/go_short.obo");
 		//readGoInfo(new InputStreamReader(is), totalgo, null);
 		for (String go : funcmap.keySet()) {
@@ -7122,26 +7074,26 @@ public class GeneSet implements GenomeSet {
 			funclist.add(f);
 		}
 		totalgo.clear();
-		
+
 		Map<String,String>	jgiGeneMap = new HashMap<>();
 		/*zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 		ze = zipin.getNextEntry();
 		while( ze != null ) {
 			if( ze.getName().equals("genes.faa") ) jgiGeneMap = jgiGeneMap( new InputStreamReader(zipin) );
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();
-		
+
 		zipin = new ZipInputStream( new ByteArrayInputStream(zipf) );
 		ze = zipin.getNextEntry();
 		while( ze != null ) {
 			if( ze.getName().equals("ko.tab.txt") ) jgiGene2KO( new InputStreamReader(zipin), jgiGeneMap, refmap );
-			
+
 			ze = zipin.getNextEntry();
 		}
 		zipin.close();*/
-		
+
 		nf = zipfilesystem.getPath("/genes.faa");
 		if( Files.exists( nf ) ) jgiGeneMap = jgiGeneMap( new InputStreamReader(Files.newInputStream(nf, StandardOpenOption.READ)) );
 		nf = zipfilesystem.getPath("/ko.tab.txt");
@@ -7183,51 +7135,51 @@ public class GeneSet implements GenomeSet {
 		System.err.println("export PYSPARK_GATEWAY_SECRET="+py4jServer.secret());
 		System.err.println("export PYSPARK_PIN_THREAD=true");
 	}
-	
+
 	public void cleanUp() {
 		refmap.clear();
 		genmap.clear();
 		unimap.clear();
 		gimap.clear();
-		
+
 		allgenes.clear();
 		geneset.clear();
 		geneloc.clear();
 		poddur.clear();
 		locgene.clear();
-		
+
 		if( ko2name != null ) ko2name.clear();
 		if( designations != null ) designations.clear();
 		if( deset != null ) deset.clear();
-		
+
 		if( allgenegroups != null ) allgenegroups.clear();
 		if( genelist != null ) genelist.clear();
-		
+
 		if( cogidmap != null ) cogidmap.clear();
 		if( cogmap != null ) cogmap.clear();
 
 		if( pfamidmap != null ) pfamidmap.clear();
 		if( pfammap != null ) pfammap.clear();
-		
+
 		if( ko2go != null ) ko2go.clear();
 		if( ko2name != null ) ko2name.clear();
-		
+
 		if( ggSpecMap != null ) ggSpecMap.clear();
 		if( specGroupMap != null ) specGroupMap.clear();
 		if( specList != null ) specList.clear();
-		
+
 		if( unresolvedmap != null ) unresolvedmap.clear();
 		if( cazymap != null ) cazymap.clear();
 		if( phastermap != null ) phastermap.clear();
 		if( namemap != null ) namemap.clear();
-		
+
 		if( contigmap!= null ) contigmap.clear();
 	}
-	
+
 	public void updateShareNum( Collection<String> specs ) {
 		if( specset != null ) specset.clear();
 		else specset = new HashMap<>();
-		
+
 		int sn = 0;
 		/*for (Gene g : genelist) {
 			if (g.species != null) {
@@ -7241,13 +7193,13 @@ public class GeneSet implements GenomeSet {
 			}
 		}*/
 		Map<Set<String>, ShareNum> subset = new HashMap<>();
-		
+
 		for (GeneGroup gg : allgenegroups) {
 			Set<String>	species = gg.getSpecies();
 			Set<String>	tmpspec = new HashSet<>( species );
 			tmpspec.retainAll( specs );
 			gg.setSpecSet( this.specset );
-			
+
 			if( species != null ) {
 				ShareNum sharenum = null;
 				if (subset.containsKey( tmpspec ) ) {
@@ -7262,7 +7214,7 @@ public class GeneSet implements GenomeSet {
 			}
 		}
 	}
-	
+
 	private void jgiGene2KO(InputStreamReader inputStreamReader, Map<String, String> jgiGeneMap, Map<String, Annotation> refmap) throws IOException {
 		BufferedReader br = new BufferedReader( inputStreamReader );
 		String	line = br.readLine();
@@ -7294,7 +7246,7 @@ public class GeneSet implements GenomeSet {
 		}
 		return jgimap;
 	}
-	
+
 	public Annotation check( Sequence contig ) {
 		for( GeneGroup sgg : allgenegroups ) {
 			for( Annotation ste : sgg.getTegevals() ) {
@@ -7326,7 +7278,7 @@ public class GeneSet implements GenomeSet {
 		}
 		bf.close();
 		zipfilesystem.close();
-		
+
 		/*FileWriter fw = new FileWriter("/home/sigmar/sandbox/distann/src/contigorder.txt");
 		fw.write("co\n");
 		for( String spec : speccontigMap.keySet() ) {
@@ -7336,18 +7288,18 @@ public class GeneSet implements GenomeSet {
 			}
 			fw.write("\n");
 		}*/
-		
+
 		//Set<Sequence>	saved = new HashSet<Sequence>();
 		/*for( String cs : GeneSet.contigmap.keySet() ) {
 			Sequence c = GeneSet.contigmap.get( cs );
 			if( !saved.contains( c ) && (c.prev != null || c.next != null) ) {
 				Sequence prev = c.isReverse() ? c.next : c.prev;
-				
+
 				int i = 0;
 				while( prev != null ) {
 					c = prev;
 					prev = c.isReverse() ? c.next : c.prev;
-					
+
 					if( i > 50 ) {
 						System.err.println();
 					}
@@ -7355,7 +7307,7 @@ public class GeneSet implements GenomeSet {
 						break;
 					}
 				}
-				
+
 				i = 0;
 				saved.add( c );
 				fw.write( (c.isReverse() ? "\\" : "/") + c.name );
@@ -7365,19 +7317,19 @@ public class GeneSet implements GenomeSet {
 					saved.add( c );
 					fw.write( (c.isReverse() ? "\\" : "/") + c.name );
 					next = c.isReverse() ? c.prev : c.next;
-					
+
 					if( i > 50 ) {
 						System.err.println();
 					}
 					if( i++ > 100 ) break;
 				}
-				
+
 				fw.write("\n");
 			}
 		}*/
 		//fw.close();
 	}
-	
+
 	public void traverseTar( TarArchiveInputStream taris, TarArchiveEntry tae, Path p ) throws IOException {
 		Path newp = p.resolve(tae.getName());
 		if( tae.isDirectory() ) {
@@ -7394,7 +7346,7 @@ public class GeneSet implements GenomeSet {
 				//long size = tae.getSize();
 				//tae.get
 				//byte[] bb = new byte[(int)size];
-				
+
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				int total = 0;
 				int r = taris.read();
@@ -7751,7 +7703,7 @@ public class GeneSet implements GenomeSet {
 			}
 		});
 	}
-	
+
 	/*static class Connection {
 		Sequence	contig;
 		boolean	ori;
@@ -7762,7 +7714,7 @@ public class GeneSet implements GenomeSet {
 	//Map<Sequence, List<Tegeval>>		contigLocMap = new HashMap<Sequence, List<Tegeval>>();
 	//static final List<Tegeval> 	ltv = new ArrayList<Tegeval>();
 	//final List<Sequence> 			contigs = new ArrayList<Sequence>();
-	
+
 	/**
 	 * Deprecated
 	 * @param species
@@ -7787,11 +7739,11 @@ public class GeneSet implements GenomeSet {
 		}
 		return specContMap;
 	}
-	
+
 	public int getGlobalIndex( Annotation tv ) {
 		int count = 0;
 		List<Sequence>	ctlist = speccontigMap.get( tv.getContig().getSpec() );
-		
+
 		if( ctlist != null ) for( Sequence ct : ctlist ) {
 			if( ct != tv.getContig() ) {
 				count += ct.getAnnotationCount();
@@ -7800,7 +7752,7 @@ public class GeneSet implements GenomeSet {
 				break;
 			}
 		}
-		
+
 		return count;
 	}
 
@@ -7844,9 +7796,9 @@ public class GeneSet implements GenomeSet {
 			// loci2aasequence( all, dir2 );
 			// loci2gene( nrblastres, dir );
 			//clusterFromBlastResults(new File("/home/horfrae/workspace/distann/src"), new String[] { "all.blastout" }, "/home/horfrae/union_cluster.txt", "/home/horfrae/simblastcluster.txt", true);
-			
+
 			clusterFromBlastResults(new File("/home/sigmar/").toPath(), new String[] { "thermus_join.blastout" }, "/home/sigmar/thermus_cluster.txt", "/home/sigmar/simblastcluster.txt", true);
-			
+
 			// clusterFromBlastResults( new File("/home/sigmar/thermus/"), new
 			// String[] {"all.blastout"}, "/home/sigmar/intersect_cluster.txt",
 			// "/home/sigmar/simblastcluster.txt", false);
@@ -7882,9 +7834,9 @@ public class GeneSet implements GenomeSet {
 			 * File("/home/sigmar/nc.aa"), 4 ); aahist( new
 			 * File("/home/sigmar/thermus/out/all.fsa"), new
 			 * File("/home/sigmar/nc.aa"), 5 );
-			 * 
+			 *
 			 * System.err.println();
-			 * 
+			 *
 			 * aahist( new File("/home/sigmar/thermus/out/aa2.fsa"), new
 			 * File("/home/sigmar/tp.aa"), 1 ); aahist( new
 			 * File("/home/sigmar/thermus/out/aa2.fsa"), new
@@ -7895,7 +7847,7 @@ public class GeneSet implements GenomeSet {
 			 * File("/home/sigmar/tp.aa"), 4 ); aahist( new
 			 * File("/home/sigmar/thermus/out/aa2.fsa"), new
 			 * File("/home/sigmar/tp.aa"), 5 );
-			 * 
+			 *
 			 * System.err.println(); //aahist( new
 			 * File("/home/sigmar/thermus/out/aa2.fsa"), new
 			 * File("/home/sigmar/nc.aa"), 6 ); aahist( new
@@ -7920,6 +7872,6 @@ public class GeneSet implements GenomeSet {
 			e.printStackTrace();
 		}
 	}
-	
+
 	boolean bleh = false;
 }

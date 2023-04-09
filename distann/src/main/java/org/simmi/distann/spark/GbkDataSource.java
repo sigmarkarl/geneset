@@ -16,14 +16,13 @@ import scala.collection.immutable.Seq;
 import java.util.Map;
 
 public class GbkDataSource implements RelationProvider, SchemaRelationProvider, FileDataSourceV2 {
-    @Override
-    public Class<? extends FileFormat> fallbackFileFormat() {
-        return null;
+
+    public GbkDataSource() {
     }
 
     @Override
-    public void eq(String s) {
-        FileDataSourceV2.super
+    public Class<? extends FileFormat> fallbackFileFormat() {
+        return null;
     }
 
     @Override

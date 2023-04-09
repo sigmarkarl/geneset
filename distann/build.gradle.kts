@@ -79,6 +79,7 @@ dependencies {
 
     implementation("org.java-websocket:Java-WebSocket:1.5.2")
 
+    implementation("org.json:json:20230227")
     implementation(group = "org.apache.poi", name = "poi", version = "5.2.3")
     implementation(group = "org.apache.poi", name = "poi-ooxml", version = "5.2.3")
     implementation(group = "commons-codec", name = "commons-codec", version = "1.13")

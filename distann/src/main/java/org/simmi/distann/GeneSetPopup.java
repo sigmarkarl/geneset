@@ -9,10 +9,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import org.simmi.Node;
+import org.simmi.NodeSet;
 import org.simmi.javafasta.DataTable;
 import org.simmi.javafasta.shared.*;
 import org.simmi.javafasta.unsigned.JavaFasta;
-import org.simmi.treedraw.shared.TreeUtil;
+import org.simmi.shared.TreeUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -530,8 +532,8 @@ public class GeneSetPopup extends ContextMenu {
         popup.getItems().add( new SeparatorMenuItem() );
         MenuItem genegainloss = new MenuItem("Gene gain/loss");
         genegainloss.setOnAction( e -> {
-            Map<TreeUtil.Node,List<GeneGroup>>	nodeGainMap = new HashMap<>();
-            Map<TreeUtil.Node,List<GeneGroup>>	nodeLossMap = new HashMap<>();
+            Map<Node,List<GeneGroup>>	nodeGainMap = new HashMap<>();
+            Map<Node,List<GeneGroup>>	nodeLossMap = new HashMap<>();
 
 			/*String treestr = "";
 			JFileChooser fc = new JFileChooser();
@@ -548,8 +550,8 @@ public class GeneSetPopup extends ContextMenu {
             Serifier serifier = geneSetHead.getConcatenatedSequences( false, true );
             String 		tree = serifier.getFastTree( serifier.lseq, geneSetHead.geneset.user, false );
 
-            org.simmi.treedraw.shared.TreeUtil tu = new org.simmi.treedraw.shared.TreeUtil();
-            TreeUtil.Node n = tu.parseTreeRecursive( tree, false );
+            TreeUtil tu = new TreeUtil();
+            Node n = tu.parseTreeRecursive( tree, false );
 
             TableModel model = new TableModel() {
                 @Override
@@ -607,7 +609,7 @@ public class GeneSetPopup extends ContextMenu {
             }
 
             //String[] sobj = {"mt.ruber", "mt.silvanus", "o.profundus", "m.hydrothermalis"};
-            TreeUtil.Node newnode = tu.getParent( n, new HashSet<>( rootgroup ) );
+            Node newnode = tu.getParent( n, new HashSet<>( rootgroup ) );
             tu.rerootRecur( n, newnode );
 
             File f = new File("/home/sigmar/gain_list.txt");
@@ -665,8 +667,8 @@ public class GeneSetPopup extends ContextMenu {
                 }
             }
 
-            org.simmi.treedraw.shared.TreeUtil treeutil = new org.simmi.treedraw.shared.TreeUtil();
-            Map<Set<String>, TreeUtil.NodeSet> nmap = new HashMap<>();
+            TreeUtil treeutil = new TreeUtil();
+            Map<Set<String>, NodeSet> nmap = new HashMap<>();
             for( GeneGroup ggroup : genegroups ) {
                 //List<Sequence>	seqlist = new ArrayList<Sequence>();
 
@@ -680,18 +682,18 @@ public class GeneSetPopup extends ContextMenu {
                 }
 
                 String tree = serifier.getFastTree( serifier.lseq, GeneSet.user, false );
-                TreeUtil.Node n = treeutil.parseTreeRecursive( tree, false );
+                Node n = treeutil.parseTreeRecursive( tree, false );
                 treeutil.setLoc( 0 );
                 n.nodeCalcMap( nmap );
             }
 
-            TreeUtil.Node guidetree = null;
+            Node guidetree = null;
 
             /*********************************** Serifier serifier = getConcatenatedSequences();
              String tree = serifier.getFastTree();
              guidetree = treeutil.parseTreeRecursive( tree, false );*/
 
-            TreeUtil.Node root = DataTable.majoRuleConsensus(treeutil, nmap, guidetree, false);
+            Node root = DataTable.majoRuleConsensus(treeutil, nmap, guidetree, false);
             String tree = root.toString();
 
             if( geneSetHead.geneset.cs.getConnections().size() > 0 ) {

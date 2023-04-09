@@ -78,20 +78,12 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
+import org.simmi.Node;
 import org.simmi.ann.ANIResult;
 import org.simmi.ann.ANIScore;
 import org.simmi.javafasta.shared.*;
-import org.simmi.treedraw.shared.TreeUtil;
 
 import flobb.ChatServer;
-/*import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SAMRecordIterator;
-import htsjdk.samtools.SAMSequenceDictionary;
-import htsjdk.samtools.SAMSequenceRecord;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.ValidationStringency;*/
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -104,11 +96,12 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.simmi.shared.TreeUtil;
 
 public class JavaFasta extends JPanel {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -127,24 +120,24 @@ public class JavaFasta extends JPanel {
 	JPanel	parentApplet = JavaFasta.this;
 	Container	currentCnt;
 	Serifier	serifier = null;
-	
+
 	//ClipboardService clipboardService;
 	boolean grabFocus;
-	
+
 	JSplitPane	mainsplit;
 	JSplitPane	splitpane;
 	JSplitPane	overviewsplit;
-	
+
 	boolean		collapseView = false;
 	boolean		edited = false;
-	
+
 	Path		currentPath = null;
 	public static String		user;
-	
+
 	public void setCurrentPath( Path cp ) {
 		currentPath = cp;
 	}
-	
+
 	public Path getCurrentPath() {
 		return currentPath;
 	}
@@ -152,7 +145,7 @@ public class JavaFasta extends JPanel {
 	public static Map<String,Integer> getBlosumMap() {
 		return getBlosumMap( true );
 	}
-	
+
 	public static Map<String,Integer> getBlosumMap( boolean includeDash ) {
 		Map<String,Integer> blosumap = new ConcurrentHashMap<>();
 		InputStream is = JavaFasta.class.getResourceAsStream("/BLOSUM62");
@@ -194,10 +187,10 @@ public class JavaFasta extends JPanel {
 		//JTextArea textarea = (JTextArea) source;
 		//String s = textarea.getText();
 		boolean fasta = true;
-		
+
 		ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 		OutputStreamWriter osw = new OutputStreamWriter( baos );
-		
+
 		List<Sequence> selseqs = new ArrayList<>();
 		int[] rr = table.getSelectedRows();
 		for( int r : rr ) {
@@ -209,7 +202,7 @@ public class JavaFasta extends JPanel {
 			for( Sequence seq : selseqs ) {
 				int val = 0;
 		   		int end = seq.length();
-		   		 
+
 		   		if( val <= end ) osw.write( seq.getName() + "\t" + seq.getSequence() + "\n" );
 		   		/*while( val < end ) {
 		   			 osw.write( seq.sb.substring(val, Math.min( end, val+70 )) + "\n" );
@@ -250,26 +243,26 @@ public class JavaFasta extends JPanel {
 			}
 		}
 	}
-	
+
 	public void setParentApplet( JPanel applet ) {
 		parentApplet = applet;
 	}
-		
+
 	public JavaFasta() {
 		this.serifier = new Serifier();
 	}
-	
+
 	public JavaFasta( Serifier serifier ) { this.serifier = serifier; }
-	
+
 	public List<Sequence> getEditedSequences() {
 		List<Sequence>	es = new ArrayList<>();
 		for( Sequence s : serifier.lseq ) {
 			if( s.isEdited() ) es.add( s );
 		}
-		
+
 		return es;
 	}
-	
+
 	public boolean isEdited() {
 		if( edited ) return true;
 		for( Sequence s : serifier.lseq ) {
@@ -277,49 +270,49 @@ public class JavaFasta extends JPanel {
 		}
 		return false;
 	}
-	
+
 	public Serifier getSerifier() {
 		return serifier;
 	}
-	
+
 	public void setSerifier( Serifier s ) {
 		this.serifier = s;
 	}
-	
+
 	/*public void checkMaxMin() {
 		serifier.checkMaxMin();
-		if( lmin < getMin() || lmax > getMax() ) {	
+		if( lmin < getMin() || lmax > getMax() ) {
 			table.tableChanged( new TableModelEvent(table.getModel()) );
 			c.repaint();
 		}
 	}*/
-	
+
 	ChatServer cs;
 	public JavaFasta( JPanel parentApplet, Serifier serifier, ChatServer cs ) {
 		this( serifier );
 		if( parentApplet != null ) this.parentApplet = parentApplet;
 		this.cs = cs;
 	}
-	
+
 	public JavaFasta( JPanel parentApplet, Serifier serifier ) {
 		this( parentApplet, serifier, null );
 	}
-	
+
 	public void selectAll() {
 		if( table != null ) table.selectAll();
 	}
-	
+
 	public void setStatus() {
 		int r = table.getSelectedRow();
 		if( r != -1 ) {
 			int tr = table.convertRowIndexToModel( r );
-			
+
 			if( tr >= 0 && tr < serifier.lseq.size() ) {
 				Sequence s = serifier.lseq.get(tr);
-				
+
 				int start = 0;
 				int stop = -1;
-				
+
 				int rs = s.getRealStart();
 				while( rs < c.selectedRect.x ) {
 					if( s.getCharAt( rs ) != '-' ) start++;
@@ -330,7 +323,7 @@ public class JavaFasta extends JPanel {
 					if( s.getCharAt( rs ) != '-' ) stop++;
 					rs++;
 				}
-				
+
 				if( stop >= start ) status.setText( start + "-" + stop );
 			}
 		}
@@ -339,15 +332,15 @@ public class JavaFasta extends JPanel {
 	public class Ruler extends JComponent {
 		int 	x;
 		double	cw;
-		
+
 		public Ruler( double lcw ) {
 			super();
-			
+
 			this.cw = lcw;
 			final JPopupMenu	popup = new JPopupMenu();
 			popup.add( new AbstractAction("Start here") {
 				@Override
-				public void actionPerformed(ActionEvent e) {	
+				public void actionPerformed(ActionEvent e) {
 					int xval = (int)(x/cw)+serifier.getMin();
 					int[] rr = table.getSelectedRows();
 					for( int r : rr ) {
@@ -355,8 +348,8 @@ public class JavaFasta extends JPanel {
 						Sequence s = serifier.lseq.get(i);
 						s.setStart( xval );
 					}
-					
-					serifier.checkMaxMin();		
+
+					serifier.checkMaxMin();
 					c.repaint();
 					overview.reval();
 					overview.repaint();
@@ -373,8 +366,8 @@ public class JavaFasta extends JPanel {
 						Sequence s = serifier.lseq.get(i);
 						s.setEnd( xval );
 					}
-					
-					serifier.checkMaxMin();		
+
+					serifier.checkMaxMin();
 					c.repaint();
 					overview.reval();
 					overview.repaint();
@@ -384,24 +377,24 @@ public class JavaFasta extends JPanel {
 			popup.addSeparator();
 			popup.add( new AbstractAction("Move here") {
 				@Override
-				public void actionPerformed(ActionEvent e) {					
+				public void actionPerformed(ActionEvent e) {
 					int xval = (int)(x/cw);
 					int[] rr = table.getSelectedRows();
-					
+
 					int min = Integer.MAX_VALUE;
 					for( int r : rr ) {
 						int i = table.convertRowIndexToModel( r );
 						Sequence s = serifier.lseq.get(i);
 						if( s.getStart() < min ) min = s.getStart();
 					}
-					
+
 					for( int r : rr ) {
 						int i = table.convertRowIndexToModel( r );
 						Sequence s = serifier.lseq.get(i);
 						s.setStart( xval+(s.getStart()-min) );
 					}
-					
-					serifier.checkMaxMin();		
+
+					serifier.checkMaxMin();
 					c.repaint();
 					overview.reval();
 					overview.repaint();
@@ -410,24 +403,24 @@ public class JavaFasta extends JPanel {
 			});
 			popup.add( new AbstractAction("Move end here") {
 				@Override
-				public void actionPerformed(ActionEvent e) {					
+				public void actionPerformed(ActionEvent e) {
 					int xval = (int)(x/cw);
 					int[] rr = table.getSelectedRows();
-					
+
 					int max = 0;
 					for( int r : rr ) {
 						int i = table.convertRowIndexToModel( r );
 						Sequence s = serifier.lseq.get(i);
 						if( s.getEnd() > max ) max = s.getEnd();
 					}
-					
+
 					for( int r : rr ) {
 						int i = table.convertRowIndexToModel( r );
 						Sequence s = serifier.lseq.get(i);
 						s.setEnd( xval-(max-s.getEnd()) );
 					}
-					
-					serifier.checkMaxMin();		
+
+					serifier.checkMaxMin();
 					c.repaint();
 					overview.reval();
 					overview.repaint();
@@ -441,14 +434,14 @@ public class JavaFasta extends JPanel {
 					for( Sequence s : serifier.lseq ) {
 						int begin = c.selectedRect.x-s.getStart();
 						int stop = begin+c.selectedRect.width;
-						
+
 						int start = Math.max(begin, 0);
 						int end = Math.min(stop, s.length());
 						if( end > start ) {
 							s.getStringBuilder().delete( start, end );
 						}
 						s.setStart( s.getStart()-Math.max( 0, Math.min( c.selectedRect.width, -begin ) ) );
-						
+
 					}
 					//max -= c.selectedRect.width;
 					c.repaint();
@@ -457,27 +450,27 @@ public class JavaFasta extends JPanel {
 			popup.add( new AbstractAction("Sort") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					//DefaultRowSorter<TableModel, String>	erm = 
+					//DefaultRowSorter<TableModel, String>	erm =
 					RowSorter<? extends TableModel>		rs = table.getRowSorter();
 					TableRowSorter<TableModel>	trs = (TableRowSorter<TableModel>)rs;
-					
+
 					//DefaultRowSorter<>	erm = (DefaultRowSorter<>)rs;
 					//List<SortKey>	lsortkey = new ArrayList<SortKey>();
 					//lsortkey.add( new SortKey() );
 					//rs.setSortKeys(keys);
 				}
 			});
-			
+
 			this.setComponentPopupMenu( popup );
-			
+
 			this.addMouseListener( new MouseListener() {
 				@Override
 				public void mouseReleased(MouseEvent e) {}
-				
+
 				@Override
 				public void mousePressed(MouseEvent e) {
 					p = e.getPoint();
-					
+
 					if( e.isShiftDown() ) {
 						//c.selectedRect.x = (int)(p.x/c.cw);
 						//c.selectedRect.y = 0;
@@ -493,13 +486,13 @@ public class JavaFasta extends JPanel {
 						c.repaint();
 					}
 				}
-				
+
 				@Override
 				public void mouseExited(MouseEvent e) {}
-				
+
 				@Override
 				public void mouseEntered(MouseEvent e) {}
-				
+
 				@Override
 				public void mouseClicked(MouseEvent e) {}
 			});
@@ -508,33 +501,33 @@ public class JavaFasta extends JPanel {
 				public void mouseMoved(MouseEvent e) {
 					x = e.getX();
 				}
-				
+
 				@Override
 				public void mouseDragged(MouseEvent e) {
 					Point np = e.getPoint();
-					
+
 					if( e.isShiftDown() ) {
 						c.selectedRect.x = (int)(p.x/c.cw);
 						c.selectedRect.y = 0;
 						c.selectedRect.width = (int)((np.x-p.x)/c.cw)+1;
 						c.selectedRect.height = serifier.lseq.size();
-						
+
 						setStatus();
 						c.repaint();
 					}
 				}
 			});
 		}
-		
+
 		public void paintComponent( Graphics g ) {
 			super.paintComponent( g );
-			
+
 			Graphics2D g2 = (Graphics2D)g;
 			g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-			
+
 			int h = this.getHeight();
 			Rectangle r = g2.getClipBounds();
-			
+
 			int smin = serifier != null ? serifier.getMin() : 0;
 			//double l = Math.log10( cw );
 			//int dval = Math.min( 10, )
@@ -551,21 +544,21 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		}
-		
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
 	};
-	
+
 	public class Overview extends JComponent {
 		BufferedImage	bi;
-		
+
 		public Overview() {
 			super();
 		}
-		
-		public void reval() {			
+
+		public void reval() {
 			Graphics bg = bi.getGraphics();
 			bg.setColor( Color.white );
 			bg.fillRect(0, 0, bi.getWidth(), bi.getHeight());
@@ -580,19 +573,19 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		}
-		
+
 		public void paintComponent( Graphics g ) {
 			super.paintComponent( g );
-			
+
 			if( bi == null || bi.getWidth() != this.getWidth() || bi.getHeight() != this.getHeight() ) {
 				bi = new BufferedImage( this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB );
 				reval();
 			}
-			
+
 			g.drawImage(bi, 0, 0, this);
 		}
 	};
-	
+
 	Set<Integer> filterset = new HashSet<Integer>();
 	final RowFilter rowfilter = new RowFilter() {
 		@Override
@@ -600,7 +593,7 @@ public class JavaFasta extends JPanel {
 			return filterset.isEmpty() || filterset.contains(entry.getIdentifier());
 		}
 	};
-	
+
 	public class FastaView extends JComponent implements KeyListener {
 		Ruler			ruler;
 		JTable			table;
@@ -612,19 +605,19 @@ public class JavaFasta extends JPanel {
 		Map<Character,Color>	ccol = new HashMap<Character,Color>();
 		Rectangle		selectedRect = new Rectangle();
 		Color			selectColor = new Color( 150,150,200,200 );
-		
+
 		public FastaView( int rh, Ruler ruler, JTable table ) {
 			this.rh = rh;
 			this.ruler = ruler;
 			this.table = table;
-			
+
 			this.addKeyListener( this );
-			
+
 			cw = ruler.cw;
 			ch = rh;
-			
+
 			this.setToolTipText(" ");
-			
+
 			ccol.put('A', Color.red);
 			ccol.put('a', Color.red);
 			ccol.put('G', Color.green);
@@ -636,24 +629,24 @@ public class JavaFasta extends JPanel {
 			ccol.put('C', Color.yellow);
 			ccol.put('c', Color.yellow);
 		}
-		
+
 		Annotation searchann = new Annotation( null, "search", null, serifier != null ? serifier.mann : null );
 		public String getToolTipText( MouseEvent e ) {
 			Point p = e.getPoint();
-			
+
 			int w = (int)(p.x/cw);
 			int h = p.y/rh;
-			
+
 			if( h >= 0 && h < table.getRowCount() ) {
 				int i = table.convertRowIndexToModel( h );
 				Sequence seq = serifier.lseq.get( i );
-				
-				if( seq.getAnnotations() != null && w+serifier.getMin() >= seq.getStart() && w+serifier.getMin() <= seq.getEnd() ) { 
+
+				if( seq.getAnnotations() != null && w+serifier.getMin() >= seq.getStart() && w+serifier.getMin() <= seq.getEnd() ) {
 					searchann.start = (w+serifier.getMin()) - seq.getStart();
 					int ai = Collections.binarySearch( seq.getAnnotations(), searchann );
-					
+
 					int ip = Math.abs(ai)-1;
-					
+
 					if( ip > 0 && ip <= seq.getAnnotations().size() ) {
 						Annotation a = seq.getAnnotations().get( ip-1 );
 						if( a.getCoordEnd() > w+serifier.getMin() ) {
@@ -669,26 +662,26 @@ public class JavaFasta extends JPanel {
 					}
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		int prevx = -1;
 		public void paintComponent( Graphics g ) {
 			super.paintComponent( g );
-			
+
 			Graphics2D g2 = (Graphics2D)g;
 			g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-			
+
 			if( serifier != null ) {
 				Rectangle r = g2.getClipBounds();
-				
+
 				int i = 0;
 				Rectangle vr = this.getVisibleRect();
-				
+
 				if( collapseView && prevx != vr.x ) {
 					filterset.clear();
-					
+
 					/*Sequence prev = null;
 					Sequence next = null;
 					for( Sequence s : serifier.lgseq ) {
@@ -702,27 +695,27 @@ public class JavaFasta extends JPanel {
 							}
 						}
 					}*/
-					
+
 					for( Sequence s : serifier.lseq ) {
 						if( (s.getStart()-serifier.getMin())*cw < vr.x+vr.width && (s.getEnd()-serifier.getMin())*cw > vr.x ) {
 							filterset.add( i );
 						}
 						i++;
 					}
-					
-					
-					
+
+
+
 					DefaultRowSorter<TableModel, Integer> rs = (DefaultRowSorter<TableModel,Integer>)table.getRowSorter();
 					rs.setRowFilter( null );
 					rs.setRowFilter( rowfilter );
 					updateCoords();
-					
+
 					prevx = vr.x;
 				}
-				
+
 				int filtersize = filterset.size();
 				if( filtersize == 0 ) filtersize = serifier.lseq.size();
-				
+
 				int xmin = (int)(r.x/cw);
 				int xmax = Math.min( (int)((r.x+r.width)/cw)+1, serifier.getDiff() );
 				for( int y = r.y/rh; y < Math.min( (r.y+r.height)/rh+1, filtersize ); y++ ) {
@@ -744,13 +737,13 @@ public class JavaFasta extends JPanel {
 								//if( a.start > )
 							}
 						}
-						
+
 						if( cw > 5.0 ) {
 							g.setColor( Color.black );
 							if( basecolors ) {
 								for( int x = Math.max(seq.getStart()-serifier.getMin(), xmin); x < Math.min(seq.getEnd()-serifier.getMin(), xmax); x++ ) {
 									char ct = seq.getCharAt(x+serifier.getMin());
-									
+
 									Color col = ccol.get(ct);
 									int startx = (int)(x*cw);
 									int starty = (int)(y*rh);
@@ -763,7 +756,7 @@ public class JavaFasta extends JPanel {
 							} else if( aacolors ) {
 								for( int x = Math.max(seq.getStart()-serifier.getMin(), xmin); x < Math.min(seq.getEnd()-serifier.getMin(), xmax); x++ ) {
 									char ct = seq.getCharAt(x+serifier.getMin());
-									
+
 									Color col = Sequence.aacolor.get(ct);
 									int startx = (int)(x*cw);
 									int starty = (int)(y*rh);
@@ -790,27 +783,27 @@ public class JavaFasta extends JPanel {
 					}
 				}
 			}
-			
+
 			g.setColor( selectColor );
 			g.fillRect( (int)(selectedRect.x*cw), selectedRect.y*rh, (int)(selectedRect.width*cw), selectedRect.height*rh );
 		}
-		
+
 		public void updateCoords() {
 			int w = (int)(serifier.getDiff()*cw);
 			int h = (filterset.isEmpty() ? serifier.lseq.size() : filterset.size())*rh;
-			
+
 			this.setPreferredSize( new Dimension(w,h) );
 			this.setSize(w, h);
-			
+
 			ruler.setPreferredSize( new Dimension(w, 20) );
 			ruler.setSize(w, 20);
 		}
-		
+
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 1L;
-		
+
 		@Override
 		public void keyTyped(KeyEvent e) {}
 
@@ -882,11 +875,11 @@ public class JavaFasta extends JPanel {
 						}
 						s.getAnnotations().removeAll( remset );
 					}
-					
+
 					for( Sequence s : seq ) {
 						start = Math.max(0, this.selectedRect.x-s.getStart() );
 						end = Math.min( s.getSequence().length(), this.selectedRect.x+this.selectedRect.width-s.getStart() );
-						
+
 						if( end > start ) {
 							s.getSequence().delete(start, end);
 							s.edited = true;
@@ -931,7 +924,7 @@ public class JavaFasta extends JPanel {
 						}
 						o++;
 					}
-					
+
 					for( Sequence s : seq ) {
 						int i = this.selectedRect.x+serifier.min-s.getStart();
 						if( i >= 0 && i < s.getSequence().length() ) {
@@ -960,7 +953,7 @@ public class JavaFasta extends JPanel {
 					table.tableChanged( new TableModelEvent(table.getModel()) );
 				}
 			}
-		
+
 			if( keycode == KeyEvent.VK_PLUS || keychar == '+' ) {
 				cw *= 1.25;
 				ch *= 1.25;
@@ -969,7 +962,7 @@ public class JavaFasta extends JPanel {
 				this.setFont( this.getFont().deriveFont((float)ch*0.6f) );
 				table.setFont( table.getFont().deriveFont((float)ch*0.6f) );
 				ruler.setFont( ruler.getFont().deriveFont((float)ch*0.6f) );
-				
+
 				FastaView.this.ruler.cw = cw;
 				updateCoords();
 			} else if( keycode == KeyEvent.VK_MINUS || keychar == '-' ) {
@@ -980,7 +973,7 @@ public class JavaFasta extends JPanel {
 				this.setFont( this.getFont().deriveFont((float)ch*0.6f) );
 				table.setFont( table.getFont().deriveFont((float)ch*0.6f) );
 				ruler.setFont( ruler.getFont().deriveFont((float)ch*0.6f) );
-				
+
 				FastaView.this.ruler.cw = cw;
 				updateCoords();
 			}
@@ -989,7 +982,7 @@ public class JavaFasta extends JPanel {
 		@Override
 		public void keyReleased(KeyEvent e) {}
 	};
-	
+
 	public void importBlastReader( BufferedReader br ) throws IOException {
 		String line = br.readLine();
 		Sequence s = null;
@@ -1000,7 +993,7 @@ public class JavaFasta extends JPanel {
 				/*for( int i = 0; i < serifier.max; i++ ) {
 					s.sb.append('-');
 				}*/
-				
+
 				serifier.lseq.add( s );
 				serifier.mseq.put( s.getName(), s );
 				s.setStart(0);
@@ -1008,25 +1001,25 @@ public class JavaFasta extends JPanel {
 				int first = line.indexOf(' ');
 				while( line.charAt(++first) == ' ' );
 				while( line.charAt(++first) != ' ' );
-				
+
 				int last = line.lastIndexOf(' ');
 				String qseq = line.substring(first, last).trim();
 				String[] qsplit = line.split("[ ]+");
 				line = br.readLine();
 				line = br.readLine();
-				
+
 				first = line.indexOf(' ');
 				while( line.charAt(++first) == ' ' );
 				while( line.charAt(++first) != ' ' );
 				last = line.lastIndexOf(' ');
 				String sseq = line.substring(first, last).trim();
 				String[] ssplit = line.split("[ ]+");
-				
+
 				int qstart = Integer.parseInt(qsplit[1]);
 				int qstop = Integer.parseInt( qsplit[ qsplit.length-1 ] );
 				int sstart = Integer.parseInt(ssplit[1]);
 				int sstop = Integer.parseInt( ssplit[ ssplit.length-1 ] );
-				
+
 				if( qseq.length() != sseq.length() ) {
 					System.err.println();
 				}
@@ -1061,7 +1054,7 @@ public class JavaFasta extends JPanel {
 			line = br.readLine();
 		}
 	}
-	
+
 	public void importAceReader( BufferedReader br ) throws IOException {
 		String line = br.readLine();
 		String consensus = null;
@@ -1069,27 +1062,27 @@ public class JavaFasta extends JPanel {
 		int lastStart = -1;
 		int lastEnd = 0;
 		Sequence s = null;
-		
+
 		List<Sequence> ctgs = new ArrayList<Sequence>();
 		//int k = 0;
 		while( line != null ) {
 			if( line.startsWith("CO")) {
 				//if( k > 1 ) break;
 				consensus = line.split("[ ]+")[1];
-				
+
 				lastStart = lastEnd;
 				cseq = new Sequence( consensus, null );
 				cseq.setId( consensus );
 				cseq.setStart( lastStart );
-				
+
 				//serifier.lseq.add( cseq );
 				ctgs.add( cseq );
 				serifier.mseq.put( cseq.getName(), cseq );
 				serifier.lgseq.add( cseq );
-				
+
 				Annotation ann = new Annotation( cseq, cseq.getName(), null, 0, cseq.length(), cseq.getRevComp(), serifier.mann );
 				serifier.addAnnotation(ann);
-				
+
 				//k++;
 			} else if( line.startsWith("BQ") ) {
 				lastEnd = cseq.getEnd();
@@ -1124,21 +1117,21 @@ public class JavaFasta extends JPanel {
 			} else if( cseq != null ) {
 				cseq.append( line );
 			}
-			
+
 			line = br.readLine();
 		}
 		br.close();
-		
+
 		for( Sequence seq : ctgs ) {
 			serifier.lseq.add( 0, seq );
 		}
 	}
-	
+
 	public void importPsiReader( List<String> lines ) throws IOException {
 		Map<String,Sequence>	seqm = new HashMap<String,Sequence>();
 		for( String line : lines ) {
 			String[] split = line.split("[ ]+");
-			
+
 			if( split.length > 1 ) {
 				Sequence seq;
 				String name = split[0];
@@ -1152,18 +1145,18 @@ public class JavaFasta extends JPanel {
 				seq.append( split[1] );
 			}
 		}
-		
+
 		c.updateCoords();
 	}
-	
+
 	public void importGbkReader( String name, BufferedReader br ) throws IOException {
 		Map<String,List<Sequence>> seqlist = serifier.readGBK( name, br );
-		
+
 		if( seqlist != null && seqlist.size() > 0 ) {
 			Sequence seq = seqlist.values().iterator().next().get(0);
 			serifier.lgseq.add( seq );
 			seq.setId( "paste" );
-			
+
 			for( List<Sequence> ss : seqlist.values() ) {
 				for( Sequence s : ss ) {
 					//s.consensus = seq;
@@ -1182,27 +1175,27 @@ public class JavaFasta extends JPanel {
 			}
 		}
 	}
-	
+
 	public void importReader( BufferedReader br ) throws IOException {
 		importReader( null, br );
 	}
-	
+
 	public void importReader( String fname, BufferedReader br ) throws IOException {
 		List<Sequence> seqlist = serifier.readSequences( br );
 		br.close();
-		
+
 		if( seqlist != null && seqlist.size() > 0 ) {
 			Sequence seq = seqlist.get(0);
 			serifier.lgseq.add( seq );
 			seq.setId( "paste" );
-			
+
 			for( Sequence s : seqlist ) {
 				if( fname != null ) s.setName( fname+"-"+s.getName() );
 				//s.consensus = seq;
 				s.setId( "paste" );
 				serifier.lseq.add( s );
 				serifier.mseq.put( s.getName(), s );
-				
+
 				if( s != null ) {
 					if( s.getEnd() > serifier.getMax() ) serifier.setMax( s.getEnd() );
 				}
@@ -1210,11 +1203,11 @@ public class JavaFasta extends JPanel {
 					if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
 				}*/
 			}
-			
+
 			serifier.gseq.put( "paste", seqlist );
 		}
 	}
-	
+
 	public void importFile( String name, InputStream is ) throws IOException {
 		if( name.endsWith(".ab1") || name.endsWith(".abi") ) addAbiSequence( name, is );
 		else if( name.endsWith(".blastout") ) {
@@ -1228,7 +1221,7 @@ public class JavaFasta extends JPanel {
 			importReader( br );
     	}
 	}
-	
+
 	String pos = "";
 	public void importFile( String name, Path path ) throws IOException {
 		if( name.endsWith(".gor") ) {
@@ -1267,14 +1260,14 @@ public class JavaFasta extends JPanel {
 			/*SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
 			SamReaderFactory srf = SamReaderFactory.makeDefault();
 			final SamReader reader = srf.open( path.toFile() );
-			
+
 			boolean bb = JOptionPane.showConfirmDialog( currentCnt, "Include header?", "Read header", JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION;
-			
+
 			SAMFileHeader sh = reader.getFileHeader();
 			SAMSequenceDictionary ssd = sh.getSequenceDictionary();
 			for( SAMSequenceRecord samseq : ssd.getSequences() ) {
 				//String ass = samseq.getAssembly();
-				
+
 				String chr = samseq.getSequenceName();
 				System.err.println( "cc " + chr );
 				final SAMRecordIterator iterator = reader.queryAlignmentStart(chr, 1);
@@ -1298,7 +1291,7 @@ public class JavaFasta extends JPanel {
 				} finally {
 					try { iterator.close(); } catch( Exception e ) {};
 				}
-				
+
 				if( bb ) {
 					Sequence seq = new Sequence( samseq.getSequenceName(), serifier.mseq );
 					seq.setLength( samseq.getSequenceLength() );
@@ -1310,16 +1303,16 @@ public class JavaFasta extends JPanel {
 			}*/
 		} else importFile( name, Files.newInputStream(path) );
 	}
-	
+
 	public Map<String,String> openRenameFile() throws IOException {
 		Map<String,String>	or = new HashMap<String,String>();
-		/*FileOpenService fos; 
-	    try { 
-	        fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService"); 
+		/*FileOpenService fos;
+	    try {
+	        fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService");
 	    } catch (UnavailableServiceException e) {
-	        fos = null; 
+	        fos = null;
 	    }*/
-	    
+
 	    /*if (fos != null) {
 	        FileContents[] fcs = fos.openMultiFileDialog(null, null);
             for( FileContents fc : fcs ) {
@@ -1333,18 +1326,18 @@ public class JavaFasta extends JPanel {
 		    		or.putAll( importRenameFile( new FileInputStream(f) ) );
 		    	}
 	    //}
-	    
+
 	    return or;
 	}
-	
+
 	public void openFiles() throws IOException {
-		/*FileOpenService fos; 
-	    try { 
-	        fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService"); 
+		/*FileOpenService fos;
+	    try {
+	        fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService");
 	    } catch (UnavailableServiceException e) {
-	        fos = null; 
+	        fos = null;
 	    }*/
-	    
+
 	    /*if (fos != null) {
 	        FileContents[] fcs = fos.openMultiFileDialog(null, null);
             for( FileContents fc : fcs ) {
@@ -1357,14 +1350,14 @@ public class JavaFasta extends JPanel {
 		    		File f = jfc.getSelectedFile();
 		    		importFile( f.getName(), f.toPath() );
 		    	}
-	    //}   
+	    //}
 	    serifier.checkMaxMin();
 	    updateView();
 	}
-	
+
 	public Map<String,String> importRenameFile( InputStream is ) throws IOException {
 		Map<String,String> or = new HashMap<>();
-	
+
 		BufferedReader br = new BufferedReader( new InputStreamReader(is) );
 		String line = br.readLine();
 		while( line != null ) {
@@ -1375,26 +1368,26 @@ public class JavaFasta extends JPanel {
 			line = br.readLine();
 		}
 		br.close();
-		
+
 		return or;
 	}
-	
+
 	public void exportPhylip() throws IOException {
 		 //FileSaveService fss = null;
          //FileContents fileContents = null;
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          OutputStreamWriter	osw = new OutputStreamWriter( baos );
-    	 
+
 	    	 osw.write( Sequence.getPhylip( serifier.lseq, false ) );
 	    	 osw.close();
 	    	 baos.close();
-	
+
 	    	 /*try {
 	    		 fss = (FileSaveService)ServiceManager.lookup("javax.jnlp.FileSaveService");
 	    	 } catch( UnavailableServiceException e ) {
 	    		 fss = null;
 	    	 }*/
-    	 
+
          /*if (fss != null) {
         	 	ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
              fileContents = fss.saveFileDialog(null, null, bais, "export.phy");
@@ -1409,26 +1402,26 @@ public class JavaFasta extends JPanel {
         		 FileOutputStream fos = new FileOutputStream( f );
         		 fos.write( baos.toByteArray() );
         		 fos.close();
-        		 
+
         		 Desktop.getDesktop().browse( f.toURI() );
         	 }
          //}
 	}
-	
+
 	public void exportFasta() throws IOException {
 		exportFasta( table, serifier.lseq );
 	}
-	
+
 	/*public Rectangle getSelectedRect() {
 		return c != null ? c.selectedRect : null;
 	}*/
-	
+
 	public void exportFasta( JTable table, List<Sequence> lseq ) throws IOException {
 		 //FileSaveService fss = null;
          //FileContents fileContents = null;
          //ByteArrayOutputStream baos = new ByteArrayOutputStream();
          //OutputStreamWriter	osw = new OutputStreamWriter( baos );
-    	 
+
          List<Sequence> seqlist = new ArrayList<>();
 	    	 int[] rr = table.getSelectedRows();
 	    	 for( int r : rr ) {
@@ -1439,13 +1432,13 @@ public class JavaFasta extends JPanel {
 	    	 //serifier.writeFasta( seqlist, osw, getSelectedRect() );
 	    	 //osw.close();
 	    	 //baos.close();
-	    	 
+
 	    	 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	    	 OutputStreamWriter	osw = new OutputStreamWriter( baos );
 	    	 serifier.writeFasta( seqlist, osw, getSelectedRect() );
 	    	 osw.close();
 	    	 baos.close();
-	    	 
+
 	    	 String str = baos.toString();
 	    	 //netscape.javascript.JSObject obj = netscape.javascript.JSObject.getWindow( parentApplet );
 	    	 //obj.call("blobstuff", new Object[] {str, "text/plain"});
@@ -1455,13 +1448,13 @@ public class JavaFasta extends JPanel {
         		 File f = jfc.getSelectedFile();
         		 //FileOutputStream fos = new FileOutputStream( f );
         		 //fos.write( baos.toByteArray() );
-        		 
+
         		 FileWriter fw = new FileWriter( f );
         		 serifier.writeFasta( seqlist, fw, getSelectedRect() );
         		 fw.close();
-        		 
+
         		 //fos.close();
-        		 
+
         		 Desktop.getDesktop().browse( f.toURI() );
         	 }
          //}
@@ -1470,7 +1463,7 @@ public class JavaFasta extends JPanel {
              try {
             	 OutputStream os = fileContents.getOutputStream( true );
             	 OutputStreamWriter	osw = new OutputStreamWriter( os );
-            	 
+
             	 int[] rr = table.getSelectedRows();
             	 for( int r : rr ) {
             		 int i = table.convertRowIndexToModel( r );
@@ -1487,7 +1480,7 @@ public class JavaFasta extends JPanel {
              }
          }*/
 	}
-	
+
 	public void exportManyFasta( JTable table, List<Sequence> lseq ) throws IOException {
 		 JFileChooser jfc = new JFileChooser();
        	 jfc.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
@@ -1495,40 +1488,40 @@ public class JavaFasta extends JPanel {
        	 if( jfc.showSaveDialog( parentApplet ) == JFileChooser.APPROVE_OPTION ) {
        		 dir = jfc.getSelectedFile();
        	 }
-       	 
+
        	 Map<String,FileWriter>	filemap = new HashMap<String,FileWriter>();
-   	 
+
 	   	 int[] rr = table.getSelectedRows();
 	   	 for( int r : rr ) {
 	   		 int i = table.convertRowIndexToModel( r );
 	   		 Sequence seq = lseq.get(i);
 	   		 int val = 0;
 	   		 int end = seq.length();
-	   		 
+
 	   		 if( c.selectedRect.width > 0 ) {
 	   			 val = Math.max( val, c.selectedRect.x-seq.getStart() );
 	   			 end = Math.min( end, c.selectedRect.x+c.selectedRect.width-seq.getStart() );
 	   		 }
-	   		 
+
 	   		 String name = seq.getName();
 	   		 int ui = name.indexOf('_');
 	   		 if( ui == -1 ) ui = name.length();
 	   		 String filename = name.substring(0,ui);
-	   		 
+
 	   		 FileWriter fw;
 	   		 if( filemap.containsKey(filename) ) fw = filemap.get( filename );
 	   		 else {
 	   			 fw = new FileWriter( new File( dir, filename ) );
 	   			 filemap.put( filename, fw );
 	   		 }
-	   		 
+
 	   		 if( val < end ) fw.write( ">" + seq.getName() + "\n" );
 	   		 while( val < end ) {
 	   			 fw.write( seq.getSequence().substring(val, Math.min( end, val+70 )) + "\n" );
 	   			 val += 70;
 	   		 }
 	   	 }
-	   	 
+
 	   	 for( String filename : filemap.keySet() ) {
 	   		 filemap.get(filename).close();
 	   	 }
@@ -1537,7 +1530,7 @@ public class JavaFasta extends JPanel {
             try {
            	 OutputStream os = fileContents.getOutputStream( true );
            	 OutputStreamWriter	osw = new OutputStreamWriter( os );
-           	 
+
            	 int[] rr = table.getSelectedRows();
            	 for( int r : rr ) {
            		 int i = table.convertRowIndexToModel( r );
@@ -1554,13 +1547,13 @@ public class JavaFasta extends JPanel {
             }
         }*/
 	}
-	
+
 	public void exportAnnotationFasta( JTable table, List<Annotation> tlann ) throws IOException {
 		//FileSaveService fss = null;
         //FileContents fileContents = null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStreamWriter	osw = new OutputStreamWriter( baos );
-   	 
+
 	   	int[] rr = table.getSelectedRows();
 	   	for( int r : rr ) {
 	   		int i = table.convertRowIndexToModel( r );
@@ -1574,13 +1567,13 @@ public class JavaFasta extends JPanel {
 	   	}
 	   	osw.close();
 	   	baos.close();
-	
+
 	   	/*try {
 	   		fss = (FileSaveService)ServiceManager.lookup("javax.jnlp.FileSaveService");
 	   	} catch( UnavailableServiceException e ) {
 	   		fss = null;
 	   	}*/
-	   	 
+
 	    /*if (fss != null) {
 	   	 		ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
 		        fileContents = fss.saveFileDialog(null, null, bais, "exportannotation.fasta");
@@ -1595,7 +1588,7 @@ public class JavaFasta extends JPanel {
 		   		 FileOutputStream fos = new FileOutputStream( f );
 		   		 fos.write( baos.toByteArray() );
 		   		 fos.close();
-		   		 
+
 		   		 Desktop.getDesktop().browse( f.toURI() );
 		   	 }
 	    //}
@@ -1604,7 +1597,7 @@ public class JavaFasta extends JPanel {
             try {
            	 OutputStream os = fileContents.getOutputStream( true );
            	 OutputStreamWriter	osw = new OutputStreamWriter( os );
-           	 
+
            	 int[] rr = table.getSelectedRows();
            	 for( int r : rr ) {
            		 int i = table.convertRowIndexToModel( r );
@@ -1621,7 +1614,7 @@ public class JavaFasta extends JPanel {
             }
         }*/
 	}
-	
+
 	//Map<String,Sequence>	mseq;
 	//ArrayList<Sequence>		lseq;
 	//ArrayList<Annotation>	lann;
@@ -1631,34 +1624,34 @@ public class JavaFasta extends JPanel {
 	Overview		overview;
 	//int				max = 0;
 	//int				min = 0;
-	
+
 	JTable			atable;
-	
+
 	public List<Sequence> getSequences() {
 		return serifier.lseq;
 	}
-	
+
 	public int getNumberOfSequences() {
 		return serifier.lseq.size();
 	}
-	
+
 	public byte[] getByteArray( int len ) {
 		return new byte[ len ];
 	}
-	
+
 	public void addAbiSequence( String name, InputStream is ) {
 		Ab1Reader abi = new Ab1Reader( is );
 		Sequence s = new Sequence( name, serifier.mseq );
 		s.append( abi.getSequence() );
 		serifier.lseq.add( s );
-		
+
 		if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
 	}
-	
+
 	public void addAbiSequence( String name, Path path ) throws IOException {
 		addAbiSequence( name, Files.newInputStream(path) );
 	}
-	
+
 	public void addAbiSequence( String name, byte[] bts, int len ) {
 		//byte[] ba = bts.getBytes();
 		ByteBuffer bb = ByteBuffer.wrap( bts );
@@ -1667,13 +1660,13 @@ public class JavaFasta extends JPanel {
 			Sequence s = new Sequence( name, serifier.mseq );
 			s.append( abi.getSequence() );
 			serifier.lseq.add( s );
-			
+
 			if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
 		} catch( Exception e ) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void updateView() {
 		if( table != null ) {
 			/*SwingUtilities.invokeLater( new Runnable() {
@@ -1684,38 +1677,38 @@ public class JavaFasta extends JPanel {
 					mainsplit.setDividerLocation(0.7);
 				}
 			});*/
-			
+
 			c.updateCoords();
 			table.tableChanged( new TableModelEvent( table.getModel() ) );
 			atable.tableChanged( new TableModelEvent( atable.getModel() ) );
 		}
 	}
-	
+
 	public void delete() {
 		edited = true;
-		
+
 		Set<Sequence>	delset = new HashSet<>();
 		Set<Annotation>	adelset = new HashSet<>();
 		int[] rr = table.getSelectedRows();
 		for( int r : rr ) {
 			int i = table.convertRowIndexToModel(r);
 			Sequence seq = serifier.lseq.get(i);
-			
+
 			delset.add( seq );
 			if( seq.getAnnotations() != null ) adelset.addAll( seq.getAnnotations() );
 		}
 		serifier.lseq.removeAll( delset );
 		serifier.lann.removeAll( adelset );
-		
+
 		updateIndexes();
 		serifier.checkMaxMin();
 		updateView();
 	}
-	
+
 	public void init() {
 		initGui( this );
 	}
-	
+
 	public void cleargetCharAt( int x, Sequence s ) {
 		if( x < s.getStart() ) s.setStart( s.getStart()-1 );
 		else {
@@ -1725,13 +1718,13 @@ public class JavaFasta extends JPanel {
 			}
 		}
 	}
-	
+
 	public void cleargetCharAt( int x, int y ) {
 		int r = table.convertRowIndexToModel(y);
 		Sequence s = serifier.lseq.get(r);
 		cleargetCharAt( x, s );
 	}
-	
+
 	public void deletegetCharAt( int x, Sequence s ) {
 		if( x < s.getStart() ) s.setStart( s.getStart()-1 );
 		else {
@@ -1741,13 +1734,13 @@ public class JavaFasta extends JPanel {
 			}
 		}
 	}
-	
+
 	public void deletegetCharAt( int x, int y ) {
 		int r = table.convertRowIndexToModel(y);
 		Sequence s = serifier.lseq.get(r);
 		deletegetCharAt( x, s );
 	}
-	
+
 	public char getgetCharAt( int x, Sequence s ) {
 		char c = ' ';
 		if( x >= s.getStart() && x < s.getEnd() ) {
@@ -1756,13 +1749,13 @@ public class JavaFasta extends JPanel {
 		}
 		return c;
 	}
-	
+
 	public char getCharAt( int x, int y ) {
 		int r = table.convertRowIndexToModel(y);
 		Sequence s = serifier.lseq.get(r);
 		return getgetCharAt( x, s );
 	}
-	
+
 	public void clearConservedSites( Map<String,Collection<Sequence>> specmap ) {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
@@ -1773,7 +1766,7 @@ public class JavaFasta extends JPanel {
 				max = Math.max( max, seq.getEnd() );
 			}
 		}
-		
+
 		int i = 0;
 		while( i < max-min ) {
 			boolean rem = true;
@@ -1792,13 +1785,13 @@ public class JavaFasta extends JPanel {
 							rem = false;
 							break;
 						}
-					
+
 						c = c2;
 					//}
 				}
 				if( !rem ) break;
 			}
-			
+
 			if( rem ) {
 				for( String spec : specmap.keySet() ) {
 					Collection<Sequence> seqset = specmap.get( spec );
@@ -1810,17 +1803,17 @@ public class JavaFasta extends JPanel {
 			}
 			i++;
 		}
-		
+
 		for( String spec : specmap.keySet() ) {
 			Collection<Sequence> seqset = specmap.get( spec );
 			for( Sequence seq : seqset ) {
 				seq.checkLengths();
 			}
 		}
-		
+
 		c.repaint();
 	}
-	
+
 	public void clearSites( Collection<Sequence> seqset, boolean variant ) {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
@@ -1828,7 +1821,7 @@ public class JavaFasta extends JPanel {
 			min = Math.min( min, seq.getStart() );
 			max = Math.max( max, seq.getEnd() );
 		}
-		
+
 		int i = 0;
 		while( i < max-min ) {
 			boolean rem = true;
@@ -1845,7 +1838,7 @@ public class JavaFasta extends JPanel {
 						rem = false;
 						break;
 					}
-				
+
 					c = c2;
 				//}
 			}
@@ -1857,11 +1850,11 @@ public class JavaFasta extends JPanel {
 			}
 			i++;
 		}
-		
+
 		for( Sequence seq : seqset ) {
 			seq.checkLengths();
 		}
-		
+
 		c.repaint();
 	}
 
@@ -1891,7 +1884,7 @@ public class JavaFasta extends JPanel {
 
 		c.repaint();
 	}
-	
+
 	public void clearSitesWithGaps( Collection<Sequence> seqset ) {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
@@ -1899,7 +1892,7 @@ public class JavaFasta extends JPanel {
 			min = Math.min( min, seq.getStart() );
 			max = Math.max( max, seq.getEnd() );
 		}
-		
+
 		int i = 0;
 		while( i < max-min ) {
 			boolean rem = true;
@@ -1924,20 +1917,20 @@ public class JavaFasta extends JPanel {
 			}
 			i++;
 		}
-		
+
 		for( Sequence seq : seqset ) {
 			seq.checkLengths();
 		}
-		
+
 		if( c != null ) c.repaint();
 	}
-	
+
 	public void updateIndexes() {
 		for( int i = 0; i < serifier.lseq.size(); i++ ) {
 			serifier.lseq.get(i).index = i;
 		}
 	}
-	
+
 	public void clearSitesWithGapsNonSelected( Collection<Sequence> seqset, Collection<Sequence> nonselected ) {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
@@ -1945,7 +1938,7 @@ public class JavaFasta extends JPanel {
 			min = Math.min( min, seq.getStart() );
 			max = Math.max( max, seq.getEnd() );
 		}
-		
+
 		int i = 0;
 		while( i < max-min ) {
 			boolean rem = true;
@@ -1971,23 +1964,23 @@ public class JavaFasta extends JPanel {
 			}
 			i++;
 		}
-		
+
 		for( Sequence seq : seqset ) {
 			seq.checkLengths();
 		}
-		
+
 		c.repaint();
 	}
-	
+
 	public StringBuilder getFastaWoGaps() {
 		int start = Integer.MIN_VALUE;
 		int end = Integer.MAX_VALUE;
-		
+
 		for( Sequence seq : serifier.lseq ) {
 			if( seq.getRealStart() > start ) start = seq.getRealStart();
 			if( seq.getRealStop() < end ) end = seq.getRealStop();
 		}
-		
+
 		List<Integer>	idxs = new ArrayList<Integer>();
 		for( int x = start; x < end; x++ ) {
 			boolean skip = false;
@@ -1998,12 +1991,12 @@ public class JavaFasta extends JPanel {
 					break;
 				}
 			}
-			
+
 			if( !skip ) {
 				idxs.add( x );
 			}
 		}
-		
+
 		StringBuilder ret = new StringBuilder();
 		for( Sequence seq : serifier.lseq ) {
 			ret.append( ">"+seq.getName()+"\n" );
@@ -2017,18 +2010,18 @@ public class JavaFasta extends JPanel {
 		}
 		return ret;
 	}
-	
+
 	public double[] get2StatePCAMatrix( int[] rr ) {
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
 		for( int r : rr ) {
 			int k = table.convertRowIndexToModel( r );
 			Sequence seq = serifier.lseq.get( k );
-			
+
 			min = Math.min( min, seq.getStart() );
 			max = Math.max( max, seq.getEnd() );
 		}
-		
+
 		List<Integer>	indx = new ArrayList<>();
 		for( int i = min; i < max; i++ ) {
 			Set<Character>	charset = new HashSet<>();
@@ -2040,7 +2033,7 @@ public class JavaFasta extends JPanel {
 					//break;
 				} else {
 					charset.add( c2 );
-					
+
 					/*if( charset.size() == 2 ) {
 						int k = table.convertRowIndexToModel( r );
 						System.err.println( i + "  " + c2 + "  " + serifier.lseq.get( k ).getName() );
@@ -2051,7 +2044,7 @@ public class JavaFasta extends JPanel {
 				indx.add( i );
 			}
 		}
-		
+
 		double[] X = new double[ indx.size()*rr.length ];
 		int ki = 0;
 		for( int i : indx ) {
@@ -2064,7 +2057,7 @@ public class JavaFasta extends JPanel {
 					X[kr * indx.size() + ki] = 0.0;
 				} else {
 					if (c == 0) c = c2;
-				
+
 				/*int k = table.convertRowIndexToModel( r );
 				String acc = serifier.lseq.get( k ).getName();
 				if( i == 192 && acc.contains("1940") ) {
@@ -2077,14 +2070,14 @@ public class JavaFasta extends JPanel {
 			}
 			ki++;
 		}
-		
+
 		return X;
 	}
-	
+
 	public StringBuilder printDistanceMatrix( double[] dd, List<String> names ) {
 		StringBuilder	text = new StringBuilder();
 		text.append("\t"+names.size()+"\n");
-		
+
 		int k = 0;
 		for( String name : names ) {
 			text.append( name );
@@ -2097,10 +2090,10 @@ public class JavaFasta extends JPanel {
 		/*for( double d : dd ) {
 			text.append( d );
 		}*/
-		
+
 		return text;
 	}
-	
+
 	public StringBuilder distanceMatrix( boolean excludeGaps, Map<String,Integer> blosumap, List<String> names ) {
 		double[] dd = distanceMatrixNumeric( false, null, blosumap );
 		return printDistanceMatrix( dd, names );
@@ -2136,30 +2129,30 @@ public class JavaFasta extends JPanel {
 
 		return printDistanceMatrix( dd, names );
 	}
-	
+
 	public StringBuilder distanceMatrix( boolean excludeGaps ) {
 		JCheckBox	jukes = new JCheckBox("Jukes-cantor correction");
 		JCheckBox	boots = new JCheckBox("Bootstrap");
 		JOptionPane.showMessageDialog( parentApplet, new Object[] {jukes, boots} );
 		boolean cantor = jukes.isSelected();
 		boolean bootstrap = boots.isSelected();
-		
+
 		int[] rr = table.getSelectedRows();
 		StringBuilder	text = new StringBuilder();
 		text.append("\t").append(rr.length).append("\n");
-		
+
 		if( rr.length > 0 ) {
 			if( excludeGaps ) {
 				int start = Integer.MIN_VALUE;
 				int end = Integer.MAX_VALUE;
-				
+
 				for( int i = 0; i < rr.length; i++ ) {
 					int r = rr[i];
 					Sequence seq = serifier.lseq.get( table.convertRowIndexToModel(r) );
 					if( seq.getRealStart() > start ) start = seq.getRealStart();
 					if( seq.getRealStop() < end ) end = seq.getRealStop();
 				}
-				
+
 				List<Integer>	idxs = new ArrayList<>();
 				for( int x = start; x < end; x++ ) {
 					int i;
@@ -2169,12 +2162,12 @@ public class JavaFasta extends JPanel {
 						char c = seq.getCharAt( x );
 						if( c != '-' && c != '.' && c == ' ' ) break;
 					}
-					
+
 					if( i == rr.length ) {
 						idxs.add( x );
 					}
 				}
-				
+
 				for( int i = 0; i < rr.length; i++ ) {
 					int r = rr[i];
 					text.append( ((String)table.getValueAt(r, 0)).replace(' ','_') );
@@ -2185,11 +2178,11 @@ public class JavaFasta extends JPanel {
 							Sequence seq2 = serifier.lseq.get( table.convertRowIndexToModel(rr[y]) );
 							int count = 0;
 							int mism = 0;
-							
+
 							for( int k : idxs ) {
 								char c1 = seq1.getCharAt( k-seq1.getStart() );
 								char c2 = seq2.getCharAt( k-seq2.getStart() );
-								
+
 								if( c1 != c2 ) mism++;
 								count++;
 							}
@@ -2211,14 +2204,14 @@ public class JavaFasta extends JPanel {
 							Sequence seq2 = serifier.lseq.get( table.convertRowIndexToModel(rr[y]) );
 							int count = 0;
 							int mism = 0;
-							
+
 							int start = Math.max( seq1.getStart(), seq2.getStart() );
 							int end = Math.min( seq1.getEnd(), seq2.getEnd() );
-							
+
 							for( int k = start; k < end; k++ ) {
 								char c1 = seq1.getCharAt( k-seq1.getStart() );
 								char c2 = seq2.getCharAt( k-seq2.getStart() );
-								
+
 								if( c1 != '.' && c1 != '-' && c1 != ' ' &&  c2 != '.' && c2 != '-' && c2 != ' ' ) {
 									if( c1 != c2 ) mism++;
 									count++;
@@ -2233,33 +2226,33 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		}
-		
+
 		return text;
 	}
-	
+
 	public StringBuilder blosumDistanceMatrix( boolean excludeGaps, Map<String,Integer> blosumap ) {
 		//JCheckBox	jukes = new JCheckBox("Jukes-cantor correction");
 		JCheckBox	boots = new JCheckBox("Bootstrap");
 		JOptionPane.showMessageDialog( parentApplet, new Object[] {boots} );
 		//boolean cantor = jukes.isSelected();
 		boolean bootstrap = boots.isSelected();
-		
+
 		int[] rr = table.getSelectedRows();
 		StringBuilder	text = new StringBuilder();
 		text.append("\t"+rr.length+"\n");
-		
+
 		if( rr.length > 0 ) {
 			if( excludeGaps ) {
 				int start = Integer.MIN_VALUE;
 				int end = Integer.MAX_VALUE;
-				
+
 				for( int i = 0; i < rr.length; i++ ) {
 					int r = rr[i];
 					Sequence seq = serifier.lseq.get( table.convertRowIndexToModel(r) );
 					if( seq.getRealStart() > start ) start = seq.getRealStart();
 					if( seq.getRealStop() < end ) end = seq.getRealStop();
 				}
-				
+
 				List<Integer>	idxs = new ArrayList<Integer>();
 				for( int x = start; x < end; x++ ) {
 					int i;
@@ -2269,12 +2262,12 @@ public class JavaFasta extends JPanel {
 						char c = seq.getCharAt( x );
 						if( c != '-' && c != '.' && c == ' ' ) break;
 					}
-					
+
 					if( i == rr.length ) {
 						idxs.add( x );
 					}
 				}
-				
+
 				for( int i = 0; i < rr.length; i++ ) {
 					int r = rr[i];
 					text.append( ((String)table.getValueAt(r, 0)).replace(' ','_') );
@@ -2285,11 +2278,11 @@ public class JavaFasta extends JPanel {
 							Sequence seq2 = serifier.lseq.get( table.convertRowIndexToModel(rr[y]) );
 							int count = 0;
 							int mism = 0;
-							
+
 							for( int k : idxs ) {
 								char c1 = seq1.getCharAt( k-seq1.getStart() );
 								char c2 = seq2.getCharAt( k-seq2.getStart() );
-								
+
 								if( c1 != c2 ) mism++;
 								count++;
 							}
@@ -2311,10 +2304,10 @@ public class JavaFasta extends JPanel {
 							Sequence seq2 = serifier.lseq.get( table.convertRowIndexToModel(rr[y]) );
 							//int count = 0;
 							//int mism = 0;
-							
+
 							int start = Math.max( seq1.getStart(), seq2.getStart() );
 							int stop = Math.min( seq1.getEnd(), seq2.getEnd() );
-							
+
 							int mest = 0;
 							int tmest = 0;
 							for( int k = start; k < stop; k++ ) {
@@ -2324,27 +2317,27 @@ public class JavaFasta extends JPanel {
 					        	String comb = c+""+c;
 					        	if( blosumap.containsKey(comb) ) tmest += blosumap.get(comb);
 					        }
-					        
+
 					        for( int k = start; k < stop; k++ ) {
 					        	char lc = seq1.getCharAt( k );
 					        	char c = Character.toUpperCase( lc );
 					        	char lc2 = seq2.getCharAt( k );
 					        	char c2 = Character.toUpperCase( lc2 );
-					        	
+
 					        	String comb = c+""+c2;
 					        	if( blosumap.containsKey(comb) ) mest += blosumap.get(comb);
 					        }
-					        
+
 					        double tani = (double)(tmest-mest)/(double)tmest;
 					        /*if( tani > (double)score/(double)tscore ) {
 					        	score = mest;
 					        	tscore = tmest;
 					        }*/
-					        
+
 							/*for( int k = start; k < end; k++ ) {
 								char c1 = seq1.getCharAt( k-seq1.getStart() );
 								char c2 = seq2.getCharAt( k-seq2.getStart() );
-								
+
 								if( c1 != '.' && c1 != '-' && c1 != ' ' &&  c2 != '.' && c2 != '-' && c2 != ' ' ) {
 									if( c1 != c2 ) mism++;
 									count++;
@@ -2358,69 +2351,69 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		}
-		
+
 		return text;
 	}
-	
+
 	public List<String> getNames() {
 		List<String>	ret = new ArrayList<String>();
-		
+
 		for( Sequence seqname : serifier.lseq ) {
 			ret.add( seqname.getName() ); //.replace(' ', '_') );
 		}
-		
+
 		return ret;
 	}
-	
+
 	public StringBuilder getFasta() {
 		return getFasta( this.getSequences() );
 	}
-	
+
 	public StringBuilder getFasta( List<Sequence> lseq ) {
 		StringBuilder out = new StringBuilder();
-		
+
    	 	for( Sequence seq : lseq ) {
    		 int val = 0;
    		 int end = seq.length();
-   		 
+
    		 if( c.selectedRect.width > 0 ) {
    			 val = Math.max( val, c.selectedRect.x-seq.getStart() );
    			 end = Math.min( end, c.selectedRect.x+c.selectedRect.width-seq.getStart() );
    		 }
-   		 
+
    		 if( val < end ) out.append( ">" + seq.getName() + "\n" );
    		 while( val < end ) {
    			 out.append( seq.getSequence().substring(val, Math.min( end, val+70 )) + "\n" );
    			 val += 70;
    		 }
    	 	}
-   		 
+
    		return out;
 	}
-	
+
 	public String getPhylip( boolean numeric ) {
 		return Sequence.getPhylip( this.getSequences(), numeric );
 	}
-	
+
 	public double[] distanceMatrixNumeric( boolean excludeGaps, double[] ent, Map<String,Integer> blosum ) {
 		JCheckBox	jukes = new JCheckBox("Jukes-cantor correction");
 		JCheckBox	boots = new JCheckBox("Bootstrap");
-		
+
 		Object[] val = blosum != null ? new Object[] { boots } : new Object[] { jukes, boots };
 		JOptionPane.showMessageDialog( parentApplet, val );
 		boolean cantor = jukes.isSelected();
 		//boolean bootstrap = boots.isSelected();
-		
+
 		List<Integer>	idxs = null;
 		if( excludeGaps ) {
 			int start = Integer.MIN_VALUE;
 			int end = Integer.MAX_VALUE;
-			
+
 			for( Sequence seq : serifier.lseq ) {
 				if( seq.getRealStart() > start ) start = seq.getRealStart();
 				if( seq.getRealStop() < end ) end = seq.getRealStop();
 			}
-			
+
 			idxs = new ArrayList<>();
 			for( int x = start; x < end; x++ ) {
 				boolean skip = false;
@@ -2431,26 +2424,26 @@ public class JavaFasta extends JPanel {
 						break;
 					}
 				}
-				
+
 				if( !skip ) {
 					idxs.add( x );
 				}
 			}
 		}
-		
+
 		double[] dd = new double[ serifier.lseq.size()*serifier.lseq.size() ];
 		Sequence.distanceMatrixNumeric( serifier.lseq, dd, idxs, boots.isSelected(), cantor, ent, blosum );
-		
+
 		int i = 0;
 		for( double d : dd ) {
 			System.err.print( "  " + d );
 			i++;
 			if( i % serifier.lseq.size() == 0 ) System.err.println();
 		}
-		
+
 		return dd;
 	}
-	
+
 	public void initDataStructures() {
 		/*lseq = new ArrayList<Sequence>() {
 			private static final long serialVersionUID = 1L;
@@ -2463,13 +2456,13 @@ public class JavaFasta extends JPanel {
 		Sequence.mseq = new HashMap<String,Sequence>();
 		Sequence.lann = new ArrayList<Annotation>();
 		Sequence.mann = new HashMap<String,Annotation>();*/
-		
+
 		Sequence.runbl = seq -> {
 			if( seq.getStart() < serifier.getMin() ) serifier.setMin( seq.getStart() );
 			if( seq.getEnd() > serifier.getMax() ) serifier.setMax( seq.getEnd() );
 		};
 	}
-	
+
 	public TransferHandler dragRows( final JTable table ) {
 		TransferHandler th = null;
 		try {
@@ -2525,33 +2518,33 @@ public class JavaFasta extends JPanel {
 					return false;
 				}
 			};
-			
+
 			th = new TransferHandler() {
 				private static final long serialVersionUID = 1L;
-				
+
 				public int getSourceActions(JComponent c) {
 					return TransferHandler.COPY_OR_MOVE;
 				}
 
-				public boolean canImport(TransferHandler.TransferSupport support) {					
+				public boolean canImport(TransferHandler.TransferSupport support) {
 					return true;
 				}
 
 				protected Transferable createTransferable(JComponent c) {
 					currentRowSelection = table.getSelectedRows();
-					
+
 					return transferable;
 				}
 
 				public boolean importData(TransferHandler.TransferSupport support) {
 					try {
 						System.err.println( table.getSelectedRows().length );
-						
+
 						DataFlavor[] dfs = support.getDataFlavors();
-						if( support.isDataFlavorSupported( ndf ) ) {					
+						if( support.isDataFlavorSupported( ndf ) ) {
 							Object obj = support.getTransferable().getTransferData( ndf );
 							ArrayList<Sequence>	seqs = (ArrayList<Sequence>)obj;
-							
+
 							ArrayList<Sequence> newlist = new ArrayList<>(serifier.lgseq.size());
 							for( int r = 0; r < table.getRowCount(); r++ ) {
 								int i = table.convertRowIndexToModel(r);
@@ -2559,27 +2552,27 @@ public class JavaFasta extends JPanel {
 							}
 							serifier.lgseq.clear();
 							serifier.lgseq = newlist;
-							
+
 							Point p = support.getDropLocation().getDropPoint();
 							int k = table.rowAtPoint( p );
-							
+
 							serifier.lgseq.removeAll( seqs );
 							for( Sequence s : seqs ) {
 								serifier.lgseq.add(k++, s);
 							}
-							
+
 							TableRowSorter<TableModel>	trs = (TableRowSorter<TableModel>)table.getRowSorter();
 							trs.setSortKeys( null );
-							
+
 							table.tableChanged( new TableModelEvent(table.getModel()) );
 							c.repaint();
-							
+
 							return true;
 						} else if( support.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
 							Object obj = support.getTransferable().getTransferData( DataFlavor.javaFileListFlavor );
 							//InputStream is = (InputStream)obj;
 							List<File>	lfile = (List<File>)obj;
-							
+
 							for( File f : lfile ) {
 								String fname = f.getName();
 								if( fname.endsWith(".ab1") ) {
@@ -2591,23 +2584,23 @@ public class JavaFasta extends JPanel {
 									Sequence s = new Sequence( f.getName(), serifier.mseq );
 									s.append( abi.getSequence() );
 									serifier.lgseq.add( s );
-									
+
 									if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
-									
+
 									bb.clear();
 								} else if( fname.endsWith(".blastout") ) {
 									FileReader fr = new FileReader( f );
 									BufferedReader br = new BufferedReader( fr );
 									String line = br.readLine();
-									
+
 									Map<String,Integer>	hitmap = new HashMap<>();
 									while( line != null ) {
 										if( line.startsWith(">") ) {
 											System.err.println( line );
 											String val = line.substring(2);
-											
+
 											System.err.println( line );
-											
+
 											line = br.readLine();
 											//boolean erm = true;
 											//while( erm && !line.startsWith(">") && !line.startsWith("Query=") ) {
@@ -2623,7 +2616,7 @@ public class JavaFasta extends JPanel {
 														}
 													}
 												}
-												
+
 												line = br.readLine();
 											}
 										} else {
@@ -2633,7 +2626,7 @@ public class JavaFasta extends JPanel {
 									br.close();
 									fr = new FileReader( f );
 									br = new BufferedReader( fr );
-									
+
 									line = br.readLine();
 									String query;
 									Sequence tseq = null;
@@ -2655,7 +2648,7 @@ public class JavaFasta extends JPanel {
 											int qstop = 0;
 											int sstart = -1;
 											int sstop = 0;
-											
+
 											String val = line.substring(2);//line.split("[\t ]+")[1];
 											line = br.readLine();
 											Sequence seq = null;
@@ -2671,7 +2664,7 @@ public class JavaFasta extends JPanel {
 															if( ind >= k ) {
 																serifier.lgseq.remove( seq );
 																serifier.lgseq.add(k, seq);
-															}/* else {											
+															}/* else {
 																seq = null;
 															}*/
 														}
@@ -2697,7 +2690,7 @@ public class JavaFasta extends JPanel {
 												}
 												line = br.readLine();
 											}
-											
+
 											if( ind != -1 ) {
 												if( ind >= k ) {
 													if( sstart > sstop ) {
@@ -2729,14 +2722,14 @@ public class JavaFasta extends JPanel {
 													}
 												}
 											}
-											
+
 											continue;
 										}
-										
+
 										line = br.readLine();
 									}
 									br.close();
-									
+
 									updateView();
 								} else {
 									BufferedReader	br = new BufferedReader( new FileReader( f ) );
@@ -2763,33 +2756,33 @@ public class JavaFasta extends JPanel {
 										line = br.readLine();
 									}
 									br.close();
-									
+
 									if( s != null ) {
 										if( s.length() > max ) max = s.length();
 									}*/
 								}
 							}
-							
+
 							updateView();
-							
+
 							return true;
-						} else if( support.isDataFlavorSupported( df ) ) {							
+						} else if( support.isDataFlavorSupported( df ) ) {
 							Object obj = support.getTransferable().getTransferData( df );
 							InputStream is = (InputStream)obj;
-							
+
 							System.err.println( charset );
 							importReader( new BufferedReader(new InputStreamReader(is, charset)) );
-							
+
 							updateView();
-							
+
 							return true;
-						}  else if( support.isDataFlavorSupported( DataFlavor.stringFlavor ) ) {							
+						}  else if( support.isDataFlavorSupported( DataFlavor.stringFlavor ) ) {
 							Object obj = support.getTransferable().getTransferData( DataFlavor.stringFlavor );
 							String str = (String)obj;
 							importReader( new BufferedReader( new StringReader(str) ) );
-							
+
 							updateView();
-							
+
 							return true;
 						}
 					} catch (UnsupportedFlavorException | IOException e) {
@@ -2803,11 +2796,11 @@ public class JavaFasta extends JPanel {
 		}
 		return th;
 	}
-	
+
 	class Ab1FileVisitor extends SimpleFileVisitor<Path> {
-	
+
 	};
-	
+
 	public void importFile( File f ) throws IOException {
 		String fname = f.getName();
 		if( fname.endsWith(".ab1") ) {
@@ -2820,23 +2813,23 @@ public class JavaFasta extends JPanel {
 			Sequence s = new Sequence( f.getName(), serifier.mseq );
 			s.append( abi.getSequence() );
 			serifier.lseq.add( s );
-			
+
 			if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
-			
+
 			bb.clear();
 		} else if( fname.endsWith(".blastout") ) {
 			FileReader fr = new FileReader( f );
 			BufferedReader br = new BufferedReader( fr );
 			String line = br.readLine();
-			
+
 			Map<String,Integer>	hitmap = new HashMap<String,Integer>();
 			while( line != null ) {
 				if( line.startsWith(">") ) {
 					System.err.println( line );
 					String val = line.substring(2);
-					
+
 					System.err.println( line );
-					
+
 					line = br.readLine();
 					//boolean erm = true;
 					//while( erm && !line.startsWith(">") && !line.startsWith("Query=") ) {
@@ -2852,7 +2845,7 @@ public class JavaFasta extends JPanel {
 								}
 							}
 						}
-						
+
 						line = br.readLine();
 					}
 				} else {
@@ -2862,7 +2855,7 @@ public class JavaFasta extends JPanel {
 			br.close();
 			fr = new FileReader( f );
 			br = new BufferedReader( fr );
-			
+
 			line = br.readLine();
 			String query;
 			Sequence tseq = null;
@@ -2884,7 +2877,7 @@ public class JavaFasta extends JPanel {
 					int qstop = 0;
 					int sstart = -1;
 					int sstop = 0;
-					
+
 					String val = line.substring(2);//line.split("[\t ]+")[1];
 					line = br.readLine();
 					Sequence seq = null;
@@ -2900,7 +2893,7 @@ public class JavaFasta extends JPanel {
 									if( ind >= k ) {
 										serifier.lseq.remove( seq );
 										serifier.lseq.add(k, seq);
-									}/* else {											
+									}/* else {
 										seq = null;
 									}*/
 								}
@@ -2926,7 +2919,7 @@ public class JavaFasta extends JPanel {
 						}
 						line = br.readLine();
 					}
-					
+
 					if( ind != -1 ) {
 						if( ind >= k ) {
 							if( sstart > sstop ) {
@@ -2958,14 +2951,14 @@ public class JavaFasta extends JPanel {
 							}
 						}
 					}
-					
+
 					continue;
 				}
-				
+
 				line = br.readLine();
 			}
 			br.close();
-			
+
 			serifier.checkMaxMin();
 			updateView();
 		} else {
@@ -2973,22 +2966,22 @@ public class JavaFasta extends JPanel {
 			importReader( f.getName(), br );
 		}
 	}
-	
+
 	static class RepeatNum implements Comparable<RepeatNum> {
 		public RepeatNum( String r, int t ) {
 			this.repeat = r;
 			this.total = t;
 		}
-		
+
 		String 	repeat;
 		int		total;
-		
+
 		@Override
 		public int compareTo(RepeatNum o) {
 			return o.total-total;
 		}
 	}
-	
+
 	public void drawPhys( Graphics2D g2, List<Sequence> seqs, int fasti, int maxseqlen, int offset, int w, int h) {
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		//g2.setFont( g2.getFont().deriveFont(24.0f) );
@@ -2996,16 +2989,16 @@ public class JavaFasta extends JPanel {
 		g2.fillRect(0, 0, w, h);
 		g2.setColor( Color.darkGray );
 		int y = 0;
-		
+
 		g2.setFont( g2.getFont().deriveFont(18.0f) );
 		for( Sequence seq : seqs ) {
 			String spec = seq.getName(); //Sequence.nameFix(seq.getName(), true);
-			
+
 			g2.setColor( Color.darkGray );
 			String nspec = spec.substring(0,Math.min(30, spec.length()));
 			int strw = g2.getFontMetrics().stringWidth(nspec);
 			g2.drawString(nspec, 350-strw, y*fasti+30);
-			
+
 			for( int i = 0; i < maxseqlen; i++ ) {
 				char c = seq.charAt(i);
 				if( c != '-' && c != ' ' && c != 'N' ) {
@@ -3015,12 +3008,12 @@ public class JavaFasta extends JPanel {
 							inanno = a;
 							//break;
 						}
-						
+
 						if( i == a.start ) {
 							break;
 						}
 					}
-					
+
 					Map<String,Integer> countmap = new HashMap<String,Integer>();
 					for( Sequence sseq : seqs ) {
 						if( sseq.annset != null ) for( Annotation a : sseq.annset ) {
@@ -3035,9 +3028,9 @@ public class JavaFasta extends JPanel {
 							}
 						}
 					}
-					
+
 					boolean large = false;
-					
+
 					int drawi = offset+(i*2400)/maxseqlen;
 					if( inanno != null && inanno.color != null && inanno.color instanceof Color ) {
 						g2.setColor( (Color)inanno.color );
@@ -3055,26 +3048,26 @@ public class JavaFasta extends JPanel {
 						g2.setColor( Color.darkGray );
 						g2.drawLine(drawi, y*fasti+18, drawi, y*fasti+22);
 					}
-					
+
 					/*if( inanno != null && inanno.name.contains("Cas4") ) {
 						System.err.println();
 					}
-					
+
 					if( inanno != null && inanno.name.contains("Cas5") ) {
 						System.err.println();
 					}*/
-					
+
 					if( inanno != null && i == inanno.start && inanno.type == null ) { //&& (seq == serifier.lseq.get(serifier.lseq.size()-1) || !large) ) {
 						g2.setColor( Color.darkGray );
-						
+
 						/*if( inanno.name.contains("Cas5") ) {
 							System.err.println();
 						}
-						
+
 						if( inanno.name.contains("Cas4") ) {
 							System.err.println();
 						}*/
-						
+
 						int val = inanno.getName().length();
 						int bil = (inanno.stop*2400)/maxseqlen - (inanno.start*2400)/maxseqlen;
 						String str = inanno.getName().substring(0,Math.min(val, inanno.getName().length()));
@@ -3086,7 +3079,7 @@ public class JavaFasta extends JPanel {
 						}
 						//if( str.contains("hypo") ) {
 						//	g2.drawString("hyp", drawi, y*fasti+50);
-						//} else 
+						//} else
 						g2.drawString(str, drawi, y*fasti+50);
 					}
 				}
@@ -3344,7 +3337,7 @@ public class JavaFasta extends JPanel {
 
 		f.setVisible( true );
 	}
-	
+
 	static JFrame		fxframe = new JFrame();
 	static JFXPanel		fxp = new JFXPanel();
 	static Scene 		scene;
@@ -3352,7 +3345,7 @@ public class JavaFasta extends JPanel {
 	Point				p;
 	public void initGui( final Container cnt ) {
 		currentCnt = cnt;
-		
+
 		JMenu file = new JMenu("File");
 		JMenu edit = new JMenu("Edit");
 		JMenu view = new JMenu("View");
@@ -3360,7 +3353,7 @@ public class JavaFasta extends JPanel {
 		JMenu name = new JMenu("Name");
 		JMenu group = new JMenu("Groups");
 		JMenu phylogeny = new JMenu("Phylogeny");
-		
+
 		AbstractAction reorderGroups = new AbstractAction( "Reorder groups" ) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -3411,7 +3404,7 @@ public class JavaFasta extends JPanel {
 				gtable.setModel( tm );
 				JScrollPane	gscroll = new JScrollPane( gtable );
 				JOptionPane.showMessageDialog(null, gscroll);
-				
+
 				int o = 0;
 				for( int r = 0; r < gtable.getRowCount(); r++ ) {
 					Sequence gseq = (Sequence)gtable.getValueAt(r, 0);
@@ -3427,14 +3420,14 @@ public class JavaFasta extends JPanel {
 		group.add( reorderGroups );
 		//Window window = SwingUtilities.windowForComponent(cnt);
 		initDataStructures();
-		
+
 		table = new JTable();
 		table.setAutoCreateRowSorter( true );
 		table.setDragEnabled( true );
-		
+
 		Action action = new CopyAction("Copy", null, "Copy data", KeyEvent.VK_CONTROL + KeyEvent.VK_C);
 		table.getActionMap().put("copy", action);
-		
+
 		/*try {
 			if (clipboardService == null)
 				clipboardService = (ClipboardService) ServiceManager.lookup("javax.jnlp.ClipboardService");
@@ -3443,7 +3436,7 @@ public class JavaFasta extends JPanel {
 			ee.printStackTrace();
 			System.err.println("Copy services not available.  Copy using 'Ctrl-c'.");
 		}*/
-		
+
 		final Ruler ruler = new Ruler( 10.0 );
 		c = new FastaView( table.getRowHeight(), ruler, table );
 		c.addMouseListener( new MouseListener() {
@@ -3484,12 +3477,12 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void mouseExited(MouseEvent e) {}
 		});
-		
+
 		c.addMouseMotionListener( new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				Point np = e.getPoint();
-				
+
 				if( e.isShiftDown() ) {
 					c.selectedRect.x = (int)(p.x/c.cw);
 					c.selectedRect.y = p.y/c.rh;
@@ -3503,16 +3496,16 @@ public class JavaFasta extends JPanel {
 						c.scrollRectToVisible( r );
 					}
 				}
-				
+
 				//p = np;
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent e) {}
 		});
-		
+
 		//final DataFlavor df = DataFlavor.getTextPlainUnicodeFlavor();
-		
+
 		table.setModel( new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -3528,7 +3521,7 @@ public class JavaFasta extends JPanel {
 			public String getColumnName(int columnIndex) {
 					if( columnIndex == 0 ) return "Name";
 				else if( columnIndex == 1 ) return "Group";
-				
+
 				else if( columnIndex == 2 ) return "Length";
 				else if( columnIndex == 3 ) return "#Anno";
 				else if( columnIndex == 4 ) return "Unaligned length";
@@ -3575,7 +3568,7 @@ public class JavaFasta extends JPanel {
 					else if( columnIndex == 8 ) {
 						int begin = c.selectedRect.x-seq.getStart();
 						int stop = begin+c.selectedRect.width;
-						
+
 						int start = Math.max(begin, 0);
 						int end = Math.min(stop, seq.length());
 						if( end > start ) {
@@ -3585,7 +3578,7 @@ public class JavaFasta extends JPanel {
 							}
 							return seq.getSubstring( start, end, 1 );
 						}
-						
+
 						return "";
 					} else if( columnIndex == 9 ) {
 						return seq.getSequenceHash();
@@ -3614,32 +3607,32 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void removeTableModelListener(TableModelListener l) {}
 		});
-		
+
 		table.getRowSorter().addRowSorterListener(e -> {
             c.repaint();
             overview.reval();
             overview.repaint();
         });
-		
+
 		splitpane = new JSplitPane();
 		splitpane.setDividerLocation(0.7);
 		splitpane.setBackground( Color.white );
-		
+
 		JScrollPane	fastascroll = new JScrollPane( c );
 		fastascroll.setBackground( Color.white );
 		fastascroll.getViewport().setBackground( Color.white );
 		fastascroll.setRowHeaderView( table );
 		fastascroll.setColumnHeaderView( ruler );
-		
+
 		fastascroll.getHorizontalScrollBar().setUnitIncrement( (int)c.cw );
-		
+
 		JScrollPane	tablescroll = new JScrollPane();
 		tablescroll.setViewport( fastascroll.getRowHeader() );
 		tablescroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
 		tablescroll.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_NEVER );
 		tablescroll.setBackground( Color.white );
 		tablescroll.getViewport().setBackground( Color.white );
-		
+
 		try {
 			final DataFlavor ndf = new DataFlavor( DataFlavor.javaJVMLocalObjectMimeType );
 			final DataFlavor df = DataFlavor.getTextPlainUnicodeFlavor();
@@ -3692,33 +3685,33 @@ public class JavaFasta extends JPanel {
 					return false;
 				}
 			};
-			
+
 			TransferHandler th = new TransferHandler() {
 				private static final long serialVersionUID = 1L;
-				
+
 				public int getSourceActions(JComponent c) {
 					return TransferHandler.COPY_OR_MOVE;
 				}
 
-				public boolean canImport(TransferHandler.TransferSupport support) {					
+				public boolean canImport(TransferHandler.TransferSupport support) {
 					return true;
 				}
 
 				protected Transferable createTransferable(JComponent c) {
 					currentRowSelection = table.getSelectedRows();
-					
+
 					return transferable;
 				}
 
 				public boolean importData(TransferHandler.TransferSupport support) {
 					try {
 						System.err.println( table.getSelectedRows().length );
-						
+
 						DataFlavor[] dfs = support.getDataFlavors();
-						if( support.isDataFlavorSupported( ndf ) ) {					
+						if( support.isDataFlavorSupported( ndf ) ) {
 							Object obj = support.getTransferable().getTransferData( ndf );
 							ArrayList<Sequence>	seqs = (ArrayList<Sequence>)obj;
-							
+
 							ArrayList<Sequence> newlist = new ArrayList<>(serifier.lseq.size());
 							for( int r = 0; r < table.getRowCount(); r++ ) {
 								int i = table.convertRowIndexToModel(r);
@@ -3726,27 +3719,27 @@ public class JavaFasta extends JPanel {
 							}
 							serifier.lseq.clear();
 							serifier.lseq = newlist;
-							
+
 							Point p = support.getDropLocation().getDropPoint();
 							int k = table.rowAtPoint( p );
-							
+
 							serifier.lseq.removeAll( seqs );
 							for( Sequence s : seqs ) {
 								serifier.lseq.add(k++, s);
 							}
-							
+
 							TableRowSorter<TableModel>	trs = (TableRowSorter<TableModel>)table.getRowSorter();
 							trs.setSortKeys( null );
-							
+
 							table.tableChanged( new TableModelEvent(table.getModel()) );
 							c.repaint();
-							
+
 							return true;
 						} else if( support.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
 							Object obj = support.getTransferable().getTransferData( DataFlavor.javaFileListFlavor );
 							//InputStream is = (InputStream)obj;
 							List<File>	lfile = (List<File>)obj;
-							
+
 							for( File f : lfile ) {
 								if( f.isDirectory() ) {
 									Files.walkFileTree( f.toPath(), new SimpleFileVisitor<Path>() {
@@ -3763,7 +3756,7 @@ public class JavaFasta extends JPanel {
 									        } else {
 									            System.out.format("Other: %s ", file);
 									        }
-									       
+
 									        return FileVisitResult.CONTINUE;
 										}
 									});
@@ -3792,35 +3785,35 @@ public class JavaFasta extends JPanel {
 										line = br.readLine();
 									}
 									br.close();
-									
+
 									if( s != null ) {
 										if( s.length() > max ) max = s.length();
 									}*/
 							}
-							
+
 							serifier.checkMaxMin();
 							updateView();
-								
+
 							return true;
-						} else if( support.isDataFlavorSupported( df ) ) {							
+						} else if( support.isDataFlavorSupported( df ) ) {
 							Object obj = support.getTransferable().getTransferData( df );
 							InputStream is = (InputStream)obj;
-							
+
 							System.err.println( charset );
 							importReader( new BufferedReader(new InputStreamReader(is, charset)) );
-							
+
 							serifier.checkMaxMin();
 							updateView();
-							
+
 							return true;
-						}  else if( support.isDataFlavorSupported( DataFlavor.stringFlavor ) ) {							
+						}  else if( support.isDataFlavorSupported( DataFlavor.stringFlavor ) ) {
 							Object obj = support.getTransferable().getTransferData( DataFlavor.stringFlavor );
 							String str = (String)obj;
 							importReader( new BufferedReader( new StringReader(str) ) );
-							
+
 							serifier.checkMaxMin();
 							updateView();
-							
+
 							return true;
 						}
 					} catch (UnsupportedFlavorException e) {
@@ -3836,16 +3829,16 @@ public class JavaFasta extends JPanel {
 		} catch( Exception e ) {
 			e.printStackTrace();
 		}
-		
+
 		JTextField	textfield = new JTextField();
 		JComponent tablecomp = new JComponent() { private static final long serialVersionUID = 1L; };
 		tablecomp.setLayout( new BorderLayout() );
 		tablecomp.add( tablescroll );
 		tablecomp.add( textfield, BorderLayout.SOUTH );
-		
+
 		splitpane.setLeftComponent( tablecomp );
 		splitpane.setRightComponent( fastascroll );
-		
+
 		JPopupMenu	popup = new JPopupMenu();
 		popup.add( new AbstractAction("View 2-state PCA matrix") {
 			@Override
@@ -3853,14 +3846,14 @@ public class JavaFasta extends JPanel {
 				int[] rr = table.getSelectedRows();
 				double[] X = get2StatePCAMatrix( rr );
 				int isize = X.length/rr.length;
-				
+
 				StringBuilder sb = new StringBuilder();
 				for( int i = 0; i < X.length; i++ ) {
 					sb.append( X[i] );
 					if( i % isize == isize-1 ) sb.append("\n");
 					else sb.append("\t");
 				}
-				
+
 				StringBuilder col = new StringBuilder();
 				for( int r : rr ) {
 					int k = table.convertRowIndexToModel( r );
@@ -3875,7 +3868,7 @@ public class JavaFasta extends JPanel {
 						col.append( Integer.parseInt(name.substring(i+6, i+8), 16)+"\n" );
 					}
 				}
-				
+
 				//Map<String,StringBuilder>	sbmap = new HashMap<String,StringBuilder>();
 				List<Sequence> ls = new ArrayList<Sequence>();
 				for( int r : rr ) {
@@ -3887,10 +3880,10 @@ public class JavaFasta extends JPanel {
 						if( X[r*isize+i] == 1.0 ) sub.append("1");
 						else sub.append("0");
 					}
-					
+
 					Sequence subseq = new Sequence( name, name, sub, null );
 					ls.add( subseq );
-					
+
 					//sbmap.put(name, sub);
 					/*fas.append( ">"+name );
 					for( int i = 0; i < isize; i++ ) {
@@ -3900,17 +3893,17 @@ public class JavaFasta extends JPanel {
 					}
 					fas.append("\n");*/
 				}
-				String restext = Sequence.getPhylip( ls, false );				
-				
+				String restext = Sequence.getPhylip( ls, false );
+
 				try {
 					FileWriter fw = new FileWriter("/Users/sigmar/ok.txt");
 					fw.write( sb.toString() );
 					fw.close();
-					
+
 					fw = new FileWriter("/Users/sigmar/col.txt");
 					fw.write( col.toString() );
 					fw.close();
-					
+
 					fw = new FileWriter("/Users/sigmar/2state.fasta");
 					fw.write( restext );
 					fw.close();
@@ -3925,7 +3918,7 @@ public class JavaFasta extends JPanel {
 				int[] rr = table.getSelectedRows();
 				double[] X = get2StatePCAMatrix( rr );
 				int isize = X.length/rr.length;
-				
+
 				double[] u = new double[rr.length];
 				double uu = 0.0;
 				for( int i = 0; i < u.length; i++ ) {
@@ -3934,7 +3927,7 @@ public class JavaFasta extends JPanel {
 				}
 				double[] uold = new double[rr.length];
 				double d = 0.0;
-				
+
 				int count = 0;
 				do {
 					double[] v = new double[isize];
@@ -3951,11 +3944,11 @@ public class JavaFasta extends JPanel {
 					for( int i = 0; i < v.length; i++ ) {
 						v[i] /= vlen;
 					}
-					
+
 					for( int i = 0; i < u.length; i++ ) {
 						uold[i] = u[i];
 					}
-					
+
 					uu = 0.0;
 					for( int i = 0; i < u.length; i++ ) {
 						u[i] = 0.0;
@@ -3963,21 +3956,21 @@ public class JavaFasta extends JPanel {
 							u[i] += X[i*v.length+k]*v[k];
 						}
 						u[i] /= vv;
-						
+
 						uu += u[i]*u[i];
 					}
-					
+
 					d = 0.0;
 					for( int i = 0; i < u.length; i++ ) {
 						double ud = uold[i] - u[i];
 						d += ud*ud;
 					}
 					d = Math.sqrt(d);
-					 
+
 					System.err.println( d );
 					count++;
 			 	} while( d > 1.0e-8 );
-				
+
 				System.err.println( "success after "+count+" iteration" );
 			}
 		});
@@ -4164,21 +4157,21 @@ public class JavaFasta extends JPanel {
 				int i = table.convertRowIndexToModel(r);
 				Sequence seq = serifier.lseq.get(i);
 				int k = seq.getName().indexOf('_');
-				
+
 				String searchstr = null;
 				if( seq.getName().contains("left") ) {
 					searchstr = seq.getName().substring(0, k+1)+"right";
 				} else if( seq.getName().contains("right") ) {
 					searchstr = seq.getName().substring(0, k+1)+"left";
 				}
-				
+
 				if( searchstr != null ) {
 					i = 0;
 					for( Sequence tseq : serifier.lseq ) {
 						if( tseq.getName().contains(searchstr) ) {
 							r = table.convertRowIndexToView(i);
 							if( r >= 0 && r < table.getRowCount() ) table.addRowSelectionInterval(r, r);
-							
+
 							Rectangle rc = c.getVisibleRect();
 							rc.x = (int)(tseq.getStart()*c.cw);
 							c.scrollRectToVisible(rc);
@@ -4189,7 +4182,7 @@ public class JavaFasta extends JPanel {
 				//int u = seq.getName().indexOf('.',k+1);
 				//String sname = seq.getName().substr
 			}
-			
+
 		});
 		popup.addSeparator();
 		popup.add( new AbstractAction("Sub sort") {
@@ -4201,10 +4194,10 @@ public class JavaFasta extends JPanel {
 					public int compare(Sequence seq1, Sequence seq2) {
 						String seq1str = "";
 						String seq2str = "";
-						
+
 						int begin = c.selectedRect.x-seq1.getStart();
 						int stop = begin+c.selectedRect.width;
-						
+
 						int start = Math.max(begin, 0);
 						int end = Math.min(stop, seq1.length());
 						if( end > start ) {
@@ -4213,10 +4206,10 @@ public class JavaFasta extends JPanel {
 								seq1str = val;
 							} else seq1str = seq1.getSubstring( start, end, 1 );
 						}
-						
+
 						begin = c.selectedRect.x-seq2.getStart();
 						stop = begin+c.selectedRect.width;
-						
+
 						start = Math.max(begin, 0);
 						end = Math.min(stop, seq2.length());
 						if( end > start ) {
@@ -4225,7 +4218,7 @@ public class JavaFasta extends JPanel {
 								seq2str = val;
 							} else seq2str = seq2.getSubstring( start, end, 1 );
 						}
-						
+
 						return seq1str.compareTo( seq2str );
 					}
 				});
@@ -4240,7 +4233,7 @@ public class JavaFasta extends JPanel {
 				String userhome = System.getProperty("user.home");
 				String username = System.getProperty("user.name");
 				String hostname = host.getText();
-				
+
 				 final List<Sequence> seqlist = new ArrayList<Sequence>();
 		    	 int[] rr = table.getSelectedRows();
 		    	 for( int r : rr ) {
@@ -4260,7 +4253,7 @@ public class JavaFasta extends JPanel {
 		    		serifier.writeFasta( seqlist, osw, getSelectedRect() );
 		    		osw.close();
 		    		Files.write(mafftp, baos.toByteArray());
-		    		
+
 		    		//"--localpair"
 			    	ProcessBuilder pb;
 			    	if( hostname.contains("localhost") ) pb = new ProcessBuilder("/opt/homebrew/bin/mafft","--thread",Integer.toString(Runtime.getRuntime().availableProcessors()),filename); //, "-in", "tmp.fasta", "-out", "tmpout.fasta");
@@ -4269,15 +4262,15 @@ public class JavaFasta extends JPanel {
 			    		pbt.directory( tmpdir.toFile() );
 						Process pc = pbt.start();
 						pc.waitFor();
-						
+
 			    		pb = new ProcessBuilder("ssh",username+"@"+hostname,"mafft","--thread",Integer.toString(Runtime.getRuntime().availableProcessors()),filename);
 			    	}
 			    	//ProcessBuilder pb = new ProcessBuilder("/usr/local/bin/mafft","--thread","32","--localpair",mafftp.getFileName().toString()); //, "-in", "tmp.fasta", "-out", "tmpout.fasta");
-			    	
+
 			    	pb.directory( tmpdir.toFile() );
 			    	//pb.redirectErrorStream(true);
 			    	final Process p = pb.start();
-			    	
+
 			    	Thread t = new Thread(() -> {
 						InputStream is = p.getErrorStream();
 						try {
@@ -4296,7 +4289,7 @@ public class JavaFasta extends JPanel {
 						}
 					});
 			    	t.start();
-			    	
+
 			    	/*t = new Thread() {
 			    		public void run() {
 			    			try {
@@ -4306,7 +4299,7 @@ public class JavaFasta extends JPanel {
 			    				osw.close();
 				    			os.close();
 				    			//serifier.lseq.removeAll( seqlist );
-			    				
+
 			    				/*for( Sequence seq : seqlist ) {
 			    					if( seq.annset != null ) for( Annotation a : seq.annset ) {
 			    						for( Sequence nseq : serifier.lseq ) {
@@ -4316,12 +4309,12 @@ public class JavaFasta extends JPanel {
 			    						}
 			    					}
 			    				}
-			    				
+
 			    				for( Sequence seq : serifier.lseq ) {
 			    					if( seq.annset != null ) {
 			    						for( Annotation a : seq.annset ) {
 			    							int cnt = 0;
-			    							
+
 			    							int newstart = 0;
 			    							int newstop = 0;
 			    							for( int i = 0; i < seq.length(); i++ ) {
@@ -4342,7 +4335,7 @@ public class JavaFasta extends JPanel {
 			    						System.err.println("empt");
 			    					}
 			    				}*/
-				    			
+
 			    				/*ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 				    			int r = is.read();
 						    	while( r != -1 ) {
@@ -4361,15 +4354,15 @@ public class JavaFasta extends JPanel {
 			    		}
 			    	};
 			    	t.start();*/
-			    	
+
 			    	InputStream is = p.getInputStream();
     				BufferedReader br = new BufferedReader( new InputStreamReader(is) );
-    				
+
     				Rectangle selr = getSelectedRect();
     				if( selr != null && selr.width > 0 ) {
 	    				int start = selr.x;
 	    				int end = start+selr.width;
-	    				
+
 	    				List<Sequence> seql = serifier.readSequences( br );
 	    				for( Sequence fs : seqlist ) {
 	    					for( Sequence ns : seql ) {
@@ -4378,19 +4371,19 @@ public class JavaFasta extends JPanel {
 	    						}
 	    					}
 	    				}
-	    				
+
 	    				int len = seql.get(0).length();
 	    				for( Sequence seq : seqlist ) {
 	    					if( seq.annset != null ) {
 	    						for( Annotation a : seq.annset ) {
 	    							if( a.stop > start && a.start < end ) {
 		    							int cnt = start;
-		    							
+
 		    							if( seq.getName().contains("teng") && a.getName().contains("Cas6") ) {
 		    								System.err.println();
 		    							}
 		    							System.err.println(  seq.getName() + " bleh2 " + a.getName() );
-		    							
+
 		    							int bil = a.stop-a.start;
 		    							int newstart = a.start;
 		    							int newstop = a.stop;
@@ -4419,7 +4412,7 @@ public class JavaFasta extends JPanel {
     				} else {
     					serifier.lseq.removeAll( seqlist );
     					importReader( br );
-    					
+
     					for( Sequence seq : seqlist ) {
 	    					if( seq.annset != null ) for( Annotation a : seq.annset ) {
 	    						for( Sequence nseq : serifier.lseq ) {
@@ -4429,12 +4422,12 @@ public class JavaFasta extends JPanel {
 	    						}
 	    					}
 	    				}
-    					
+
     					for( Sequence seq : seqlist ) {
 	    					if( seq.annset != null ) {
 	    						for( Annotation a : seq.annset ) {
 	    							int cnt = 0;
-	    							
+
 	    							int newstart = 0;
 	    							int newstop = 0;
 	    							for( int i = 0; i < seq.length(); i++ ) {
@@ -4456,10 +4449,10 @@ public class JavaFasta extends JPanel {
 	    					}
 	    				}
     				}
-    				
+
     				br.close();
     				is.close();
-    				
+
     				updateView();
 		    	 } catch (IOException e) {
 					e.printStackTrace();
@@ -4483,12 +4476,12 @@ public class JavaFasta extends JPanel {
 					//BufferedWriter fw = Files.newBufferedWriter( tmpdir.resolve( "tmp.fasta" ) ); //new FileWriter( new File( tmpdir, "tmp.fasta" ) );
 					//serifier.writeFasta( seqlist, fw, null );
 			    	//fw.close();
-			    	
+
 			    	ProcessBuilder pb = new ProcessBuilder("/usr/local/bin/muscle"); //, "-in", "tmp.fasta", "-out", "tmpout.fasta");
 			    	pb.directory( tmpdir.toFile() );
 			    	//pb.redirectErrorStream(true);
 			    	final Process p = pb.start();
-			    	
+
 			    	Thread t = new Thread() {
 			    		public void run() {
 			    			InputStream is = p.getErrorStream();
@@ -4501,7 +4494,7 @@ public class JavaFasta extends JPanel {
 			    		}
 			    	};
 			    	t.start();
-			    	
+
 			    	t = new Thread() {
 			    		public void run() {
 			    			try {
@@ -4510,21 +4503,21 @@ public class JavaFasta extends JPanel {
 			    				serifier.writeFasta( seqlist, osw, getSelectedRect() );
 			    				osw.close();
 				    			os.close();
-				    			
+
 			    				InputStream is = p.getInputStream();
 			    				BufferedReader br = new BufferedReader( new InputStreamReader(is) );
-			    				
+
 			    				Rectangle selr = getSelectedRect();
 			    				if( selr != null && selr.width > 0 ) {
 				    				int start = selr.x;
 				    				int end = start+selr.width;
-				    				
+
 				    				List<Sequence> seqlist = serifier.readSequences( br );
 				    				for( Sequence fs : serifier.lseq ) {
 				    					for( Sequence ns : seqlist ) {
 				    						if( fs.getName().equals(ns.getName()) ) {
 				    							fs.replaceSelected( ns, start, end );
-				    							
+
 				    						}
 				    					}
 				    				}
@@ -4532,10 +4525,10 @@ public class JavaFasta extends JPanel {
 			    					serifier.lseq.removeAll( seqlist );
 			    					importReader( br );
 			    				}
-			    				
+
 			    				br.close();
 			    				is.close();
-			    				
+
 			    				/*for( Sequence seq : seqlist ) {
 			    					if( seq.annset != null ) for( Annotation a : seq.annset ) {
 			    						for( Sequence nseq : serifier.lseq ) {
@@ -4545,12 +4538,12 @@ public class JavaFasta extends JPanel {
 			    						}
 			    					}
 			    				}*/
-			    				
+
 			    				/*for( Sequence seq : serifier.lseq ) {
 			    					if( seq.annset != null ) {
 			    						for( Annotation a : seq.annset ) {
 			    							int cnt = 0;
-			    							
+
 			    							int newstart = 0;
 			    							int newstop = 0;
 			    							for( int i = 0; i < seq.length(); i++ ) {
@@ -4571,7 +4564,7 @@ public class JavaFasta extends JPanel {
 			    						System.err.println("empt");
 			    					}
 			    				}*/
-				    			
+
 			    				/*ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 				    			int r = is.read();
 						    	while( r != -1 ) {
@@ -4579,16 +4572,16 @@ public class JavaFasta extends JPanel {
 						    		r = is.read();
 						    	}
 						    	//System.out.println( baos.toString() );*/
-						    	
-						    	
-						    	 
-						    	
+
+
+
+
 						    	/*BufferedReader br = Files.newBufferedReader( tmpdir.resolve("tmpout.fasta") ); //new FileReader( new File( tmpdir, "tmpout.fasta" ) );
 						    	//BufferedReader	br = new BufferedReader( fr );
 						    	importReader( br );
 						    	br.close();
 						    	//fr.close();*/
-						    	 
+
 						    	//table.tableChanged( new TableModelEvent( table.getModel() ) );
 			    				updateView();
 				    		} catch (IOException e) {
@@ -4617,26 +4610,26 @@ public class JavaFasta extends JPanel {
 					FileWriter fw = new FileWriter( new File( tmpdir, "tmp.fasta" ) );
 					serifier.writeFasta( seqlist, fw, getSelectedRect() );
 			    	fw.close();
-			    	
+
 			    	ProcessBuilder pb = new ProcessBuilder("muscle", "-in", "tmp.fasta", "-out", "tmpout.fasta");
 			    	pb.directory( tmpdir );
 			    	Process p = pb.start();
 			    	InputStream os = p.getInputStream();
 			    	while( os.read() != -1 ) ;
-			    	
+
 			    	// serifier.lseq.removeAll( seqlist );
-			    	 
+
 			    	 FileReader fr = new FileReader( new File( tmpdir, "tmpout.fasta" ) );
 			    	 BufferedReader	br = new BufferedReader( fr );
 			    	 List<Sequence> seqs = serifier.readSequences( br );
 			    	 br.close();
 			    	 fr.close();
-			    	 
+
 			    	 for( Sequence s : seqs ) {
 			    		 Sequence ps = serifier.mseq.get( s.getName() );
 			    		 ps.getSequence().replace( c.selectedRect.x, c.selectedRect.x+c.selectedRect.width, s.getSequence().toString() );
 			    	 }
-			    	 
+
 			    	 table.tableChanged( new TableModelEvent( table.getModel() ) );
 		    	 } catch (IOException e) {
 					e.printStackTrace();
@@ -4644,7 +4637,7 @@ public class JavaFasta extends JPanel {
 			}
 		});
 		//popup.addSeparator();
-		
+
 		edit.add( new AbstractAction("Merge same names") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -4655,9 +4648,9 @@ public class JavaFasta extends JPanel {
 					int i = table.convertRowIndexToModel(r);
 					if( i >= 0 && i < serifier.lseq.size() ) {
 						Sequence seq = serifier.lseq.get(i);
-						
+
 						System.err.println("same name se " + seq.getStart() + " " + seq.getEnd() + "  " + seq.offset );
-						
+
 						String name = seq.getName();
 						Set<Sequence> remseq;
 						if( remseqmap.containsKey( name ) ) {
@@ -4681,7 +4674,7 @@ public class JavaFasta extends JPanel {
 						remseq.add( seq );*/
 					}
 				}
-				
+
 				System.err.println( "lseq size " + serifier.lseq.size() );
 				for( String name : remseqmap.keySet() ) {
 					Set<Sequence> remseq = remseqmap.get( name );
@@ -4692,36 +4685,36 @@ public class JavaFasta extends JPanel {
 						if( s.getStart() < start ) start = s.getStart();
 						if( s.getEnd() > end ) end = s.getEnd();
 					}
-					
+
 					newseq.setStart( start );
 					Map<Character,Integer>	charset = new TreeMap<Character,Integer>();
 					Map<Character,Integer>	allcharset = new TreeMap<Character,Integer>();
-					
+
 					System.err.println( "now " + name + " " + start + " " + end );
 					for( int i = start; i < end; i++ ) {
 					//for( int i = 408; i < 410; i++ ) {
 						for( Sequence s : remseq ) {
 							char chr = getgetCharAt(i, s);
 							char cc = Character.toUpperCase(chr);
-							//if( c != '-' && c != ' ' ) 
+							//if( c != '-' && c != ' ' )
 							int k = 0;
 							if( charset.containsKey(cc) ) {
 								k = charset.get(cc);
 							}
 							charset.put( cc, k+1 );
 						}
-						
+
 						for( Sequence s : serifier.lseq ) {
 							char c = getgetCharAt(i, s);
 							char cc = Character.toUpperCase(c);
-							//if( c != '-' && c != ' ' ) 
+							//if( c != '-' && c != ' ' )
 							int k = 0;
 							if( allcharset.containsKey(cc) ) {
 								k = allcharset.get(cc);
 							}
 							allcharset.put( cc, k+1 );
 						}
-						
+
 						if( charset.size() == 0 ) newseq.getSequence().append('-');
 						else if( charset.size() == 1 ) newseq.getSequence().append( charset.keySet().iterator().next() );
 						else if( charset.size() > 1 ) {
@@ -4738,21 +4731,21 @@ public class JavaFasta extends JPanel {
 							}
 							if( val == ' ' ) newseq.getSequence().append('-');
 							else newseq.getSequence().append( val );
-							
+
 							/*	newseq.sb.append( charset.iterator().next() );
 							} else if( charset.size() == 3 ) {
 								newseq.sb.append( charset.iterator().next() );
 							} else newseq.sb.append( 'N' );*/
 						}
-						
+
 						charset.clear();
 						allcharset.clear();
 					}
-					
+
 					serifier.lseq.removeAll( remseq );
 					serifier.lseq.add( newseq );
 				}
-				
+
 				serifier.checkMaxMin();
 				c.updateCoords();
 				table.tableChanged( new TableModelEvent(table.getModel()) );
@@ -4791,21 +4784,21 @@ public class JavaFasta extends JPanel {
 					if( s.getStart() < start ) start = s.getStart();
 					if( s.getEnd() > end ) end = s.getEnd();
 				}
-				
+
 				newseq.setStart( start );
 				Map<Character,Integer>	charset = new TreeMap<>();
 				for( int i = start; i < end; i++ ) {
 					for( Sequence s : remseq ) {
 						char c = s.getCharAt(i);
 						char cc = Character.toUpperCase(c);
-						//if( c != '-' && c != ' ' ) 
+						//if( c != '-' && c != ' ' )
 						int k = 0;
 						if( charset.containsKey(cc) ) {
 							k = charset.get(cc);
 						}
 						charset.put( cc, k+1 );
 					}
-					
+
 					if( charset.size() == 0 ) newseq.getSequence().append('-');
 					else if( charset.size() == 1 ) newseq.getSequence().append( charset.keySet().iterator().next() );
 					else if( charset.size() > 1 ) {
@@ -4821,19 +4814,19 @@ public class JavaFasta extends JPanel {
 							}
 						}
 						newseq.getSequence().append( val );
-						
+
 						/*	newseq.sb.append( charset.iterator().next() );
 						} else if( charset.size() == 3 ) {
 							newseq.sb.append( charset.iterator().next() );
 						} else newseq.sb.append( 'N' );*/
 					}
-					
+
 					charset.clear();
 				}
-				
+
 				serifier.lseq.removeAll( remseq );
 				serifier.lseq.add( newseq );
-				
+
 				table.tableChanged( new TableModelEvent(table.getModel()) );
 				c.repaint();
 				overview.reval();
@@ -4853,7 +4846,7 @@ public class JavaFasta extends JPanel {
 					if( seq.getGroup() != null ) gname = seq.getGroup();
 					remseq.add( seq );
 				}
-				
+
 				Sequence newseq = new Sequence(gname, serifier.mseq);
 				for( Sequence s : remseq ) {
 					/*if( s.getAnnotations() != null ) for( Annotation a : s.getAnnotations() ) {
@@ -4864,10 +4857,10 @@ public class JavaFasta extends JPanel {
 					newseq.append( s );
 				}
 				newseq.setStart( 0 );
-				
+
 				//serifier.lseq.removeAll( remseq );
 				serifier.lseq.add( newseq );
-				
+
 				updateView();
 				overview.reval();
 				overview.repaint();
@@ -4955,7 +4948,7 @@ public class JavaFasta extends JPanel {
 				for( Sequence seq : serifier.lseq ) {
 					if( seq.length() > max ) max = seq.length();
 				}
-				
+
 				for( Sequence seq : serifier.lseq ) {
 					for( int i = seq.length(); i < max; i++ ) {
 						seq.getSequence().append('-');
@@ -4995,7 +4988,7 @@ public class JavaFasta extends JPanel {
 							}
 						}
 						seq.reverseComplement();
-						
+
 						c.repaint();
 					}
 				}
@@ -5015,7 +5008,7 @@ public class JavaFasta extends JPanel {
 						sb.setgetCharAt( i, sb.getCharAt(seq.length()-1-i) );
 						sb.setgetCharAt( seq.length()-1-i, c );
 					}*/
-					
+
 					Rectangle rc = getSelectedRect();
 					if( rc == null || rc.width == 0 ) {
 						seq.reverseComplement();
@@ -5039,7 +5032,7 @@ public class JavaFasta extends JPanel {
 				c.repaint();
 				table.tableChanged( new TableModelEvent( table.getModel() ) );
 			}
-		});	
+		});
 		edit.add( new AbstractAction("Reverse") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -5054,7 +5047,7 @@ public class JavaFasta extends JPanel {
 						sb.setgetCharAt( i, sb.getCharAt(seq.length()-1-i) );
 						sb.setgetCharAt( seq.length()-1-i, c );
 					}*/
-					
+
 					Rectangle rc = getSelectedRect();
 					if( rc == null || rc.width == 0 ) {
 						seq.reverse();
@@ -5091,7 +5084,7 @@ public class JavaFasta extends JPanel {
 						char c = sb.getCharAt(i);
 						sb.setgetCharAt( i, complimentMap.get(c) );
 					}*/
-					
+
 					Rectangle rc = getSelectedRect();
 					if( rc == null || rc.width == 0 ) {
 						seq.complement();
@@ -5136,42 +5129,42 @@ public class JavaFasta extends JPanel {
 				for( int r : rr ) {
 					int k = table.convertRowIndexToModel( r );
 					Sequence seq = serifier.lseq.get( k );
-					
+
 					/*StringBuilder	sb = seq.sb;
-					
+
 					int i1 = sb.indexOf("T");
 					int i2 = sb.indexOf("U");
-					
+
 					if( i1 == -1 ) i1 = sb.length();
 					if( i2 == -1 ) i2 = sb.length();
-					
+
 					while( i1 < sb.length() || i2 < sb.length() ) {
 						while( i1 < i2 ) {
 							sb.setgetCharAt(i1, 'U');
 							i1 = sb.indexOf("T", i1+1);
 							if( i1 == -1 ) i1 = sb.length();
 						}
-						
+
 						while( i2 < i1 ) {
 							sb.setgetCharAt(i2, 'T');
 							i2 = sb.indexOf("U", i2+1);
 							if( i2 == -1 ) i2 = sb.length();
 						}
 					}
-					
+
 					i1 = sb.indexOf("t");
 					i2 = sb.indexOf("u");
-					
+
 					if( i1 == -1 ) i1 = sb.length();
 					if( i2 == -1 ) i2 = sb.length();
-					
+
 					while( i1 < sb.length() || i2 < sb.length() ) {
 						while( i1 < i2 ) {
 							sb.setgetCharAt(i1, 'u');
 							i1 = sb.indexOf("t", i1+1);
 							if( i1 == -1 ) i1 = sb.length();
 						}
-						
+
 						while( i2 < i1 ) {
 							sb.setgetCharAt(i2, 't');
 							i2 = sb.indexOf("u", i2+1);
@@ -5194,40 +5187,40 @@ public class JavaFasta extends JPanel {
 					for( int i = 0; i < sb.length(); i++ ) {
 						if( sb.charAt(i) == '.' || sb.charAt(i) == '*' ) sb.setCharAt(i, '-');
 					}
-					
+
 					/*int i1 = sb.indexOf("T");
 					int i2 = sb.indexOf("U");
-					
+
 					if( i1 == -1 ) i1 = sb.length();
 					if( i2 == -1 ) i2 = sb.length();
-					
+
 					while( i1 < sb.length() || i2 < sb.length() ) {
 						while( i1 < i2 ) {
 							sb.setgetCharAt(i1, 'U');
 							i1 = sb.indexOf("T", i1+1);
 							if( i1 == -1 ) i1 = sb.length();
 						}
-						
+
 						while( i2 < i1 ) {
 							sb.setgetCharAt(i2, 'T');
 							i2 = sb.indexOf("U", i2+1);
 							if( i2 == -1 ) i2 = sb.length();
 						}
 					}
-					
+
 					i1 = sb.indexOf("t");
 					i2 = sb.indexOf("u");
-					
+
 					if( i1 == -1 ) i1 = sb.length();
 					if( i2 == -1 ) i2 = sb.length();
-					
+
 					while( i1 < sb.length() || i2 < sb.length() ) {
 						while( i1 < i2 ) {
 							sb.setgetCharAt(i1, 'u');
 							i1 = sb.indexOf("t", i1+1);
 							if( i1 == -1 ) i1 = sb.length();
 						}
-						
+
 						while( i2 < i1 ) {
 							sb.setgetCharAt(i2, 't');
 							i2 = sb.indexOf("u", i2+1);
@@ -5250,7 +5243,7 @@ public class JavaFasta extends JPanel {
 				}
 				serifier.removeAllNs( seqlist );
 				updateView();
-				
+
 				c.repaint();
 			}
 		});
@@ -5266,7 +5259,7 @@ public class JavaFasta extends JPanel {
 				}
 				serifier.removeGaps( seqlist );
 				updateView();
-				
+
 				c.repaint();
 			}
 		});
@@ -5282,7 +5275,7 @@ public class JavaFasta extends JPanel {
 				}
 				serifier.removeAllGaps( seqlist );
 				updateView();
-				
+
 				c.repaint();
 			}
 		});
@@ -5309,14 +5302,14 @@ public class JavaFasta extends JPanel {
 							int ix = Integer.parseInt( split[0].substring(1,split[0].length()-1) );
 							int is = Integer.parseInt( split[2] );
 							double dis = Double.parseDouble( split[3] );
-							
+
 							if( dis >= -20.0 ) {
 								for( Sequence seq : seqlist ) {
 									seq.getSequence().setCharAt( i, seq.getSequence().charAt(ix-1) );
 								}
 								i++;
 							}
-							
+
 							line = br.readLine();
 						}
 						for( Sequence seq : seqlist ) {
@@ -5329,7 +5322,7 @@ public class JavaFasta extends JPanel {
 					}
 				}
 				//discardEvo( seqlist );
-				
+
 				c.repaint();
 			}
 		});
@@ -5344,7 +5337,7 @@ public class JavaFasta extends JPanel {
 					seqset.add( seq );
 				}
 				clearSitesWithGaps( seqset );
-				
+
 			}
 		});
 		edit.add( new AbstractAction("Clear gaps from selected") {
@@ -5360,7 +5353,7 @@ public class JavaFasta extends JPanel {
 				Collection<Sequence> nonselected = new ArrayList<Sequence>( serifier.lseq );
 				nonselected.removeAll( seqset );
 				clearSitesWithGapsNonSelected( seqset, nonselected );
-				
+
 			}
 		});
 		edit.add( new AbstractAction("Clear conserved sites") {
@@ -5471,13 +5464,13 @@ public class JavaFasta extends JPanel {
 					min = Math.min( min, seq.getStart() );
 					max = Math.max( max, seq.getEnd() );
 				}
-				
+
 				for( int r : rr ) {
 					int k = table.convertRowIndexToModel( r );
 					Sequence seq = serifier.lseq.get( k );
 					seq.setStart( seq.getStart()-min );
 				}
-				
+
 				int i = 0;
 				while( i < max-min ) {
 					boolean rem = true;
@@ -5493,7 +5486,7 @@ public class JavaFasta extends JPanel {
 								rem = false;
 								break;
 							}
-						
+
 							c = c2;
 						}
 					}
@@ -5504,18 +5497,18 @@ public class JavaFasta extends JPanel {
 						max--;
 					} else i++;
 				}
-				
+
 				c.repaint();
 			}
 		});
-		
+
 		view.add( new AbstractAction("Physical mapping") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				frame.setSize(800, 400);
-				
+
 				int[] rr = table.getSelectedRows();
 				final List<Sequence> seqs;
 				if( rr == null || rr.length == 0 ) {
@@ -5527,7 +5520,7 @@ public class JavaFasta extends JPanel {
 						seqs.add( serifier.lseq.get(i) );
 					}
 				}
-				
+
 				int maxseql = 0;
 				for( Sequence seq : seqs ) {
 					maxseql = Math.max( seq.length(), maxseql );
@@ -5535,14 +5528,14 @@ public class JavaFasta extends JPanel {
 				final int maxseqlen = Math.max(1, maxseql);
 				final int fasti = 50;
 				final int offset = 360;
-				
+
 				int w = 3200; //serifier.lseq.get(0).length();
 				int h = fasti*seqs.size()+10;
-				
+
 				BufferedImage bimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 				Graphics2D g2 = bimg.createGraphics();
 				drawPhys( g2, seqs, fasti, maxseqlen, offset, w, h );
-				
+
 				JComponent c = new JComponent() {
 					public void paintComponent( Graphics g ) {
 						Graphics2D g2 = (Graphics2D)g;
@@ -5554,7 +5547,7 @@ public class JavaFasta extends JPanel {
 				c.setSize( dim );
 				JScrollPane pane = new JScrollPane( c );
 				frame.add( pane );
-				
+
 				JPopupMenu popup = new JPopupMenu();
 				popup.add( new AbstractAction("Save img") {
 
@@ -5574,7 +5567,7 @@ public class JavaFasta extends JPanel {
 					}
 				});
 				c.setComponentPopupMenu( popup );
-				
+
 				frame.setVisible(true);
 			}
 		});
@@ -5586,9 +5579,9 @@ public class JavaFasta extends JPanel {
 				String userhome = System.getProperty("user.home");
 				String username = System.getProperty("user.name");
 				String hostname = host.getText();
-				
+
 				Map<String,List<Sequence>> mseq = new HashMap<>();
-				
+
 				for( Sequence seq : serifier.lseq ) {
 					String spec = seq.getSpec();
 					List<Sequence> lseq;
@@ -5600,16 +5593,16 @@ public class JavaFasta extends JPanel {
 					}
 					lseq.add( seq );
 				}
-				
+
 				String home = System.getProperty("user.home");
 				Path tmpdir = Paths.get(home);
 				for( String spec : mseq.keySet() ) {
 					List<Sequence> lseq = mseq.get(spec);
-					
+
 					String filename = "in."+spec+".fasta";
 					String pname = home+"/"+filename;
 					Path p = Paths.get(pname);
-					
+
 					try {
 						BufferedWriter bw = Files.newBufferedWriter(p);
 						serifier.writeFasta(lseq, bw, null);
@@ -5622,7 +5615,7 @@ public class JavaFasta extends JPanel {
 					} catch (IOException e2) {
 						e2.printStackTrace();
 					}*/
-					
+
 					List<String> commandsList;
 					if( hostname.equals("localhost") ) commandsList = new ArrayList<>(Arrays.asList("/Users/sigmarkarl/mummer-4.0.0rc1/mummer", "-maxmatch", "-n", "-l", "15", pname, pname));
 					else {
@@ -5634,16 +5627,16 @@ public class JavaFasta extends JPanel {
 						} catch (IOException | InterruptedException e1) {
 							e1.printStackTrace();
 						}
-						
+
 						commandsList = new ArrayList<>(Arrays.asList("ssh", username + "@" + hostname, "mummer", "-maxmatch", "-n", "-l", "25", filename, filename));
 			    	}
-					
+
 					final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					//Path pout = Paths.get("/Users/sigmar/pout.mummer");
 					List cmds = new ArrayList<>();
 					cmds.add( new Object[] {null, baos, null} );
 					cmds.add( commandsList );
-					
+
 					Runnable run = () -> {
 						String res = baos.toString();
 
@@ -5711,9 +5704,9 @@ public class JavaFasta extends JPanel {
 				String userhome = System.getProperty("user.home");
 				String username = System.getProperty("user.name");
 				String hostname = host.getText();
-				
+
 				/*Map<String,List<Sequence>> mseq = new HashMap<String,List<Sequence>>();
-				
+
 				for( Sequence seq : serifier.lseq ) {
 					String spec = seq.getSpec();
 					List<Sequence> lseq;
@@ -5725,15 +5718,15 @@ public class JavaFasta extends JPanel {
 					}
 					lseq.add( seq );
 				}*/
-				
+
 				//Path tmpdir = Paths.get(userhome);
 				//for( String spec : mseq.keySet() ) {
 					//List<Sequence> lseq = mseq.get(spec);
-					
+
 					/*String filename = "in."+spec+".fasta";
 					String pname = userhome+"/"+filename;
 					Path p = Paths.get(pname);
-					
+
 					try {
 						BufferedWriter bw = Files.newBufferedWriter(p);
 						serifier.writeFasta(lseq, bw, null);
@@ -5741,26 +5734,26 @@ public class JavaFasta extends JPanel {
 					} catch (IOException e2) {
 						e2.printStackTrace();
 					}*/
-					
+
 				List<String> commandsList;
 				if( hostname.equals("localhost") ) commandsList = new ArrayList<>(Arrays.asList(new String[]{"blastp", "-num_threads", "4"}));
 				else {
 					commandsList = new ArrayList<>(Arrays.asList(new String[]{"ssh", username + "@" + hostname, "blastp", "-db", "/data/nr", "-num_threads", "32"}));
 		    	}
-				
+
 				StringWriter sw = new StringWriter();
 				try {
 					serifier.writeFasta(serifier.lseq, sw, getSelectedRect());
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
-				
+
 				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				//Path pout = Paths.get("/Users/sigmar/pout.mummer");
 				List<Object> cmds = new ArrayList<Object>();
 				cmds.add( new Object[] {sw.toString().getBytes(), baos, null} );
 				cmds.add( commandsList );
-				
+
 				Runnable run = () -> {
                     String res = baos.toString();
 
@@ -5812,7 +5805,7 @@ public class JavaFasta extends JPanel {
 				for( int row : rr ) {
 					int m = table.convertRowIndexToModel( row );
 					Sequence sequence = serifier.lseq.get( m );
-					
+
 					Set<Annotation> clearann = new HashSet<Annotation>();
 					for( Annotation ann : sequence.getAnnotations() ) {
 						if( ann.type == null || !ann.type.contains("repeat") ) {
@@ -5847,7 +5840,7 @@ public class JavaFasta extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				int LEN = 2;
 				int repNum = 2;
-				
+
 				List<Repeat> _repeats = new ArrayList<Repeat>();
 				//for( Sequence sequence : serifier.lseq ) {
 				int[] rr = table.getSelectedRows();
@@ -5863,7 +5856,7 @@ public class JavaFasta extends JPanel {
 									break;
 								}
 							}*/
-							
+
 							//if( yes ) {
 								for( int l = k; l < k+i; l++ ) {
 									for( int r = 1; r < repNum; r++ ) {
@@ -5878,7 +5871,7 @@ public class JavaFasta extends JPanel {
 										break;
 									}*/
 								}
-								
+
 								if( yes ) {
 									int u = LEN;
 									while( yes ) {
@@ -5891,34 +5884,34 @@ public class JavaFasta extends JPanel {
 										}
 										if( yes ) u++;
 									}
-									
+
 									int start = k;
 									int stop = k+i*u;
-									
+
 									if( stop - start > 8 ) {
 										Repeat r = new Repeat();
 										r.setName( sequence.getName()+"_repeat_"+i );
-										
+
 										r.setSeq(sequence);
 										r.start = start;
-										
+
 										r.length = i;
 										r.color = Color.blue;
-										
+
 										r.type = "repeat_"+i+"_"+u;
 										r.stop = stop;
-											
+
 										sequence.addAnnotation( r );
 										_repeats.add( r );
 									}
-									
+
 									k = stop;
 								}
 							//}
 						}
 					}
 				}
-				
+
 				serifier.lann.addAll( _repeats );
 				atable.tableChanged( new TableModelEvent( atable.getModel()) );
 			}
@@ -5950,8 +5943,8 @@ public class JavaFasta extends JPanel {
 					rs.setRowFilter(null);
 					rs.setRowFilter( rowfilter );
 					c.updateCoords();
-					
-					
+
+
 					//table.tableChanged( new TableModelEvent(table.getModel()) );
 				}
 			}
@@ -5979,22 +5972,22 @@ public class JavaFasta extends JPanel {
 							for( Sequence seq : lseq ) {
 								int ind = seq.getSequence().indexOf(leit);
 								int rind = seq.getSequence().indexOf(rcleit);
-								
+
 								if( !stopped ) {
 									if( ind != -1 ) {
 										int val = rect.x+serifier.getMin()-(seq.getStart()+ind);
-										
+
 										for( Sequence sseq : lseq ) {
 											if( sseq != s ) {
 												sseq.setStart( sseq.getStart()+val );
 											}
 										}
 										s.setStart( s.getStart()+val );
-										
+
 										stopped = true;
 									} else if( rind != -1 ) {
 										System.err.println( "reverse" );
-										
+
 										for( Sequence subseq : lseq ) {
 											subseq.reverseComplement();
 											if( subseq != s ) {
@@ -6002,21 +5995,21 @@ public class JavaFasta extends JPanel {
 											}
 										}
 										s.reverseComplement();
-										
+
 										ind = seq.getSequence().indexOf(leit);
 										int val = rect.x+serifier.getMin()-(seq.getStart()+ind);
-										
+
 										for( Sequence sseq : lseq ) {
 											if( sseq != s ) {
 												sseq.setStart( sseq.getStart()+val );
 											}
 										}
 										s.setStart( s.getStart()+val );
-										
+
 										stopped = true;
 									}
 								}
-								
+
 								if( ind != -1 || rind != -1 ) {
 									int u = seq.getSequence().indexOf(leit);
 									if( u != -1 ) filterset.add( seq.index );
@@ -6031,7 +6024,7 @@ public class JavaFasta extends JPanel {
 						rs.setRowFilter(null);
 						rs.setRowFilter( rowfilter );
 						c.updateCoords();
-						
+
 						//table.tableChanged( new TableModelEvent(table.getModel()) );
 					}
 				}
@@ -6042,7 +6035,7 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				collapseView = !collapseView;
-				
+
 				if( !collapseView ) {
 					//filterset.clear();
 					//c.updateCoords();
@@ -6051,7 +6044,7 @@ public class JavaFasta extends JPanel {
 			}
 		});
 		view.add( cbmi2 );
-		
+
 		anno.add( new AbstractAction("Annotate selected") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -6059,7 +6052,7 @@ public class JavaFasta extends JPanel {
 				for( int y = selr.y; y < selr.y+selr.height; y++ ) {
 					int i = table.convertColumnIndexToModel(y);
 					Sequence seq = serifier.lseq.get(i);
-					
+
 					Annotation a = new Annotation(seq,"unknown",Color.gray,selr.x,selr.x+selr.width,1,null);
 					serifier.lann.add( a );
 					Collections.sort( seq.getAnnotations() );
@@ -6067,7 +6060,7 @@ public class JavaFasta extends JPanel {
 				atable.tableChanged( new TableModelEvent( atable.getModel() ) );
 			}
 		});
-		
+
 		//popup.addSeparator();
 		file.add( new AbstractAction("Open") {
 			@Override
@@ -6086,7 +6079,7 @@ public class JavaFasta extends JPanel {
 				jfc.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 		    	if( jfc.showOpenDialog( parentApplet ) == JFileChooser.APPROVE_OPTION ) {
 		    		File f = jfc.getSelectedFile();
-		    		
+
 		    		Path startingDir = Paths.get( f.toURI() );
 		            String pattern = "*.ab1";
 
@@ -6108,7 +6101,7 @@ public class JavaFasta extends JPanel {
 				frame.setSize(800, 600);
 				JavaFasta	jf = new JavaFasta();
 				jf.initGui( frame );
-				
+
 				List<Sequence> seqs = JavaFasta.this.getSequences();
 				for( Sequence s : seqs ) {
 					Sequence seq = new Sequence(s.getName(), jf.serifier.mseq);
@@ -6120,7 +6113,7 @@ public class JavaFasta extends JPanel {
 					jf.serifier.addSequence(seq);
 				}
 				jf.updateView();
-				
+
 				frame.setVisible( true );
 			}
 		});
@@ -6132,7 +6125,7 @@ public class JavaFasta extends JPanel {
 				frame.setSize(800, 600);
 				JavaFasta	jf = new JavaFasta();
 				jf.initGui( frame );
-				
+
 				Map<Sequence,List<Annotation>> mann = new HashMap<>();
 				int[] rr = atable.getSelectedRows();
 				for( int r : rr ) {
@@ -6141,7 +6134,7 @@ public class JavaFasta extends JPanel {
 					if( ann.getSeq() == null ) {
 						System.err.println();
 					}
-					
+
 					List<Annotation> alist;
 					if( mann.containsKey(ann.getSeq()) ) {
 						alist = mann.get( ann.getSeq() );
@@ -6151,7 +6144,7 @@ public class JavaFasta extends JPanel {
 					}
 					alist.add( ann );
 				}
-				
+
 				for( Sequence seq : mann.keySet() ) {
 					List<Annotation> alist = mann.get(seq);
 					Collections.sort( alist );
@@ -6159,18 +6152,18 @@ public class JavaFasta extends JPanel {
 					for( int i = 0; i < alist.size()-1; i++ ) {
 						Annotation a = alist.get(i);
 						Annotation na = alist.get(i+1);
-						
+
 						String type = "";
 						if( a.getName().contains("-") ) type = "-"+a.getName().substring(0,4);
 						else if( na.getName().contains("-") ) type = "-"+na.getName().substring(0,4);
-						
+
 						String newname = a.getSeq().getName()+"-CRISPR-"+a.start+type;
 						Sequence nseq = new Sequence( newname, serifier.mseq );
-						
+
 						if( a.stop+1 > na.start-1 ) {
 							System.err.println();
 						}
-						
+
 						String subs = a.getSeq().getSubstring(a.stop+1, na.start-1, 1);
 						if( na.start - a.stop < 50 && na.start - a.stop > 19 ) {
 							Annotation newa = new Annotation(seq,newname,null,a.stop+1,na.start-1,0,serifier.mann);
@@ -6179,7 +6172,7 @@ public class JavaFasta extends JPanel {
 							spacerlist.add( newa );
 							serifier.lann.add( newa );
 						}
-						
+
 						nseq.append( subs );
 						jf.serifier.addSequence(nseq);
 					}
@@ -6187,7 +6180,7 @@ public class JavaFasta extends JPanel {
 					//Collections.sort( alist );
 				}
 				jf.updateView();
-				
+
 				frame.setVisible( true );
 			}
 		});
@@ -6209,7 +6202,7 @@ public class JavaFasta extends JPanel {
 					for( String cons : serifier.gseq.keySet() ) {
 						Sequence 		parseq = serifier.mseq.get(cons);
 						List<Sequence> 	sseq = serifier.gseq.get(cons);
-						
+
 						for( Sequence s : sseq ) {
 							int diff = parseq.getStart() - s.getStart();
 							if( diff >= 50 ) {
@@ -6217,7 +6210,7 @@ public class JavaFasta extends JPanel {
 								nseq.append( s.getSubstring(0, diff, 1) );
 								lseq.add( nseq );
 							}
-							
+
 							diff = s.getEnd() - parseq.getEnd();
 							if( diff >= 50 ) {
 								Sequence nseq = new Sequence( parseq.getName()+"_right", null );
@@ -6231,7 +6224,7 @@ public class JavaFasta extends JPanel {
 						File f = jfc.getSelectedFile();
 	        		 //FileOutputStream fos = new FileOutputStream( f );
 	        		 //fos.write( baos.toByteArray() );
-	        		 
+
 	        		 	FileWriter fw = new FileWriter( f );
 	        		 	serifier.writeFasta( lseq, fw, null );
 	        		 	fw.close();
@@ -6320,7 +6313,7 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				StringBuilder sb = distanceMatrix( true );
-				
+
 				File save = null;
 				try {
 					JFileChooser	fc = new JFileChooser();
@@ -6328,9 +6321,9 @@ public class JavaFasta extends JPanel {
 						save = fc.getSelectedFile();
 					}
 				} catch( Exception e1 ) {
-					
+
 				}
-				
+
 				if( save != null ) {
 					try {
 						FileWriter fw = new FileWriter( save );
@@ -6386,7 +6379,7 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				StringBuilder sb = distanceMatrix( false );
-				
+
 				File save = null;
 				try {
 					JFileChooser	fc = new JFileChooser();
@@ -6394,9 +6387,9 @@ public class JavaFasta extends JPanel {
 						save = fc.getSelectedFile();
 					}
 				} catch( Exception e1 ) {
-					
+
 				}
-				
+
 				if( save != null ) {
 					try(FileWriter fw = new FileWriter( save )) {
 						fw.write( sb.toString() );
@@ -6418,16 +6411,16 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Map<String,Integer> blosumap = JavaFasta.getBlosumMap();
-				
+
 				List<String> names = new ArrayList<>();
 				for( Sequence seq : serifier.lseq ) {
 					names.add( seq.getName() );
 				}
-				
+
 				StringBuilder sb = distanceMatrix( false, blosumap, names );
-				
+
 				System.err.println( sb.toString().split("\n").length );
-				
+
 				File save = null;
 				try {
 					JFileChooser	fc = new JFileChooser();
@@ -6435,9 +6428,9 @@ public class JavaFasta extends JPanel {
 						save = fc.getSelectedFile();
 					}
 				} catch( Exception e1 ) {
-					
+
 				}
-				
+
 				if( save != null ) {
 					try(FileWriter fw = new FileWriter( save )) {
 						fw.write( sb.toString() );
@@ -6460,13 +6453,13 @@ public class JavaFasta extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Map<String, Integer> blosumap = getBlosumMap();
 				double[] dd = distanceMatrixNumeric( false, null, blosumap );
-				
+
 				System.err.println("about to call showTree");
 				List<String> corrInd = new ArrayList<String>();
 				for( Sequence seq : serifier.lseq ) {
 					corrInd.add( seq.getName() );
 				}
-				
+
 				StringBuilder sb = printDistanceMatrix( dd, corrInd );
 				Path p = Paths.get( "/Users/sigmar/dist.txt" );
 				try {
@@ -6474,11 +6467,11 @@ public class JavaFasta extends JPanel {
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
-				
+
 				TreeUtil tu = new TreeUtil();
-				TreeUtil.Node n = tu.neighborJoin(dd, corrInd, null, false, false);
+				Node n = tu.neighborJoin(dd, corrInd, null, false, false);
 				String tree = n.toString();
-				
+
 				/*boolean failed = false;
 				try {
 					JSObject jso = JSObject.getWindow( parentApplet );
@@ -6486,7 +6479,7 @@ public class JavaFasta extends JPanel {
 				} catch( NoSuchMethodError | Exception e1 ) {
 					failed = true;
 				}*/
-				
+
 				//if( failed ) {
 				//String 				tree = serifier.getFastTree();
 				if( cs.getConnections().size() > 0 ) {
@@ -6502,7 +6495,7 @@ public class JavaFasta extends JPanel {
 					}
 		    	}
 				//}
-				
+
 				/*String urlstr = Base64.encodeBase64URLSafeString( sb.toString().getBytes() );
 				try {
 					URI treeuri = new URI( "http://webconnectron.appspot.com/Treedraw.html?dist="+urlstr );
@@ -6512,7 +6505,7 @@ public class JavaFasta extends JPanel {
 				} catch (MalformedURLException e1) {
 					e1.printStackTrace();
 				}
-				
+
 				try {
 					URI treeuri = new URI( "http://webconnectron.appspot.com/Treedraw.html" );
 					JavaFasta.this.getAppletContext().showDocument(treeuri.toURL(), "_blank");
@@ -6531,19 +6524,19 @@ public class JavaFasta extends JPanel {
 		    		 Sequence seq = serifier.lseq.get(i);
 		    		 seqlist.add( seq );
 		    	 }
-		    	 
+
 		    	 /*List<Sequence> oldseq = serifier.lseq;
 		    	 serifier.lseq = seqlist;
 		    	 String tree = serifier.getFastTree();
 		    	 serifier.lseq = oldseq;*/
-		    	 
+
 		    	 //System.err.println( tree );
 			     /*pb = new ProcessBuilder("google-chrome", "http://127.0.0.1:8888/Treedraw.html"); //"http://webconnectron.appspot.com/Treedraw.html");
 		    	p = pb.start();
 		    	OutputStream os = p.getOutputStream();
 		    	os.write( tree.getBytes() );
 		    	os.close();*/
-		    	 
+
 
 				String 				tree = serifier.getFastTree( seqlist, user, false );
 				System.err.println( tree );
@@ -6594,7 +6587,7 @@ public class JavaFasta extends JPanel {
 				StringBuilder sb = distanceMatrix( true );
 			}
 		});
-		
+
 		name.add( new AbstractAction("Retain") {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -6604,31 +6597,31 @@ public class JavaFasta extends JPanel {
 					try {
 						List<String> lines = Files.readAllLines(p);
 						Set<String> lset = new HashSet<String>( lines );
-						
+
 						Set<Sequence> remset = new HashSet<Sequence>();
 						int[] rr = table.getSelectedRows();
 						for( int r : rr ) {
 							int i = table.convertRowIndexToModel(r);
 							Sequence seq = serifier.lseq.get(i);
-							
+
 							if( !lset.contains(seq.getName()) ) remset.add( seq );
 						}
 						serifier.lseq.removeAll( remset );
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					
+
 					c.updateCoords();
 					table.tableChanged( new TableModelEvent( table.getModel() ) );
 				}
-				
+
 				/*JTextField tf = new JTextField();
 				JOptionPane.showMessageDialog(cnt, tf);
 				int r = table.getSelectedRow();
 				int i = table.convertRowIndexToModel( r );
 				Sequence s = serifier.lseq.get( i );
 				int k = s.sb.indexOf( tf.getText() );
-				
+
 				Rectangle rect = c.getVisibleRect();
 				rect.x = k*10;
 				c.scrollRectToVisible( rect );*/
@@ -6643,7 +6636,7 @@ public class JavaFasta extends JPanel {
 				int i = table.convertRowIndexToModel( r );
 				Sequence s = serifier.lseq.get( i );
 				int k = s.getSequence().indexOf( tf.getText() );
-				
+
 				Rectangle rect = c.getVisibleRect();
 				rect.x = (int)((k+s.offset)*c.cw);
 				c.scrollRectToVisible( rect );
@@ -6661,7 +6654,7 @@ public class JavaFasta extends JPanel {
 					if( s.getName().contains(tf.getText()) ) {
 						int r = table.convertRowIndexToView(i);
 						table.setRowSelectionInterval(r, r);
-						
+
 						Rectangle rect = c.getVisibleRect();
 						rect.y = r*table.getRowHeight();
 						rect.x = (-serifier.getMin()+s.getStart())*10;
@@ -6672,7 +6665,7 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		});
-		
+
 		name.add( new AbstractAction("Find duplicates") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -6681,11 +6674,11 @@ public class JavaFasta extends JPanel {
 					int i = table.convertRowIndexToModel(r);
 					Sequence seq = serifier.lseq.get(i);
 					String seqstr = seq.getSequence().toString();
-					
+
 					for( int k = r+1; k < rr.length; k++ ) {
 						i = table.convertRowIndexToModel(k);
 						Sequence seq2 = serifier.lseq.get(i);
-						
+
 						if( seqstr.compareTo( seq2.getSequence().toString() ) == 0 ) {
 							table.removeRowSelectionInterval(0, table.getRowCount()-1);
 							table.setRowSelectionInterval(r, r);
@@ -6693,7 +6686,7 @@ public class JavaFasta extends JPanel {
 							break;
 						}
 					}
-					
+
 					if( table.getSelectedRowCount() == 2 ) break;
 				}
 			}
@@ -6705,12 +6698,12 @@ public class JavaFasta extends JPanel {
 				for( int i = 0; i < rr.length; i++ ) {
 					Sequence seq = serifier.lseq.get( rr[i] );
 					String seqstr = seq.getName();
-					
+
 					int count = 0;
 					for( int n = i+1; n < rr.length; n++ ) {
 						Sequence seq2 = serifier.lseq.get(n);
 						String seqstr2 = seq2.getName();
-						
+
 						if( seqstr.compareTo( seqstr2 ) == 0 ) {
 							int curi = seqstr2.indexOf('[');
 							if( curi == -1 ) {
@@ -6739,26 +6732,26 @@ public class JavaFasta extends JPanel {
 					int i = table.convertRowIndexToModel(r);
 					sortseqs.add( i );
 				}
-				
+
 				Collection<Sequence> removee = new HashSet<Sequence>();
 				while( sortseqs.size() > 0 ) {
 					Collection<Integer> removei = new HashSet<Integer>();
 					for( int i : sortseqs ) {
 						Sequence seq = serifier.lseq.get(i);
 						String seqstr = seq.getName();
-						
+
 						for( int n : sortseqs ) {
 							if( n > i ) {
 								Sequence seq2 = serifier.lseq.get(n);
 								String seqstr2 = seq2.getName();
-								
+
 								if( seqstr.compareTo( seqstr2 ) == 0 ) {
 									removee.add( seq2 );
 									removei.add( n );
 								}
 							}
 						}
-						
+
 						removei.add(i);
 						break;
 					}
@@ -6779,26 +6772,26 @@ public class JavaFasta extends JPanel {
 					int i = table.convertRowIndexToModel(r);
 					sortseqs.add( i );
 				}
-				
+
 				Collection<Sequence> removee = new HashSet<>();
 				while( sortseqs.size() > 0 ) {
 					Collection<Integer> removei = new HashSet<>();
 					for( int i : sortseqs ) {
 						Sequence seq = serifier.lseq.get(i);
 						String seqstr = seq.getSequence().toString();
-						
+
 						for( int n : sortseqs ) {
 							if( n > i ) {
 								Sequence seq2 = serifier.lseq.get(n);
 								String seqstr2 = seq2.getSequence().toString();
-								
+
 								if( seqstr.compareTo( seqstr2 ) == 0 ) {
 									removee.add( seq2 );
 									removei.add( n );
 								}
 							}
 						}
-						
+
 						removei.add(i);
 						break;
 					}
@@ -6871,12 +6864,12 @@ public class JavaFasta extends JPanel {
 				Map<String,String> ss = new HashMap<>();
 				for( Sequence seq : serifier.lseq ) {
 					String name = seq.getName();
-					
+
 					int i = name.indexOf('_');
 					if( i != -1 ) {
 						//int k = name.indexOf('_', i+1);
 						//if( k != -1 ) {
-						
+
 						int li = name.lastIndexOf(';');
 						int k = name.indexOf("_");
 						if( k == -1 ) k = li;
@@ -6888,7 +6881,7 @@ public class JavaFasta extends JPanel {
 							color = colors[ss.size()];
 							ss.put( key, color );
 						}
-						
+
 						if( li != -1 ) {
 							String end = name.substring(li+1).replace(';', ' ').trim();
 							seq.setName( name.substring(0,li)+"["+color+"]$;"+end );
@@ -6898,7 +6891,7 @@ public class JavaFasta extends JPanel {
 							//String end = name.substring(li+1).replace(';', ' ').trim();
 							//seq.setName( name.substring(0,li)+"["+color+"]{1.0 1.0 2.0};"+end );
 						}
-						
+
 						/*int li = name.lastIndexOf(';');
 						int ln = name.lastIndexOf(';', li-1);
 						if( ln != -1 ) {
@@ -6920,7 +6913,7 @@ public class JavaFasta extends JPanel {
 					Map<String,String> or = openRenameFile();
 					for( String seqval : or.keySet() ) {
 						String rename = or.get(seqval);
-						
+
 						for( Sequence seq : serifier.lseq ) {
 							if( seq.getName().equals(seqval) ) {
 								seq.setName( seq.getName() + "_" + rename );
@@ -6940,7 +6933,7 @@ public class JavaFasta extends JPanel {
 					Map<String,String> or = openRenameFile();
 					for( String seqval : or.keySet() ) {
 						String rename = or.get(seqval);
-						
+
 						for( Sequence seq : serifier.lseq ) {
 							if( seq.getStringBuilder().indexOf(seqval) != -1 ) {
 								seq.setName( seq.getName() + "_" + rename );
@@ -6967,7 +6960,7 @@ public class JavaFasta extends JPanel {
 					}
 					ul.add( seq );
 				}
-				
+
 				for( String seqname : un.keySet() ) {
 					List<Sequence> ul = un.get( seqname );
 					for( int i = 1; i < ul.size(); i++ ) {
@@ -7028,7 +7021,7 @@ public class JavaFasta extends JPanel {
 				for( int r : rr ) {
 					int i = table.convertRowIndexToModel(r);
 					Sequence seq = serifier.lseq.get(i);
-					
+
 					String name = seq.getName();
 					int d = name.lastIndexOf('-');
 					if( d == -1 ) d = name.length();
@@ -7100,7 +7093,7 @@ public class JavaFasta extends JPanel {
 			}
 		});
 		name.add( new AbstractAction("Reverse names") {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int[] rr = table.getSelectedRows();
@@ -7122,7 +7115,7 @@ public class JavaFasta extends JPanel {
 				updateView();
 			}
 		});
-		
+
 		popup.add( new AbstractAction("Shannon blocks filering") {
 			public void actionPerformed( ActionEvent e ) {
 				final JCheckBox cb = new JCheckBox("Only use selected for evaluation");
@@ -7135,7 +7128,7 @@ public class JavaFasta extends JPanel {
 				JOptionPane.showMessageDialog(parentApplet, message, "Shannon blocks filter", JOptionPane.DEFAULT_OPTION );
 				int winsize = (Integer)sp.getValue();
 				double per = (Double)pc.getValue();
-				
+
 				int min;
 				int max;
 				int total = table.getRowCount();
@@ -7143,16 +7136,16 @@ public class JavaFasta extends JPanel {
 				if( cb.isSelected() ){
 					min = Integer.MAX_VALUE;
 					max = Integer.MIN_VALUE;
-					
+
 					seqset = new HashSet<Sequence>();
 					int[] rr = table.getSelectedRows();
 					for( int r : rr ) {
 						int k = table.convertRowIndexToModel( r );
 						Sequence seq = serifier.lseq.get( k );
-						
+
 						min = Math.min( min, seq.getStart() );
 						max = Math.max( max, seq.getEnd() );
-						
+
 						seqset.add( seq );
 					}
 					total = seqset.size();
@@ -7160,12 +7153,12 @@ public class JavaFasta extends JPanel {
 					min = serifier.getMin();
 					max = serifier.getMax();
 				}
-				
+
 				double[] d = new double[max-min];
 				Map<Character,Integer>	shanmap = new HashMap<>();
 				for( int x = min; x < max; x++ ) {
 					shanmap.clear();
-					
+
 					if( seqset != null ) {
 						for( Sequence seq : seqset ) {
 							char c = getCharAt( x, table.convertRowIndexToView( seq.index ) );
@@ -7181,7 +7174,7 @@ public class JavaFasta extends JPanel {
 							shanmap.put( c, val+1 );
 						}
 					}
-					
+
 					double res = 0.0;
 					for( char c : shanmap.keySet() ) {
 						int val = shanmap.get(c);
@@ -7190,7 +7183,7 @@ public class JavaFasta extends JPanel {
 					}
 					d[x-min] = res;
 				}
-				
+
 				double[] old = d;
 				double sum = 0.0;
 				for( int k = 0; k < Math.min( old.length, winsize ); k++ ) {
@@ -7201,7 +7194,7 @@ public class JavaFasta extends JPanel {
 					d[i] = sum/(double)winsize;
 					sum += -d[i]+old[i+winsize];
 				}
-				
+
 				int i = 0;
 				while( i < max-min ) {
 					boolean rem = true;
@@ -7227,11 +7220,11 @@ public class JavaFasta extends JPanel {
 					}
 					i++;
 				}
-				
+
 				for( Sequence seq : seqset ) {
 					seq.checkLengths();
 				}
-				
+
 				c.repaint();
 			}
 		});
@@ -7258,7 +7251,7 @@ public class JavaFasta extends JPanel {
 					}
 					d[x-serifier.getMin()] = res;
 				}
-				
+
 				final JCheckBox	cb = new JCheckBox("Filter blocks");
 				final JSpinner 	sp = new JSpinner( new SpinnerNumberModel(10, 2, 100, 1) );
 				sp.setEnabled( false );
@@ -7299,28 +7292,28 @@ public class JavaFasta extends JPanel {
 						}
 					}
 					if( seqs[1] == null ) seqs[1] = seqs[0];
-					
+
 					final int x;
 					final int y;
-					
+
 					final int offset;
 					Rectangle rc = getSelectedRect();
 					if( rc != null && rc.width > 0 ) {
 						offset = rc.x;
-						
+
 						x = rc.width;
 						y = rc.width;
 					} else {
 						offset = 0;
-						
+
 						x = seqs[0].length();
 						y = seqs[1].length();
 					}
-					
+
 					final JDialog	dialog = new JDialog();
 					dialog.setSize(300, 200);
 					dialog.setDefaultCloseOperation( dialog.DISPOSE_ON_CLOSE );
-					
+
 					JComponent	panel = new JComponent() {};
 					Border brd = new EmptyBorder(10, 10, 10, 10);
 					panel.setBorder( brd );
@@ -7328,7 +7321,7 @@ public class JavaFasta extends JPanel {
 					grid.setHgap(5);
 					grid.setVgap(5);
 					panel.setLayout( grid );
-					
+
 					JLabel		windlab = new JLabel("Window");
 					final JSpinner	windspin = new JSpinner( new SpinnerNumberModel(10, 1, 1000, 1) );
 					JLabel		errlab = new JLabel("Errors");
@@ -7341,23 +7334,23 @@ public class JavaFasta extends JPanel {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							dialog.dispose();
-							
+
 							JFrame	frame = new JFrame();
 							frame.setSize(800, 600);
 							frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-							
+
 							Sequence first = seqs[0];
 							Sequence second = seqs[1];
 							int w = (Integer)windspin.getValue();
 							int err = (Integer)errspin.getValue();
-							
+
 							final int ix = (Integer)wspin.getValue();
 							final int iy = (Integer)hspin.getValue();
 							final BufferedImage	bi = new BufferedImage( ix, iy, BufferedImage.TYPE_INT_ARGB );
 							Graphics2D g2 = bi.createGraphics();
 							g2.setColor( Color.white );
 							g2.fillRect(0, 0, ix,  iy);
-							
+
 							int rx = x-w;
 							int ry = y-w;
 							if( err == -1 ) {
@@ -7366,7 +7359,7 @@ public class JavaFasta extends JPanel {
 									int ind = i+offset;
 									String check = first.getSubstring(ind, ind+w, 1);//first.sb.substring(ind, ind+w);
 									String rcheck = first.getSubstring(ind, ind+w, -1);
-									
+
 									int x = (ix*i)/rx;
 									int k = secstr.indexOf( check );
 									while( k != -1 ) {
@@ -7375,21 +7368,21 @@ public class JavaFasta extends JPanel {
 											System.err.println();
 										}*/
 										bi.setRGB(x, y, 0xFF000000);
-										
+
 										k = secstr.indexOf( check, k+1 );
 									}
 									int r = secstr.indexOf( rcheck );
 									while( r != -1 ) {
 										int y = (iy*r)/ry;
-										//if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() ) 
+										//if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() )
 										bi.setRGB(x, y, 0xFFFF0000);
-										
+
 										r = secstr.indexOf( rcheck, r+1 );
 									}
 								}
 							} else {
 								Annotation rann = null;
-								
+
 								for( int i = 0; i < rx; i++ ) {
 									Annotation fann = null;
 									System.err.println( i + " of " + rx );
@@ -7401,22 +7394,22 @@ public class JavaFasta extends JPanel {
 												char c = first.getCharAt(i+v+offset);
 												char sc = second.getCharAt(k-v+w-1+offset);
 												if( c == second.getCharAt(k+v+offset) ) count++;
-												
+
 												Character rC = Sequence.rc.get( sc );
-												
+
 												/*if( rC == null ) {
 													System.err.println();
 												}*/
-												
+
 												char rc = rC;
 												if( c == rc ) rcount++;
 											}
-											
+
 											if( w - count <= err ) {
 												if( /*rann == null &&*/ fann == null ) {
 													fann = new Annotation( first,i,i+w,1, second.getSubstring(i, i+w, 1) );
 												}
-												
+
 												int x = (ix*i)/rx;
 												int y = (iy*k)/ry;
 												if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() ) {
@@ -7430,12 +7423,12 @@ public class JavaFasta extends JPanel {
 												}
 												fann = null;
 											}*/
-											
+
 											if( w - rcount <= err ) {
 												if( /*rann == null &&*/ fann == null ) {
 													fann = new Annotation( first,i,i+w,1, first.getSubstring(i, i+w, -1) );
 												}
-												
+
 												int x = (ix*i)/rx;
 												int y = (iy*k)/ry;
 												if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() ) {
@@ -7451,7 +7444,7 @@ public class JavaFasta extends JPanel {
 											}*/
 										}
 									}
-									
+
 									if( fann != null ) {
 										if( rann != null && i-rann.start == rann.stop-rann.start-w+1 ) {
 											rann.stop++;
@@ -7464,7 +7457,7 @@ public class JavaFasta extends JPanel {
 									} else rann = null;
 								}
 							}
-							
+
 							List<Annotation> lann = new ArrayList<>();
 							int[] rr = atable.getSelectedRows();
 							//g2.setColor( Color.green );
@@ -7478,31 +7471,31 @@ public class JavaFasta extends JPanel {
 							for( Annotation a : lann ) {
 								int start = iy*(a.start-offset)/ry;
 								int stop = iy*(a.stop-offset)/ry;
-								
+
 								if( start < ix && stop > 0 ) {
 									if( g2.getColor() == Color.green ) g2.setColor( Color.darkGray );
 									else g2.setColor( Color.green );
 									g2.drawLine(start, start, stop, stop);
 								}
 							}
-							
+
 							//g2.setColor( Color.magenta );
 							//g2.fillRect(10, 10, 90, 90);
-							
+
 							g2.dispose();
-							
+
 							/*for( int i = 20; i < 90; i++) {
 								for( int k = 10; k < 100; k++) {
 									bi.setRGB(i, k, 0xFFaaaa00);
 								}
 							}*/
-							
+
 							atable.tableChanged( new TableModelEvent( atable.getModel() ) );
-							
+
 							JComponent	comp = new JComponent() {
 								public void paintComponent( Graphics g ) {
 									super.paintComponent(g);
-									
+
 									g.drawImage( bi, 0, 0, this );
 								}
 							};
@@ -7510,33 +7503,33 @@ public class JavaFasta extends JPanel {
 							JScrollPane	scrollpane = new JScrollPane();
 							scrollpane.setViewportView( comp );
 							frame.add( scrollpane );
-							
+
 							comp.addMouseListener( new MouseListener() {
 								int startx;
 								int starty;
-								
+
 								@Override
 								public void mouseReleased(MouseEvent e) {
 									int x = e.getX();
 									int y = e.getY();
-									
+
 									int minx = Math.min(startx, x);
 									//int miny = Math.min(starty, y);
-									
+
 									int maxx = Math.max(startx, x);
 									//int maxy = Math.max(starty, y);
-									
+
 									int start = minx; //Math.min( minx, miny );
 									int stop = maxx; //Math.max( maxx, maxy );
-									
+
 									double pstart = (double)(start*serifier.getDiff())/(double)ix;
 									double pstop = (double)(stop*serifier.getDiff())/(double)ix;
-									
+
 									c.selectedRect.y = 0;
 									c.selectedRect.height = 1;
 									c.selectedRect.x = (int)pstart;
 									c.selectedRect.width = (int)pstop - c.selectedRect.x;
-									
+
 									atable.clearSelection();
 									int i = 0;
 									for( Annotation a : serifier.lann ) {
@@ -7546,26 +7539,26 @@ public class JavaFasta extends JPanel {
 										}
 										i++;
 									}
-									
+
 									c.repaint();
 								}
-								
+
 								@Override
 								public void mousePressed(MouseEvent e) {
 									startx = e.getX();
 									starty = e.getY();
 								}
-								
+
 								@Override
 								public void mouseExited(MouseEvent e) {}
-								
+
 								@Override
 								public void mouseEntered(MouseEvent e) {}
-								
+
 								@Override
 								public void mouseClicked(MouseEvent e) {}
 							});
-							
+
 							JPopupMenu	popup = new JPopupMenu();
 							popup.add( new AbstractAction("Save image") {
 								@Override
@@ -7573,14 +7566,14 @@ public class JavaFasta extends JPanel {
 									ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 									try {
 										ImageIO.write(bi, "png",  baos);
-										
-										/*FileSaveService fss; 
+
+										/*FileSaveService fss;
 										try {
 											fss = (FileSaveService)ServiceManager.lookup("javax.jnlp.FileSaveService");
 									    	} catch( UnavailableServiceException e2 ) {
 									    		fss = null;
 									    	}*/
-									    	 
+
 								         /*if (fss != null) {
 								        	 	ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
 								             FileContents fileContents = fss.saveFileDialog(null, null, bais, "export.png");
@@ -7595,7 +7588,7 @@ public class JavaFasta extends JPanel {
 								        		 FileOutputStream fos = new FileOutputStream( f );
 								        		 fos.write( baos.toByteArray() );
 								        		 fos.close();
-								        		 
+
 								        		 Desktop.getDesktop().browse( f.toURI() );
 								        	 }
 								         //}
@@ -7605,7 +7598,7 @@ public class JavaFasta extends JPanel {
 								}
 							});
 							comp.setComponentPopupMenu( popup );
-							
+
 							frame.setVisible( true );
 						}
 					});
@@ -7619,18 +7612,18 @@ public class JavaFasta extends JPanel {
 					panel.add( hlab );
 					panel.add( hspin );
 					panel.add( ok );
-					
+
 					dialog.setVisible( true );
 				}
 			}
 		});
-		
+
 		popup.add( new AbstractAction("GC plot") {
 			public void actionPerformed( ActionEvent e ) {
 				final JDialog	dialog = new JDialog();
 				dialog.setSize(300, 200);
 				dialog.setDefaultCloseOperation( dialog.DISPOSE_ON_CLOSE );
-				
+
 				JComponent	panel = new JComponent() {};
 				Border brd = new EmptyBorder(10, 10, 10, 10);
 				panel.setBorder( brd );
@@ -7638,7 +7631,7 @@ public class JavaFasta extends JPanel {
 				grid.setHgap(5);
 				grid.setVgap(5);
 				panel.setLayout( grid );
-				
+
 				JLabel		windlab = new JLabel("Window");
 				final JSpinner	windspin = new JSpinner( new SpinnerNumberModel(10, 1, 1000, 1) );
 				JLabel		errlab = new JLabel("Points");
@@ -7651,33 +7644,33 @@ public class JavaFasta extends JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						dialog.dispose();
-						
+
 						//JFrame	frame = new JFrame();
 						fxframe.setSize(800, 600);
 						fxframe.setDefaultCloseOperation( JFrame.HIDE_ON_CLOSE );
-						
+
 						if( fxp != null ) {
 							fxp = new JFXPanel();
 							fxframe.setLayout( new BorderLayout() );
 							fxframe.add( fxp, BorderLayout.CENTER );
 						}
-						
+
 						int w = (Integer)windspin.getValue();
 						int p = (Integer)errspin.getValue();
-						
+
 						int ir = 0;
 						int r = table.getSelectedRow();
 						if( r != -1 ) r = table.convertRowIndexToModel( r );
 						if( r != -1 ) ir = r;
-						
+
 						Sequence s = serifier.lseq.get(ir);
-						
+
 						final XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
 						double[] d = new double[ p ];
 						//int start = w/2;
 						for( int i = 0; i < p; i++ ) {
 							int u = i*(s.length()-w)/p;
-							
+
 							int tot = 0;
 							int gctot = 0;
 							for( int k = u; k < u+w; k++ ) {
@@ -7688,17 +7681,17 @@ public class JavaFasta extends JPanel {
 								tot++;
 							}
 							d[i] = (double)gctot/(double)tot;
-							
+
 							XYChart.Data<Number,Number> dd = new XYChart.Data<Number,Number>( i, d[i] );
 				        	//Tooltip.install( d.getNode(), new Tooltip( names[i] ) );
 				        	series.getData().add( dd );
 						}
-				       
+
 						final NumberAxis xAxis = new NumberAxis();
 					    final NumberAxis yAxis = new NumberAxis();
 						final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
 						//Scene scene = createBarChartScene( names, data, xTitle, yTitle, start, stop, step, title );
-						
+
 						Platform.runLater(new Runnable() {
 			                 @Override
 			                 public void run() {
@@ -7707,27 +7700,27 @@ public class JavaFasta extends JPanel {
 			                		 //fxframe.setScene( scene );
 			                		 fxp.setScene(scene);
 			                	 } else {
-			                		 
+
 			                		 scene.setRoot( lineChart );
 			                	 }
 								 lineChart.getData().add(series);
-								 
+
 								 //lineChart.re
 			                 }
 			            });
-				        
+
 						/*Sequence first = seqs[0];
 						Sequence second = seqs[1];
 						int w = (Integer)windspin.getValue();
 						int err = (Integer)errspin.getValue();
-						
+
 						int ix = (Integer)wspin.getValue();
 						int iy = (Integer)hspin.getValue();
 						final BufferedImage	bi = new BufferedImage( ix, iy, BufferedImage.TYPE_INT_ARGB );
 						Graphics2D g2 = bi.createGraphics();
 						g2.setColor( Color.white );
 						g2.fillRect(0, 0, ix,  iy);
-						
+
 						int rx = x-w;
 						int ry = y-w;
 						if( err == 0 ) {
@@ -7736,7 +7729,7 @@ public class JavaFasta extends JPanel {
 								int ind = i+offset;
 								String check = first.getSubstring(ind, ind+w, 1);//first.sb.substring(ind, ind+w);
 								String rcheck = first.getSubstring(ind, ind+w, -1);
-								
+
 								int x = (ix*i)/rx;
 								int k = secstr.indexOf( check );
 								while( k != -1 ) {
@@ -7745,15 +7738,15 @@ public class JavaFasta extends JPanel {
 										System.err.println();
 									}*
 									bi.setRGB(x, y, 0xFF000000);
-									
+
 									k = secstr.indexOf( check, k+1 );
 								}
 								int r = secstr.indexOf( rcheck );
 								while( r != -1 ) {
 									int y = (iy*r)/ry;
-									//if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() ) 
+									//if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() )
 									bi.setRGB(x, y, 0xFFFF0000);
-									
+
 									r = secstr.indexOf( rcheck, r+1 );
 								}
 							}
@@ -7767,9 +7760,9 @@ public class JavaFasta extends JPanel {
 										char c = first.getCharAt(i+v+offset);
 										char sc = second.getCharAt(k-v+w-1+offset);
 										if( c == second.getCharAt(k+v+offset) ) count++;
-										
+
 										Character rC = Sequence.rc.get( sc );
-										
+
 										char rc = rC;
 										if( c == rc ) rcount++;
 									}
@@ -7778,7 +7771,7 @@ public class JavaFasta extends JPanel {
 										int y = (iy*k)/ry;
 										if( x >= 0 && x < bi.getWidth() && y >= 0 && y < bi.getHeight() ) bi.setRGB(x, y, 0xFF000000);
 									}
-									
+
 									if( w - rcount <= err ) {
 										int x = (ix*i)/rx;
 										int y = (iy*k)/ry;
@@ -7787,7 +7780,7 @@ public class JavaFasta extends JPanel {
 								}
 							}
 						}
-						
+
 						int[] rr = atable.getSelectedRows();
 						g2.setColor( Color.green );
 						for( int r : rr ) {
@@ -7795,17 +7788,17 @@ public class JavaFasta extends JPanel {
 							Annotation a = serifier.lann.get(m);
 							int start = iy*(a.start-offset)/ry;
 							int stop = iy*(a.stop-offset)/ry;
-							
+
 							if( start < ix && stop > 0 ) {
 								g2.drawLine(start, start, stop, stop);
 							}
 						}
 						g2.dispose();
-						
+
 						JComponent	comp = new JComponent() {
 							public void paintComponent( Graphics g ) {
 								super.paintComponent(g);
-								
+
 								g.drawImage( bi, 0, 0, this );
 							}
 						};
@@ -7813,31 +7806,31 @@ public class JavaFasta extends JPanel {
 						JScrollPane	scrollpane = new JScrollPane();
 						scrollpane.setViewportView( comp );
 						frame.add( scrollpane );
-						
+
 						comp.addMouseListener( new MouseListener() {
 							int startx;
 							int starty;
-							
+
 							@Override
 							public void mouseReleased(MouseEvent e) {
 								int x = e.getX();
 								int y = e.getY();
-								
+
 								int minx = Math.min(startx, x);
 								int miny = Math.min(starty, y);
-								
+
 								int maxx = Math.max(startx, x);
 								int maxy = Math.max(starty, y);
-								
+
 								int start = Math.min( minx, miny );
 								int stop = Math.max( maxx, maxy );
-								
+
 								double pstart = (double)(start*serifier.getDiff())/(double)ix;
 								double pstop = (double)(stop*serifier.getDiff())/(double)ix;
-								
+
 								c.selectedRect.x = (int)pstart;
 								c.selectedRect.width = (int)pstop - c.selectedRect.x;
-								
+
 								atable.clearSelection();
 								int i = 0;
 								for( Annotation a : serifier.lann ) {
@@ -7847,26 +7840,26 @@ public class JavaFasta extends JPanel {
 									}
 									i++;
 								}
-								
+
 								c.repaint();
 							}
-							
+
 							@Override
 							public void mousePressed(MouseEvent e) {
 								startx = e.getX();
 								starty = e.getY();
 							}
-							
+
 							@Override
 							public void mouseExited(MouseEvent e) {}
-							
+
 							@Override
 							public void mouseEntered(MouseEvent e) {}
-							
+
 							@Override
 							public void mouseClicked(MouseEvent e) {}
 						});
-						
+
 						JPopupMenu	popup = new JPopupMenu();
 						popup.add( new AbstractAction("Save image") {
 							@Override
@@ -7874,14 +7867,14 @@ public class JavaFasta extends JPanel {
 								ByteArrayOutputStream	baos = new ByteArrayOutputStream();
 								try {
 									ImageIO.write(bi, "png",  baos);
-									
-									FileSaveService fss; 
+
+									FileSaveService fss;
 									try {
 										fss = (FileSaveService)ServiceManager.lookup("javax.jnlp.FileSaveService");
 							    	} catch( UnavailableServiceException e2 ) {
 							    		fss = null;
 							    	}
-							    	 
+
 							         if (fss != null) {
 							        	 ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
 							             FileContents fileContents = fss.saveFileDialog(null, null, bais, "export.png");
@@ -7896,7 +7889,7 @@ public class JavaFasta extends JPanel {
 							        		 FileOutputStream fos = new FileOutputStream( f );
 							        		 fos.write( baos.toByteArray() );
 							        		 fos.close();
-							        		 
+
 							        		 Desktop.getDesktop().browse( f.toURI() );
 							        	 }
 							         }
@@ -7906,7 +7899,7 @@ public class JavaFasta extends JPanel {
 							}
 						});
 						comp.setComponentPopupMenu( popup );*/
-						
+
 						fxframe.setVisible( true );
 					}
 				});
@@ -7916,13 +7909,13 @@ public class JavaFasta extends JPanel {
 				panel.add( errlab );
 				panel.add( errspin );
 				panel.add( ok );
-				
+
 				dialog.setVisible( true );
 			}
 		});
 		table.setComponentPopupMenu( popup );
 		tablescroll.setComponentPopupMenu( popup );
-		
+
 		/*fastascroll.getRowHeader().addChangeListener( new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
@@ -7933,7 +7926,7 @@ public class JavaFasta extends JPanel {
 			}
 		});*/
 		table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
-			
+
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				table.getVisibleRect();
@@ -7954,7 +7947,7 @@ public class JavaFasta extends JPanel {
 					int r = table.getSelectedRow();
 					int i = table.convertRowIndexToModel( r );
 					Sequence s = serifier.lseq.get( i );
-					
+
 					Rectangle rect = c.getVisibleRect();
 					if( rect.x == (int)((s.getStart()-serifier.getMin())*c.cw) ) {
 						rect.x = (int)((s.getEnd()-serifier.getMin())*c.cw)-rect.width;
@@ -7977,10 +7970,10 @@ public class JavaFasta extends JPanel {
 		table.addKeyListener( new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {}
-			
+
 			@Override
 			public void keyReleased(KeyEvent e) {}
-			
+
 			@Override
 			public void keyPressed(KeyEvent e) {
 				int keycode = e.getKeyCode();
@@ -8024,17 +8017,17 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		});
-		
+
 		overview = new Overview();
 		overviewsplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
 		overviewsplit.setDividerLocation(0.7);
 		overviewsplit.setTopComponent( splitpane );
 		overviewsplit.setBottomComponent( overview );
-		
+
 		JTextField	asearch = new JTextField();
 		atable = new JTable() {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -8042,10 +8035,10 @@ public class JavaFasta extends JPanel {
 				//super.getToolTipText( me );
 				Point p = me.getPoint();
 				int y = p.y/atable.getRowHeight();
-				
+
 				int i = atable.convertRowIndexToModel( y );
 				Annotation a = serifier.lann.get(i);
-				
+
 				if( a.desc != null ) return a.desc.toString();
 				return a.getName();
 			}
@@ -8053,7 +8046,7 @@ public class JavaFasta extends JPanel {
 		atable.setDragEnabled( true );
 		atable.setToolTipText( "" );
 		atable.setAutoCreateRowSorter( true );
-		
+
 		JScrollPane	ascroll = new JScrollPane( atable );
 		JComponent	acomp = new JComponent() {};
 		acomp.setLayout( new BorderLayout() );
@@ -8063,7 +8056,7 @@ public class JavaFasta extends JPanel {
 		mainsplit.setDividerLocation(0.7);
 		mainsplit.setLeftComponent( overviewsplit );
 		mainsplit.setRightComponent( acomp );
-		
+
 		JPopupMenu	apopup = new JPopupMenu();
 		atable.setComponentPopupMenu( apopup );
 		apopup.add( new AbstractAction("Open as sequence") {
@@ -8074,7 +8067,7 @@ public class JavaFasta extends JPanel {
 				frame.setSize(800, 600);
 				JavaFasta	jf = new JavaFasta();
 				jf.initGui( frame );
-				
+
 				int[] rr = atable.getSelectedRows();
 				for( int r : rr ) {
 					int i = atable.convertRowIndexToModel(r);
@@ -8083,9 +8076,9 @@ public class JavaFasta extends JPanel {
 					jf.serifier.addSequence(aseq);
 					jf.serifier.mseq.put(aseq.getName(), aseq);
 				}
-			
+
 				jf.updateView();
-				
+
 				frame.setVisible( true );
 			}
 		});
@@ -8097,12 +8090,12 @@ public class JavaFasta extends JPanel {
 				int[] rr = atable.getSelectedRows();
 				for( int r : rr ) {
 					int i = atable.convertRowIndexToModel(r);
-					
+
 					if( i >= 0 && i < serifier.lann.size() ) {
 						Annotation a = serifier.lann.get(i);
 						remannset.add( a );
 					}
-					
+
 					// right?
 					//a.seq.removeAnnotation( a );
 				}
@@ -8117,17 +8110,17 @@ public class JavaFasta extends JPanel {
 				int[] rr = atable.getSelectedRows();
 				for( int r : rr ) {
 					int i = atable.convertRowIndexToModel(r);
-					
+
 					Annotation a = serifier.lann.get(i);
 					remannset.add( a );
-					
+
 					a.getSeq().removeAnnotation( a );
 				}
 				serifier.lann.removeAll( remannset );
 				atable.tableChanged( new TableModelEvent(atable.getModel() ) );
 			}
 		});
-		
+
 		apopup.add( new AbstractAction("Align offset") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -8140,7 +8133,7 @@ public class JavaFasta extends JPanel {
 					seqs.put( a.getSeq(), a );
 					max = Math.max(max, a.start);
 				}
-				
+
 				for( Sequence seq : seqs.keySet() ) {
 					Annotation sela = seqs.get(seq);
 					seq.setStart(max-sela.start);
@@ -8171,7 +8164,7 @@ public class JavaFasta extends JPanel {
 					seqs.put( a.getSeq(), a );
 					max = Math.max(max, a.start);
 				}
-				
+
 				for( Sequence seq : seqs.keySet() ) {
 					Annotation sela = seqs.get(seq);
 					List<Annotation> lann = seq.getAnnotations();
@@ -8186,11 +8179,11 @@ public class JavaFasta extends JPanel {
 									hit--;
 								}
 								hit = max-a.start;
-								
+
 								break;
 							}
 						}
-						
+
 						for( Annotation a : lann ) {
 							if( hit != -1 ) {
 								a.start += hit;
@@ -8213,7 +8206,7 @@ public class JavaFasta extends JPanel {
 					seqs.put( a.getSeq(), a );
 					max = Math.max(max, a.stop);
 				}
-				
+
 				for( Sequence seq : seqs.keySet() ) {
 					Annotation sela = seqs.get(seq);
 					List<Annotation> lann = seq.getAnnotations();
@@ -8221,13 +8214,13 @@ public class JavaFasta extends JPanel {
 						int hit = -1;
 						System.err.println( "mmu start" );
 						for( Annotation a : lann ) {
-							if( hit != -1 ) { 
+							if( hit != -1 ) {
 								System.err.println( "mmu " + a.start );
-								
+
 								a.start += hit;
 								a.stop += hit;
 							} else System.err.println( "mmux " + a.start );
-							
+
 							if( a == sela ) {
 								hit = max-a.stop;
 								while( hit > 0 ) {
@@ -8270,7 +8263,7 @@ public class JavaFasta extends JPanel {
 							sset.add( ann.getSeq() );
 						}
 					}
-					
+
 					for( Sequence seq : sset ) {
 						seq.sortLocs();
 					}
@@ -8286,55 +8279,55 @@ public class JavaFasta extends JPanel {
 				hcell.put("Cse2", 3);
 				hcell.put("Csd2", 4);
 				hcell.put("Cmr3", 5);
-				
+
 				for( Sequence seq : serifier.lseq ) {
 					List<Annotation> lann = seq.getAnnotations();
 					if( lann != null ) {
 						String found = null;
 						int fidx = -1;
-						
+
 						for( int k = 0; k < lann.size(); k++ ) {
 							Annotation a = lann.get(k);
-							
+
 							for( String type : hcell.keySet() ) {
 								if( a.getName() != null && a.getName().contains(type) ) {
 									found = type;
 									fidx = k;
 								}
 							}
-							
+
 							String type = a.getType();
 							if( found != null && type != null && type.contains("mummer") ) {
 								if( !a.getName().contains("-") ) {
 									a.setName( found+"-"+a.getName() );
 								}
 							}
-							
+
 							if( k > fidx+100 ) {
 								found = null;
 							}
 						}
-						
+
 						found = null;
 						fidx = -1;
-						
+
 						for( int k = lann.size()-1; k >= 0; k-- ) {
 							Annotation a = lann.get(k);
-							
+
 							for( String type : hcell.keySet() ) {
 								if( a.getName() != null && a.getName().contains(type) ) {
 									found = type;
 									fidx = k;
 								}
 							}
-							
+
 							String type = a.getType();
 							if( found != null && type != null && type.contains("mummer") ) {
 								if( !a.getName().contains("-") ) {
 									a.setName( found+"-"+a.getName() );
 								}
 							}
-							
+
 							if( k < fidx-100 ) {
 								found = null;
 							}
@@ -8377,7 +8370,7 @@ public class JavaFasta extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Set<Annotation> allset = new HashSet<>();
-				
+
 				Map<Sequence, List<Annotation>> mann = new HashMap<>();
 				int[] rr = atable.getSelectedRows();
 				if( rr != null && rr.length > 0 ) {
@@ -8394,7 +8387,7 @@ public class JavaFasta extends JPanel {
 						}
 						lann.add( ann );
 						allset.add( ann );
-						
+
 						//mann.put( ann.seq, ann );
 					}
 				} else {
@@ -8413,65 +8406,65 @@ public class JavaFasta extends JPanel {
 							lann.add( ann );
 							allset.add( ann );
 						}
-						
+
 						//mann.put( ann.seq, ann );
 					}
 				}
 				System.err.println( "reps " + allset.size() );
-				
+
 				Set<Annotation> remannset = new HashSet<>();
 				for( Sequence seq : mann.keySet() ) {
 					List<Annotation> lann = mann.get( seq );
 					Collections.sort(lann);
-					
+
 					Set<Annotation> remo = new HashSet<>();
 					Annotation first = lann.get(0);
 					for( int i = 1; i < lann.size(); i++ ) {
 						Annotation second = lann.get(i);
-						
+
 						if( second.start < first.stop ) {
 							first.stop = Math.max(first.stop, second.stop);
 							remo.add( second );
 						} else first = second;
 					}
 					lann.removeAll( remo );
-					
+
 					for( int i = 0; i < lann.size()-1; i++ ) {
 						first = lann.get(i);
 						Annotation second = lann.get(i+1);
-						
+
 						if( first.stop-first.start < 50 && second.stop-second.start < 50 && second.start-first.stop > 15 && second.start-first.stop < 50 ) {
 							boolean similar = false;
 							String minna = first.getName().length() < second.getName().length() ? first.getName() : second.getName();
 							String meira = minna == first.getName() ? second.getName() : first.getName();
-							
+
 							minna = minna.toUpperCase();
 							meira = meira.toUpperCase();
-							
+
 							for( int u = 0; u < meira.length()-20; u++ ) {
 								int count = 0;
 								for( int m = 0; m < Math.min(meira.length()-u,minna.length()); m++ ) {
 									if( minna.charAt(m) == meira.charAt(m+u) ) count++;
 								}
-								
+
 								if( count >= 20 ) {
 									similar = true;
 									break;
 								}
 							}
-							
+
 							if( !similar ) for( int u = 0; u < minna.length()-20; u++ ) {
 								int count = 0;
 								for( int m = 0; m < Math.min(minna.length()-u,meira.length()); m++ ) {
 									if( minna.charAt(m+u) == meira.charAt(m) ) count++;
 								}
-								
+
 								if( count >= 20 ) {
 									similar = true;
 									break;
 								}
 							}
-							
+
 							if( similar ) {
 								remannset.add( first );
 								remannset.add( second );
@@ -8480,19 +8473,19 @@ public class JavaFasta extends JPanel {
 						}
 					}
 				}
-				
+
 				System.err.println( "remann "+remannset.size() );
 				allset.removeAll( remannset );
 				/*int[] rr = atable.getSelectedRows();
 				for( int r : rr ) {
 					int i = atable.convertRowIndexToModel(r);
-					
+
 					Annotation a = serifier.lann.get(i);
 					remannset.add( a );
-					
+
 					a.seq.removeAnnotation( a );
 				}*/
-				
+
 				serifier.lann.removeAll( allset );
 				atable.tableChanged( new TableModelEvent(atable.getModel() ) );
 			}
@@ -8557,37 +8550,37 @@ public class JavaFasta extends JPanel {
 						//mann.put( ann.seq, ann );
 					}
 				}
-				
+
 				int maxcount = 14;
 				Set<String> specset = new TreeSet<>();
 				for( String seq : mann.keySet() ) {
 					List<Annotation> lann = mann.get( seq );
 					Collections.sort(lann);
-					
+
 					String spec = Sequence.getSpec( seq );
 					//spec = Sequence.nameFix(spec, true);
 					//System.err.println( "truff " + seq + " " + lann.size() );
-					
+
 					specset.add( spec );
-					
+
 					for( int i = 0; i < lann.size(); i++ ) {
 						Annotation ann = lann.get(i);
 						String annname = ann.getName();
 						int idx = annname.indexOf('-');
 						if( idx != -1 ) annname = annname.substring(idx+1).toUpperCase();
-						
+
 						int storecount = 0;
 						String similar = null;
 						boolean rev = false;
-						
+
 						int maxconsecount = 0;
 						for( String rep : tann.keySet() ) {
 							//String minna = ann.name.length() < rep.length() ? ann.name : rep;
 							//String meira = minna == ann.name ? rep : ann.name;
-							
+
 							//minna = minna.toUpperCase();
 							//meira = meira.toUpperCase();
-							
+
 							for( int u = 0; u < rep.length()-maxcount; u++ ) {
 								int count = 0;
 								int consecount = 0;
@@ -8603,14 +8596,14 @@ public class JavaFasta extends JPanel {
 									}
 								}
 								if( consecount > storeconsecount ) storeconsecount = consecount;
-								
+
 								if( count >= maxcount && storeconsecount > maxconsecount ) {
 									storecount = count;
 									maxconsecount = storeconsecount;
 									similar = rep.toUpperCase();
 								}
 							}
-							
+
 							for( int u = 0; u < annname.length()-maxcount; u++ ) {
 								int count = 0;
 								int consecount = 0;
@@ -8626,14 +8619,14 @@ public class JavaFasta extends JPanel {
 									}
 								}
 								if( consecount > storeconsecount ) storeconsecount = consecount;
-								
+
 								if( count >= maxcount && storeconsecount > maxconsecount ) {
 									storecount = count;
 									maxconsecount = storeconsecount;
 									similar = rep.toUpperCase();
 								}
 							}
-							
+
 							for( int u = 0; u < rep.length()-maxcount; u++ ) {
 								int count = 0;
 								int consecount = 0;
@@ -8649,7 +8642,7 @@ public class JavaFasta extends JPanel {
 									}
 								}
 								if( consecount > storeconsecount ) storeconsecount = consecount;
-								
+
 								if( count >= maxcount && storeconsecount > maxconsecount ) {
 									rev = true;
 									storecount = count;
@@ -8657,7 +8650,7 @@ public class JavaFasta extends JPanel {
 									similar = rep.toUpperCase();
 								}
 							}
-							
+
 							for( int u = 0; u < annname.length()-maxcount; u++ ) {
 								int count = 0;
 								int consecount = 0;
@@ -8673,7 +8666,7 @@ public class JavaFasta extends JPanel {
 									}
 								}
 								if( consecount > storeconsecount ) storeconsecount = consecount;
-								
+
 								if( count >= maxcount && storeconsecount > maxconsecount ) {
 									rev = true;
 									storecount = count;
@@ -8681,12 +8674,12 @@ public class JavaFasta extends JPanel {
 									similar = rep.toUpperCase();
 								}
 							}
-							
+
 							/*if( similar != null ) {
 								break;
 							}*/
 						}
-						
+
 						List<Annotation> lan;
 						if( similar != null && tann.containsKey(similar) ) {
 							Map<String,List<Annotation>> lanm = tann.get( similar );
@@ -8697,56 +8690,56 @@ public class JavaFasta extends JPanel {
 								lan = new ArrayList<>();
 								lanm.put( spec, lan );
 							}
-							
+
 							/*if( ann.seq.name.contains("2137") ) {
 								System.err.println( "setnext: " + annname + " similar to " + similar + " rev " + rev + " storecount " + storecount );
 							}*/
-							
+
 							//System.err.println( "blubbbbbi " + ann.seq.name );
 						} else {
 							Map<String,List<Annotation>> lanm = new HashMap<>();
 							lan = new ArrayList<>();
 							lanm.put( ann.getSeq().getSpec(), lan );
 							tann.put( annname, lanm );
-							
+
 							//if( ann.seq.name.contains("2137") ) System.err.println( "reference: " + annname );
 						}
 						lan.add( ann );
 					}
 				}
-				
+
 				Map<String,CellStyle>	repeatColor = new HashMap<>();
-				
+
 				List<RepeatNum>	lrn = new ArrayList<>();
 				Map<String,String>	commonRepeatMap = new HashMap<>();
 				for( String rep : tann.keySet() ) {
 					Map<String,List<Annotation>>	lanm = tann.get(rep);
-					
+
 					int sum = 0;
 					for( String spec : lanm.keySet() ) {
 						List<Annotation> slann = lanm.get(spec);
 						for( Annotation a : slann ) commonRepeatMap.put(a.getName(), rep);
-						
+
 						sum += slann.size();
 					}
-					
+
 					lrn.add( new RepeatNum(rep,sum) );
 				}
-				
+
 				Workbook wb = new XSSFWorkbook();
 				Sheet sh = wb.createSheet("CRISPR");
-				
+
 				CellStyle csPlas = wb.createCellStyle();
 				csPlas.setFillForegroundColor( IndexedColors.RED.index );
 				csPlas.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 				repeatColor.put("plas", csPlas);
-				
+
 				CellStyle csNb = wb.createCellStyle();
 				csNb.setFillForegroundColor( IndexedColors.GREEN.index );
 				csNb.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 				repeatColor.put("np", csNb);
-				
-				
+
+
 				CellStyle csRed = wb.createCellStyle();
 				csRed.setFillForegroundColor( IndexedColors.RED.index );
 				csRed.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -8765,7 +8758,7 @@ public class JavaFasta extends JPanel {
 				CellStyle csYellow = wb.createCellStyle();
 				csYellow.setFillForegroundColor( IndexedColors.YELLOW.index );
 				csYellow.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-				
+
 				int i = 0;
 				CellStyle[] colors = new CellStyle[] { csRed, csGreen, csBlue, csCyan, csMagenta, csYellow };
 				Collections.sort( lrn );
@@ -8776,9 +8769,9 @@ public class JavaFasta extends JPanel {
 				}
 				tann.clear();
 				tann = tann2;
-				
-				
-				
+
+
+
 				int total = 0;
 				for( String rep : tann.keySet() ) {
 					Map<String,List<Annotation>> lanm = tann.get( rep );
@@ -8787,7 +8780,7 @@ public class JavaFasta extends JPanel {
 						total += lann.size();
 					}
 				}
-				
+
 				Map<String,Row> hrow = new HashMap<>();
 				Map<String,Integer> hcell = new HashMap<>();
 				hcell.put("Csh2", 1);
@@ -8795,18 +8788,18 @@ public class JavaFasta extends JPanel {
 				hcell.put("Cse2", 3);
 				hcell.put("Csd2", 4);
 				hcell.put("Cmr3", 5);
-				
+
 				Map<String,Map<String,Integer>> typeRepeat = new HashMap<>();
-				
+
 				//hcell.put();
-				
+
 				Map<String,Integer> hcell2 = new HashMap<>();
 				//hcell.put("Csh2", 1);
 				hcell2.put("III-A", 2);
 				hcell2.put("I-E", 3);
 				//hcell.put("Csd2", 4);
 				hcell2.put("III-B", 5);
-				
+
 				i = 0;
 				List<Row> nullrow = new ArrayList<>();
 				Row rw = sh.createRow(i++);
@@ -8816,24 +8809,24 @@ public class JavaFasta extends JPanel {
 					rw.createCell(c).setCellValue(crispr);
 				}
 				rw.createCell(hcell.size()+1).setCellValue("Cas6");
-				
+
 				rw = sh.createRow(i++);
 				nullrow.add( rw );
 				for( String crispr : hcell2.keySet() ) {
 					int c = hcell2.get(crispr);
 					rw.createCell(c).setCellValue(crispr);
 				}
-				
+
 				int k = 0;
 				for( String spec : specset ) {
 					rw = sh.createRow(i++);
 					nullrow.add( rw );
 					hrow.put(spec,rw);
-					
+
 					String nspec = Sequence.nameFix(spec, true);
 					rw.createCell(k).setCellValue(nspec);
 				}
-				
+
 				i++;
 				//i = 0;
 				k = 1;
@@ -8847,7 +8840,7 @@ public class JavaFasta extends JPanel {
 					System.err.print( "\t" + spec );
 				}
 				System.err.println();
-				
+
 				i++;
 				Map<String,Integer> msi = new HashMap<String,Integer>();
 				for( String rep : tann.keySet() ) {
@@ -8856,17 +8849,17 @@ public class JavaFasta extends JPanel {
 					for( String s : lanm.keySet() ) {
 						sum += lanm.get(s).size();
 					}
-					
+
 					k = 0;
 					rw = sh.createRow(i++);
-					
+
 					Cell cell = rw.createCell(k++);
 					cell.setCellValue(rep);
 					CellStyle cs = repeatColor.get(rep);
 					if( cs != null ) cell.setCellStyle( cs );
-					
+
 					rw.createCell(k++).setCellValue(sum);
-					
+
 					System.err.print( rep+"\t"+sum );
 					for( String spec : specset ) {
 						int count = 0;
@@ -8883,7 +8876,7 @@ public class JavaFasta extends JPanel {
 					}
 					System.err.println();
 				}
-				
+
 				rw = sh.createRow(i++);
 				k = 1;
 				rw.createCell(k++).setCellValue(total);;
@@ -8898,7 +8891,7 @@ public class JavaFasta extends JPanel {
 					}
 				}
 				Map<String,CellStyle>	csMap = new HashMap<>();
-				
+
 				i++;
 				List<Row> lrow = new ArrayList<>();
 				Row hd = sh.createRow(i++);
@@ -8910,29 +8903,29 @@ public class JavaFasta extends JPanel {
 					for( Sequence seq : serifier.lseq ) {
 						if( seq.getName().contains(spec) && mann.containsKey(seq.getName()) ) {
 							List<Annotation> repeats = mann.get(seq.getName());
-							
+
 							if( u < lrow.size() ) rw = lrow.get(u);
 							else {
 								rw = sh.createRow(i+u);
 								lrow.add(rw);
 							}
 							u++;
-							
+
 							rw.createCell(k).setCellValue(seq.getName());
-							
+
 							List<Annotation> olann = seq.getAnnotations();
 							if( olann != null ) {
 								String type = null;
 								int mcount = 0;
 								String lastrep = null;
 								int count = 0;
-								
+
 								List<Annotation> lann = new ArrayList<>( olann );
 								lann.addAll( repeats );
 								Collections.sort( lann );
-								
+
 								Map<String,Integer> lastrepeats = new HashMap<>();
-								
+
 								int onlycas = -1;
 								String name = null;
 								String lastname = null;
@@ -8946,19 +8939,19 @@ public class JavaFasta extends JPanel {
 									int m = name.indexOf('(');
 									if( m == -1 ) m = name.length();
 									name = name.substring(0,m);
-									
+
 									if( ann.type != null && ann.type.contains("mummer") ) {
 										if( onlycas > 2 ) {
 											Row r = hrow.get(spec);
 											int c = hcell.size()+1;
-											
+
 											Contig ct = (Contig)seq;
 											boolean plas = ct.isPlasmid();
 											String plastr = plas ? "plas" : "np";
-											
+
 											Cell cell = r.createCell(c);
 											cell.setCellValue( plastr );
-											
+
 											CellStyle cs = repeatColor.get(plastr);
 											if( cs != null ) {
 												cell.setCellStyle(cs);
@@ -8966,7 +8959,7 @@ public class JavaFasta extends JPanel {
 										}
 										onlycas = 0;
 										String rep = commonRepeatMap.get(ann.getName()); //null;
-										
+
 										if( lastrepeats.containsKey(rep) ) {
 											lastrepeats.put( rep, lastrepeats.get(rep)+1 );
 										} else {
@@ -8986,7 +8979,7 @@ public class JavaFasta extends JPanel {
 											}
 										}
 										System.err.println( rep );*/
-										
+
 										if( mcount > 0 && lastrep != null && !lastrep.equals(rep) ) {
 											if( u < lrow.size() ) rw = lrow.get(u);
 											else {
@@ -8998,12 +8991,12 @@ public class JavaFasta extends JPanel {
 											cell.setCellValue( mcount+"-"+lastrep );
 											CellStyle cs = repeatColor.get(lastrep);
 											if( cs != null ) cell.setCellStyle( cs );
-											
+
 											mcount = 0;
 										}
 										mcount++;
 										lastrep = rep;
-										
+
 										if( count > 0 ) {
 											if( u < lrow.size() ) rw = lrow.get(u);
 											else {
@@ -9012,7 +9005,7 @@ public class JavaFasta extends JPanel {
 											}
 											u++;
 											rw.createCell(k).setCellValue( count == 1 ? lastname : "count "+count );
-											
+
 											count = 0;
 										}
 									} else if( name.contains("CRISPR") || name.contains("Csh") || name.contains("Cse") || name.contains("Cmr") || name.contains("Crm") || name.contains("Cas") || name.contains("Csd") || name.contains("Csm") ) {
@@ -9024,7 +9017,7 @@ public class JavaFasta extends JPanel {
 											}
 											u++;
 											rw.createCell(k).setCellValue( count == 1 ? lastname : "count "+count );
-											
+
 											count = 0;
 										} else if( mcount > 0 ) {
 											if( u < lrow.size() ) rw = lrow.get(u);
@@ -9037,17 +9030,17 @@ public class JavaFasta extends JPanel {
 											cell.setCellValue( mcount+"-"+lastrep );
 											CellStyle cs = repeatColor.get(lastrep);
 											if( cs != null ) cell.setCellStyle( cs );
-											
+
 											mcount = 0;
 										}
-										
+
 										if( u < lrow.size() ) rw = lrow.get(u);
 										else {
 											rw = sh.createRow(i+u);
 											lrow.add(rw);
 										}
 										u++;
-										
+
 										//int v = name.indexOf('(');
 										//if( v == -1 ) v = name.length();
 										String newname = name; //.substring(0,v);
@@ -9059,7 +9052,7 @@ public class JavaFasta extends JPanel {
 										newname = newname.replace(",", "");*/
 										newname = newname.trim();
 										System.err.println( "blehname   " + newname );
-										
+
 										String yes = null;
 										for( String h : hcell.keySet() ) {
 											if( newname.contains(h) ) {
@@ -9070,26 +9063,26 @@ public class JavaFasta extends JPanel {
 										if( yes != null ) { //hcell.containsKey(newname) ) {
 											Row r = hrow.get(spec);
 											int c = hcell.get(yes);
-											
+
 											Contig ct = (Contig)seq;
 											boolean plas = ct.isPlasmid();
 											String plastr = plas ? "plas" : "np";
-											
+
 											Cell cell = r.createCell(c);
 											cell.setCellValue( plastr );
-											
+
 											CellStyle cs = repeatColor.get(plastr);
 											if( cs != null ) {
 												cell.setCellStyle(cs);
 											}
 										}
-										
+
 										Cell cell = rw.createCell(k);
 										cell.setCellValue( newname.length() == 0 ? name : newname );
-										
+
 										if( newname.contains("Cse") ) {
 											String crispr = "Cse";
-											
+
 											onlycas = -1;
 											CellStyle cs;
 											if( csMap.containsKey("Cse") ) {
@@ -9101,7 +9094,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Cse", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9117,7 +9110,7 @@ public class JavaFasta extends JPanel {
 											lastrepeats.clear();
 										} else if( newname.contains("Cas") ) {
 											String crispr = "Cas";
-											
+
 											if( onlycas != -1 ) onlycas++;
 											CellStyle cs;
 											if( csMap.containsKey("Cas") ) {
@@ -9129,7 +9122,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Cas", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9156,7 +9149,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Csm", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9183,7 +9176,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Cmr", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9200,7 +9193,7 @@ public class JavaFasta extends JPanel {
 										} else if( newname.contains("Csd") ) {
 											String crispr = "Csd";
 											onlycas = -1;
-											
+
 											CellStyle cs;
 											if( csMap.containsKey("Csd") ) {
 												cs = csMap.get("Csd");
@@ -9211,7 +9204,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Csd", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9238,7 +9231,7 @@ public class JavaFasta extends JPanel {
 												csMap.put("Csh", cs);
 											}
 											cell.setCellStyle( cs );
-											
+
 											if( typeRepeat.containsKey(crispr) ) {
 												Map<String,Integer> mm = typeRepeat.get(crispr);
 												for( String typ : lastrepeats.keySet() ) {
@@ -9269,14 +9262,14 @@ public class JavaFasta extends JPanel {
 											cell.setCellValue( mcount+"-"+lastrep );
 											CellStyle cs = repeatColor.get(lastrep);
 											if( cs != null ) cell.setCellStyle( cs );
-											
+
 											mcount = 0;
 										}
 										count++;
 									}
 									lastname = name;
 								}
-								
+
 								if( count > 0 ) {
 									if( u < lrow.size() ) rw = lrow.get(u);
 									else {
@@ -9302,15 +9295,15 @@ public class JavaFasta extends JPanel {
 						}
 					}
 					k++;
-					
+
 					//break;
 				}
-				
+
 				int j = 10;
 				for( String crispr : typeRepeat.keySet() ) {
 					int l = 0;
 					nullrow.get(l).createCell(j).setCellValue(crispr);
-					
+
 					Map<String,Integer> msti = typeRepeat.get(crispr);
 					for( String rep : msti.keySet() ) {
 						int count = msti.get(rep);
@@ -9322,11 +9315,11 @@ public class JavaFasta extends JPanel {
 							if (cs != null) cell.setCellStyle(cs);
 						}
 					}
-					
+
 					j++;
 				}
-				
-				
+
+
 				try {
 					String userhome = System.getProperty("user.home");
 					Path p = userhome != null && userhome.length() > 0 ? Paths.get(userhome).resolve("crispr.xlsx") : Paths.get("crispr.xlsx");
@@ -9335,7 +9328,7 @@ public class JavaFasta extends JPanel {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				
+
 				k = 0;
 				for( String rep : tann.keySet() ) {
 					System.err.println(">"+k);
@@ -9396,7 +9389,7 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		});
-		
+
 		atable.setModel( new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -9467,7 +9460,7 @@ public class JavaFasta extends JPanel {
 			public void removeTableModelListener(TableModelListener l) {}
 		});
 		setAnnotationTableTransferhandler( ascroll );
-		
+
 		atable.addMouseListener( new MouseAdapter() {
 			public void mousePressed( MouseEvent e ) {
 				if( e.getClickCount() == 2 ) {
@@ -9476,10 +9469,10 @@ public class JavaFasta extends JPanel {
 					if( i == -1 && r < atable.getRowCount() ) {
 						i = r;
 					}
-					
+
 					if( i != -1 ) {
 						Annotation a = serifier.lann.get( i );
-						
+
 						i = serifier.lseq.indexOf( a.getSeq() );
 						int m = 0;
 						if( i != -1 ) {
@@ -9489,7 +9482,7 @@ public class JavaFasta extends JPanel {
 								table.setRowSelectionInterval(m, m);
 							}
 						}
-						
+
 						Rectangle cellrect = table.getCellRect(m, 0, true);
 						Rectangle rect = c.getVisibleRect();
 						if( rect.x == (int)((a.getCoordStart()-serifier.getMin())*c.cw) ) {
@@ -9498,9 +9491,9 @@ public class JavaFasta extends JPanel {
 							rect.x = (int)((a.getCoordStart()-serifier.getMin())*c.cw);
 						}
 						rect.y = cellrect.y;
-						
+
 						c.scrollRectToVisible( rect );
-						
+
 						if( i == -1 ) {
 							c.selectedRect.x = a.getCoordStart()-serifier.getMin();
 							c.selectedRect.width = a.getLength();
@@ -9512,14 +9505,14 @@ public class JavaFasta extends JPanel {
 				}
 			}
 		});
-		
+
 		atable.addKeyListener( new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {}
-			
+
 			@Override
 			public void keyReleased(KeyEvent e) {}
-			
+
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if( e.getKeyCode() == KeyEvent.VK_DELETE ) {
@@ -9532,16 +9525,16 @@ public class JavaFasta extends JPanel {
 						delset.add( ann );
 					}
 					serifier.lann.removeAll( delset );
-					
+
 					updateView();
 				}
 			}
 		});
-		
+
 		if (cnt instanceof JFrame) {
 			JFrame frame = (JFrame)cnt;
 			frame.setResizable(true);
-			
+
 			JMenuBar mb = new JMenuBar();
 			mb.add( file );
 			mb.add( edit );
@@ -9552,16 +9545,16 @@ public class JavaFasta extends JPanel {
 			mb.add( phylogeny );
 			frame.setJMenuBar( mb );
 		}
-		
+
 		mainsplit.setBackground( Color.white );
 		ascroll.getViewport().setBackground( Color.white );
-		
+
 		cnt.setLayout( new BorderLayout() );
 		cnt.add( mainsplit );
 		status.setPreferredSize( new Dimension(100, 20) );
 		cnt.add( status, BorderLayout.SOUTH );
 	}
-	
+
 	JLabel	status = new JLabel();
 	public void setAnnotationTableTransferhandler( JScrollPane atablescroll ) {
 		try {
@@ -9585,12 +9578,12 @@ public class JavaFasta extends JPanel {
 					}
 					//return ret;
 				}
-	
+
 				@Override
 				public DataFlavor[] getTransferDataFlavors() {
 					return new DataFlavor[] { df };
 				}
-	
+
 				@Override
 				public boolean isDataFlavorSupported(DataFlavor arg0) {
 					if( arg0.equals(df) ) {
@@ -9599,31 +9592,31 @@ public class JavaFasta extends JPanel {
 					return false;
 				}
 			};
-			
+
 			TransferHandler th = new TransferHandler() {
 				private static final long serialVersionUID = 1L;
-				
+
 				public int getSourceActions(JComponent c) {
 					return TransferHandler.COPY_OR_MOVE;
 				}
-	
-				public boolean canImport(TransferHandler.TransferSupport support) {					
+
+				public boolean canImport(TransferHandler.TransferSupport support) {
 					return true;
 				}
-	
+
 				protected Transferable createTransferable(JComponent c) {
 					currentRowSelection = atable.getSelectedRows();
-					
+
 					return transferable;
 				}
-	
+
 				public boolean importData(TransferHandler.TransferSupport support) {
-					try {			
+					try {
 						if( support.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
 							Object obj = support.getTransferable().getTransferData( DataFlavor.javaFileListFlavor );
 							//InputStream is = (InputStream)obj;
 							List<File>	lfile = (List<File>)obj;
-							
+
 							for( File f : lfile ) {
 								String fname = f.getName();
 								if( fname.endsWith(".ab1") ) {
@@ -9635,13 +9628,13 @@ public class JavaFasta extends JPanel {
 									Sequence s = new Sequence( f.getName(), serifier.mseq );
 									s.append( abi.getSequence() );
 									serifier.lseq.add( s );
-									
+
 									if( s.length() > serifier.getMax() ) serifier.setMax( s.length() );
-									
+
 									bb.clear();
 								} else if( fname.endsWith(".blastout") ) {
 									FileReader fr = new FileReader( f );
-									BufferedReader br = new BufferedReader( fr );									
+									BufferedReader br = new BufferedReader( fr );
 									String line = br.readLine();
 									String query = null;
 									String name = null;
@@ -9659,7 +9652,7 @@ public class JavaFasta extends JPanel {
 														break;
 													}
 												}
-												
+
 												if( seq != null ) {
 													Annotation a = new Annotation( seq, name, Color.red, serifier.mann );
 													a.desc = a.desc == null ? new StringBuilder( query ) : a.desc.append( query );
@@ -9685,11 +9678,11 @@ public class JavaFasta extends JPanel {
 												e.printStackTrace();
 											}
 										}
-										
+
 										line = br.readLine();
 									}
 									br.close();
-									
+
 									atable.tableChanged( new TableModelEvent( atable.getModel() ) );
 									for( Sequence seq : serifier.lseq ) {
 										if( seq.getAnnotations() != null ) Collections.sort( seq.getAnnotations() );
@@ -9701,7 +9694,7 @@ public class JavaFasta extends JPanel {
 									while( line != null ) {
 										if( line.startsWith(">") ) {
 											String name = line.substring(1);
-											
+
 											Sequence theseq = null;
 											for( String seqname : serifier.mseq.keySet() ) {
 												if( name.contains( seqname.split(" ")[0] ) ) {
@@ -9709,7 +9702,7 @@ public class JavaFasta extends JPanel {
 													break;
 												}
 											}
-											
+
 											if(  theseq != null ) {
 												a = new Annotation( theseq, name, Color.red, serifier.mann );
 												String[]	mylla = name.split("#");
@@ -9729,12 +9722,12 @@ public class JavaFasta extends JPanel {
 									br.close();
 								}
 							}
-							
+
 							atable.tableChanged( new TableModelEvent( atable.getModel() ) );
 							//c.updateCoords();
-							
+
 							return true;
-						} else if( support.isDataFlavorSupported( df ) ) {						
+						} else if( support.isDataFlavorSupported( df ) ) {
 							Object obj = support.getTransferable().getTransferData( df );
 							ArrayList<Annotation>	lann = (ArrayList<Annotation>)obj;
 							/*ArrayList<Sequence> newlist = new ArrayList<Sequence>( serifier.lseq.size() );
@@ -9744,22 +9737,22 @@ public class JavaFasta extends JPanel {
 							}
 							serifier.lseq.clear();
 							serifier.lseq = newlist;*/
-							
+
 							Point p = support.getDropLocation().getDropPoint();
 							int k = atable.rowAtPoint( p );
-							
+
 							serifier.lann.removeAll( lann );
-							
+
 							//for( Sequence seq : serifier)
 							/*for( Annotation ann : serifier.lann ) {
 								Sequence seq = ann.getContig();
 								List<Sequence>	lseq = serifier.gseq.get( seq.getName() );
 							}*/
-							
+
 							for( Annotation a : lann ) {
 								serifier.lann.add(k++, a);
 							}
-							
+
 							int current = 0;
 							//Sequence prev;
 							for( Annotation ann : serifier.lann ) {
@@ -9770,16 +9763,16 @@ public class JavaFasta extends JPanel {
 								for( Sequence subseq : lseq ) {
 									if( subseq != seq ) subseq.setStart( subseq.getStart() + (current-val) );
 								}
-								
+
 								current = seq.getEnd();
 							}
-							
+
 							/*TableRowSorter<TableModel>	trs = (TableRowSorter<TableModel>)atable.getRowSorter();
 							trs.setSortKeys( null );*/
-							
+
 							atable.tableChanged( new TableModelEvent(atable.getModel()) );
 							c.repaint();
-							
+
 							return true;
 						}
 					} catch (UnsupportedFlavorException | IOException e) {
@@ -9796,7 +9789,7 @@ public class JavaFasta extends JPanel {
 	}
 
 	static String tre;
-	
+
 	public static void main(String[] args) throws IOException {
 		var trePath = Path.of("/Users/sigmar/cov19_pca.tsv");
 		tre = Files.readString(Path.of("/Users/sigmar/cov19_pca.csv"));
@@ -9814,14 +9807,14 @@ public class JavaFasta extends JPanel {
 		frame.setSize(800, 600);
 		JavaFasta	jf = new JavaFasta();
 		jf.initGui( frame );
-		
+
 		frame.setVisible( true );*/
 	}
-	
+
 	public Rectangle getSelectedRect() {
 		return c == null ? null : c.selectedRect;
 	}
-	
+
 	public String getSelectedSequence() {
 		String str = null;;
 		Rectangle r = getSelectedRect();
@@ -9834,15 +9827,15 @@ public class JavaFasta extends JPanel {
 		}
 		return str;
 	}
-	
+
 	public class Finder extends SimpleFileVisitor<Path> {
 	    private final PathMatcher matcher;
 	    private int numMatches = 0;
-	
+
 	    public Finder(String pattern) {
 	        matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 	    }
-	
+
 	    // Compares the glob pattern against
 	    // the file or directory name.
 	    void find(Path file) {
@@ -9857,13 +9850,13 @@ public class JavaFasta extends JPanel {
 	            System.out.println(file);
 	        }
 	    }
-	
+
 	    // Prints the total number of
 	    // matches to standard out.
 	    void done() {
 	        System.out.println("Matched: " + numMatches);
 	    }
-	
+
 	    // Invoke the pattern matching
 	    // method on each file.
 	    @Override
@@ -9871,7 +9864,7 @@ public class JavaFasta extends JPanel {
 	        find(file);
 	        return FileVisitResult.CONTINUE;
 	    }
-	
+
 	    // Invoke the pattern matching
 	    // method on each directory.
 	    @Override
@@ -9879,14 +9872,14 @@ public class JavaFasta extends JPanel {
 	        find(dir);
 	        return FileVisitResult.CONTINUE;
 	    }
-	
+
 	    @Override
 	    public FileVisitResult visitFileFailed(Path file, IOException exc) {
 	        System.err.println(exc);
 	        return FileVisitResult.CONTINUE;
 	    }
 	}
-	
+
 	class Repeat extends Annotation {
 		public int length;
 	};
