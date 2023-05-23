@@ -75,7 +75,7 @@ public class CogChart {
                     if( tmp.size() > 0 ) {
                         int total = gg.size();
                         int p = 0;
-                        for( Annotation a : gg.genes ) {
+                        for( Annotation a : gg.getGenes() ) {
                             Sequence contig = a.getContig();
                             if( contig != null && contig.isPlasmid() ) p++;
                         }
@@ -613,7 +613,7 @@ public class CogChart {
                     cog = genesethead.geneset.cogmap.get(g.id);
                     if(cog==null) {
                         GeneGroup gg = g.getGeneGroup();
-                        if(gg!=null) for(Annotation ann : gg.genes) {
+                        if(gg!=null) for(Annotation ann : gg.getGenes()) {
                             Gene gene = ann.getGene();
                             if(gene!=null) {
                                 cog = gene.cog;
@@ -627,7 +627,7 @@ public class CogChart {
                 if (cog != null && cog.cogsymbol != null && cog.cogsymbol.length()>0) cogsymbol = cog.cogsymbol;
                 String annotation = cog != null ? "("+cog.cogsymbol+") " + cog.annotation : "(-) No annotation";
                 GeneGroup gg = g.getGeneGroup();
-                if(gg != null && (!accessory || gg.genes.size() < 2)) {
+                if(gg != null && (!accessory || gg.getGenes().size() < 2)) {
                     cogsymbol.chars().forEach(cc -> {
                         String splitSymbol = String.valueOf((char)cc);
                         submap.compute(splitSymbol, (k, v) -> v == null ? 1 : v + 1);

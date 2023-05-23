@@ -44,13 +44,13 @@ public class FastaSequence {
     }
 
     public void writeSequence( Appendable fw, int gap, boolean italic ) throws IOException {
-        if( italic ) fw.append("><i>"+getName()+"</i>\n");
-        else fw.append(">"+getName()+"\n");
+        if( italic ) fw.append("><i>").append(getName()).append("</i>\n");
+        else fw.append(">").append(getName()).append("\n");
         for( int k = 0; k < sb.length(); k+=gap ) {
             int m = Math.min(sb.length(), k+gap);
             String substr = sb.substring(k, m);
             //(seq.sb.length() == k+70 ? "")
-            fw.append( substr+"\n" );
+            fw.append(substr).append("\n");
         }
     }
 

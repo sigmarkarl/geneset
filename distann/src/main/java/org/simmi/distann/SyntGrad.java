@@ -83,10 +83,10 @@ public class SyntGrad {
 
 	public void syntGrad( final GeneSetHead genesethead, final int w, final int h, Set<String> presel ) {
 		GeneSet									geneset = genesethead.geneset;
-		//final Collection<String> 				specset = geneset.getSelspec(geneset, geneset.getSpecies(), (JCheckBox[])null); 
+		//final Collection<String> 				specset = geneset.getSelspec(geneset, geneset.getSpecies(), (JCheckBox[])null);
 		final Collection<String>				specset = geneset.getSpecies(); //speciesFromCluster( clusterMap );
 		final List<String>						species = new ArrayList<>( specset );
-		
+
 		TableModel model = new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -129,13 +129,13 @@ public class SyntGrad {
 		};
 		JTable table1 = new JTable( model );
 		JTable table2 = new JTable( model );
-		
+
 		table1.getSelectionModel().setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 		table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-		
+
 		JScrollPane	scroll1 = new JScrollPane( table1 );
 		JScrollPane	scroll2 = new JScrollPane( table2 );
-		
+
 		if( presel != null ) {
 			int i = 0;
 			for( String spec : species ) {
@@ -143,15 +143,15 @@ public class SyntGrad {
 					int r = table2.convertRowIndexToView(i);
 					table2.addRowSelectionInterval(r, r);
 				}
-				
+
 				i++;
 			}
 		}
-		
+
 		FlowLayout flowlayout = new FlowLayout();
 		JComponent cmp = new JComponent() {};
 		cmp.setLayout( flowlayout );
-		
+
 		cmp.add( scroll1 );
 		cmp.add( scroll2 );
 
@@ -159,9 +159,9 @@ public class SyntGrad {
 		TransferHandler th = new SpeciesSelection(geneset).dragRows( table2, species );
 		scroll2.setTransferHandler( th );
 		table2.setTransferHandler( th );
-		
+
 		JOptionPane.showMessageDialog(null, cmp);
-		
+
 		int sr = table1.getSelectedRow();
 		final String 		spec1 = sr != -1 ? species.get( table1.convertRowIndexToModel( sr )) : null; //(String)table1.getValueAt( table1.getSelectedRow(), 0 );
 		final List<Sequence>	contigs1 = spec1 != null ? geneset.speccontigMap.get( spec1 ) : null;
@@ -174,17 +174,17 @@ public class SyntGrad {
 		}
 
 		final BufferedImage bi = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
-		
+
 		final Graphics2D g2 = bi.createGraphics();
 		g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-		
+
 		drawImage( genesethead, g2, spec1, contigs1, spec2s, w, h );
-		
+
 		final JComponent c = new JComponent() {
 			public void paintComponent( Graphics g ) {
 				super.paintComponent( g );
-				
+
 				g.drawImage(bi,0,0,bi.getWidth()/2,bi.getHeight()/2,this);
 			}
 		};
@@ -274,17 +274,17 @@ public class SyntGrad {
 		c.addMouseListener( new MouseListener() {
 			Point p;
 			boolean doubleclicked = false;
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				//Container comp = genesethead;
 				Point np = e.getPoint();
 				if( p != null ) {
 					doubleclicked = doubleclicked || e.getClickCount() == 2;
-					
+
 					double ndx = 2*np.x-bi.getWidth()/2;
 					double ndy = 2*np.y-bi.getHeight()/2;
-					
+
 					double dx = 2*p.x-bi.getWidth()/2;
 					double dy = 2*p.y-bi.getHeight()/2;
 
@@ -376,11 +376,11 @@ public class SyntGrad {
 								if (e.isAltDown()) {
 								/*Tegeval tv1 = c.annset.get(minloc-loc);
 								Tegeval tv2 = c.annset.get(maxloc-loc);
-								
+
 								int from = Math.min( tv1.start, tv2.start );
 								int to = Math.max( tv1.stop, tv2.stop );
 								String seqstr = c.getSubstring( from, to, 1 );
-							
+
 								Sequence seq = new Sequence("phage_"+from+"_"+to, null);
 								seq.append( seqstr );
 								geneset.showSomeSequences( geneset, Arrays.asList( new Sequence[] {seq} ) );*/
@@ -418,7 +418,7 @@ public class SyntGrad {
                                                     for (Annotation te : ti.tset) {
                                                         genesethead.getGeneTable().getSelectionModel().select(te.getGene());
                                                     }
-                                                    genesethead.getGeneTable().scrollTo(ti.best.getGene());
+                                                    genesethead.getGeneTable().scrollTo(((Annotation)ti.best).getGene());
                                                 }
                                             });
 										}
@@ -431,30 +431,30 @@ public class SyntGrad {
 				isbeingdragged = false;
 				doubleclicked = false;
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				p = e.getPoint();
-				doubleclicked = e.getClickCount() == 2; 
+				doubleclicked = e.getClickCount() == 2;
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				p = e.getPoint();
 			}
 		});
-		
+
 		Dimension dim = new Dimension( 2048, 2048 );
 		c.setPreferredSize( dim );
 		c.setSize( dim );
 		JScrollPane	scrollpane = new JScrollPane( c );
-		
+
 		/*JComponent panel = new JComponent() {};
 		panel.setLayout( new BorderLayout() );
 		panel.add( tb, BorderLayout.NORTH );
@@ -467,7 +467,7 @@ public class SyntGrad {
 		bg.add(plasmcolor);
 
 		chromandplasm.setSelected(true);
-		
+
 		JToolBar toolbar = new JToolBar();
 		toolbar.add( contcheck );
 		toolbar.add( selcheck );
@@ -479,12 +479,12 @@ public class SyntGrad {
 		toolbar.add( onlyplasm );
 		toolbar.add( plasmcolor );
 		toolbar.add( repaint );
-		
+
 		repaint.addActionListener(e -> {
             drawImage( genesethead, g2, spec1, contigs1, spec2s, w, h );
             c.repaint();
         });
-		
+
 		JFrame frame = new JFrame();
 		frame.add( toolbar, BorderLayout.NORTH );
 		frame.add( scrollpane );
@@ -512,31 +512,31 @@ public class SyntGrad {
 		else if( plasmcolor.isSelected() ) return 4;
 		return 0;
 	}
-	
+
 	public void drawImage( GeneSetHead genesethead, Graphics2D g2, String spec1, List<Sequence> contigs1, List<String> spec2s, int w, int h ) {
 		drawImage(genesethead, g2, spec1, contigs1, spec2s, w, h, 1.0, getInclusion());
 	}
-	
+
 	public void doTv( GeneSetHead genesethead, Graphics2D g2, Annotation tv, int tvn, int total, int ptvn, int ptotal, String spec1, List<Sequence> contigs1, int w2, int h2, int rad, double radscale, int inclusion ) {
 		GeneSet geneset = genesethead.geneset;
 		Gene gene = tv.getGene();
 		boolean phage = gene != null ? tv.isPhage() : false;
 		boolean plasmid = tv.getContig().isPlasmid();
-		
+
 		GeneGroup gg = gene != null ? gene.getGeneGroup() : null;
 		double r = (double)tvn/(double)total;
 		double pr = (double)ptvn/(double)ptotal;
 		double tr = (double)(tvn)/(double)(total+ptotal);
 		double ptr = (double)(total+ptvn)/(double)(total+ptotal);
-		
+
 		//Gene sgene = gg.s
-		
+
 		boolean visible = false;
 		if( spec1 != null ) {
 			if( gg != null ) {
 				Teginfo gene2s = gg.getGenes( spec1 );
 				visible = true;
-				
+
 				boolean inplasmid = false;
 				if( gene2s != null && gene2s.tset != null ) for( Annotation tee : gene2s.tset ) {
 					if( tee.getContshort() != null && tee.getContshort().isPlasmid() ) {
@@ -544,14 +544,14 @@ public class SyntGrad {
 						break;
 					}
 				}
-				
+
 				double ratio;
 				if( inplasmid ) {
 					ratio = GeneCompare.invertedGradientPlasmidRatio( spec1, contigs1, pr, gg );
 				} else {
 					ratio = GeneCompare.invertedGradientRatio( spec1, contigs1, r, gg, tv );
 				}
-				
+
 				if( ratio >= 0.0 ) {
 					Color color = inplasmid ^ inclusion == 4 ? GeneCompare.gradientGrayscaleColor( ratio ) : GeneCompare.gradientColor( ratio );
 					g2.setColor( color );
@@ -569,15 +569,15 @@ public class SyntGrad {
 			if( gg != null ) {
 				Teginfo ti = gg.getGenes( gene.getSpecies() );
 				count = ti.tset.size();
-				
+
 				int i = 0;
 				if( genesethead.isGeneview() ) {
 					int rv = genesethead.getGeneTable().getItems().indexOf(gene);
 					if( rv >= 0 && rv < genesethead.getGeneTable().getItems().size() ) {
 						visible = true; //geneset.table.isRowSelected( rv );
-						
+
 						if( syntcol.isSelected() ) {
-							//double ratio = (double)gg.index/(double)geneset.allgenegroups.size(); 
+							//double ratio = (double)gg.index/(double)geneset.allgenegroups.size();
 							double ratio = (double)rv/(double)genesethead.getGeneTable().getItems().size();
 							color = GeneCompare.gradientColor(ratio);
 						}
@@ -586,16 +586,16 @@ public class SyntGrad {
 					int rv = genesethead.getGeneGroupTable().getItems().indexOf(gg);
 					if( rv >= 0 && rv < genesethead.getGeneGroupTable().getItems().size() ) {
 						visible = true; //geneset.table.isRowSelected( rv );
-						
+
 						if( syntcol.isSelected() ) {
-							//double ratio = (double)gg.index/(double)geneset.allgenegroups.size(); 
+							//double ratio = (double)gg.index/(double)geneset.allgenegroups.size();
 							double ratio = (double)rv/(double)genesethead.getGeneGroupTable().getItems().size();
 							color = GeneCompare.gradientColor(ratio);
 						}
 					}
 				}
 			}
-			
+
 			if( !syntcol.isSelected() ) {
 				if( phage && plasmid ) {
 					if( count > 1 ) color = darkmag;
@@ -613,7 +613,7 @@ public class SyntGrad {
 			}
 			g2.setColor( color );
 		}
-		
+
 		if( visible ) {
 			double rr = 2.0*Math.PI*(inclusion == 3 ? (plasmid ? ptr : tr) : (inclusion == 1 ? r : pr));
 
@@ -628,7 +628,7 @@ public class SyntGrad {
 			//g2.drawLine(rad, 0, rad+15, 0);
 			g2.rotate( -rr*radscale );
 			g2.translate(-w2, -h2);
-			
+
 			if( selcheck.isSelected() ) {
 				int i = 0;
 				if( genesethead.isGeneview() ) {
@@ -661,7 +661,7 @@ public class SyntGrad {
 					}
 				}
 			}
-			
+
 			if( homol.isSelected() ) {
 				if( gg != null ) {
 					Teginfo ti = gg.getGenes(spec1);
@@ -670,15 +670,15 @@ public class SyntGrad {
 					//if( ti.tset.size() > 23 ) {
 					//if( ti.tset.size() > 1 && ti.tset.size() < 4 ) {
 						//System.err.println( "tiname " + rr + " " + ti.tset.size() + "  " + ti.best.name );
-						
+
 						g2.setColor( Color.black );
 						for( Annotation te : ti.tset ) {
 							if( te != tv ) {
 								g2.translate(w2, h2);
-								
+
 								tvn = 0;
 								ptvn = 0;
-								
+
 								double rrr = 0.0; //= 2.0*Math.PI*( plasmid ? ptr : tr );
 								if( te.getContshort().isPlasmid() ) {
 									for( Sequence c : contigs1 ) {
@@ -711,7 +711,7 @@ public class SyntGrad {
 									rrr = 2.0*Math.PI*(double)(tvn)/(double)(total+ptotal);
 									//rrr = 2*Math.PI*(double)(total+ptvn)/(double)(total+ptotal);
 								}
-								
+
 								//System.err.println( "rrr " + rrr );
 								//rrr = Math.PI/2.0;
 								double cs2 = Math.cos( rrr );
@@ -723,7 +723,7 @@ public class SyntGrad {
 								int x2 = (int)(rad*cs2);
 								int y2 = (int)(rad*sn2);
 								g2.drawLine(x1, y1, x2, y2);
-								
+
 								g2.translate(-w2, -h2);
 							}
 						}
@@ -732,10 +732,10 @@ public class SyntGrad {
 			}
 		}
 	}
-	
+
 	public void drawImage( GeneSetHead genesethead, Graphics2D g2, String spec1, List<Sequence> contigs1, List<String> spec2s, int w, int h, double radscale, int inclusion ) {
 		GeneSet geneset = genesethead.geneset;
-		
+
 		int w2 = w/2;
 		int h2 = h/2;
 
@@ -745,20 +745,20 @@ public class SyntGrad {
 		g2.fillRect( 0, 0, w, h );
 		for( String spec : spec2s ) {
 			List<Sequence> scontigs = geneset.speccontigMap.get( spec );
-			
+
 			int ptotal = 0;
 			int total = 0;
 			for( Sequence c : scontigs ) {
 				if( c.isPlasmid() ) ptotal += c.getAnnotationCount();
 				else total += c.getAnnotationCount();
 			}
-			
+
 			int tvn = 0;
 			int ptvn = 0;
-			
+
 			boolean succ = false;
 			Annotation te = null;
-			
+
 			if( genesethead.isGeneview() ) {
 				Gene gene = genesethead.getGeneTable().getSelectionModel().getSelectedItem();
 				te = gene.getTegeval();
@@ -767,14 +767,14 @@ public class SyntGrad {
 				if( gg != null ) {
 					Teginfo t = gg.getGenes(spec);
 					if( t != null ) {
-						te = t.best;
+						te = (Annotation)t.best;
 					}
 				}
 			}
-			
+
 			if( te != null ) {
 				succ = true;
-				
+
 				int ci = 0;
 				int k = -1;
 				//Tegeval te = t.best;
@@ -784,7 +784,7 @@ public class SyntGrad {
 						if( te != null ) break;
 					}
 				}*/
-				
+
 				if( te != null && te.getContshort() != null ) {
 					if( te.getContshort().isPlasmid() ) {
 						for( Sequence c : scontigs ) {
@@ -840,11 +840,11 @@ public class SyntGrad {
 										tvn = (tvn+1)%total;
 									}
 									tv = c.getNext(tv);
-									
+
 									if( tv != null && tv.start == prev.start ) {
 										System.err.println( tv.getName() + "   " + prev.getName() );
 										System.err.println( tv == prev );
-										
+
 										break;
 									}
 								}
@@ -880,11 +880,11 @@ public class SyntGrad {
 										tvn = (tvn+1)%total;
 									}
 									ftv = c.getNext( ftv );
-									
+
 									if( ftv != null && ftv.start == prev.start ) {
 										System.err.println( ftv.getName() + "   " + prev.getName() );
 										System.err.println( ftv == prev );
-										
+
 										break;
 									}
 								}
@@ -914,7 +914,7 @@ public class SyntGrad {
 							while( tv != null ) {
 								boolean plas = tv.getContig().isPlasmid();
 								if( inclusion == 3 || (plas && inclusion > 1) || (!plas && (inclusion&1) == 1) ) doTv( genesethead, g2, tv, tvn, total, ptvn, ptotal, spec1, contigs1, w2, h2, rad, radscale, inclusion );
-								
+
 								Annotation prev = tv;
 								if( plas ) {
 									ptvn = (ptvn+1)%ptotal;
@@ -922,32 +922,32 @@ public class SyntGrad {
 									tvn = (tvn+1)%total;
 								}
 								tv = c.getNext( tv );
-								
+
 								if( tv != null && tv.start == prev.start ) {
 									System.err.println( tv.getName() + "   " + prev.getName() );
 									System.err.println( tv == prev );
-									
+
 									break;
 								}
-								
+
 								/*if( tv == c.getFirst() ) {
 									break;
 								}*/
 							}
 						}
-						
+
 						/*Tegeval prev = tv;
-						
+
 						if( tv != null && tv.start == prev.start ) {
 							System.err.println( tv.name + "   " + prev.name );
 							System.err.println( tv == prev );
-							
+
 							break;
 						}*/
 					}
 				}
 			}
-			
+
 			if( !succ ) {
 				//System.err.println("packkki .................................................");
 				for( Sequence c : scontigs ) {
@@ -955,28 +955,28 @@ public class SyntGrad {
 					while( tv != null ) {
 						boolean plas = tv.getContig().isPlasmid();
 						if( inclusion == 3 || (plas && inclusion > 1) || (!plas && (inclusion&1) == 1) ) doTv( genesethead, g2, tv, tvn, total, ptvn, ptotal, spec1, contigs1, w2, h2, rad, radscale, inclusion );
-						
+
 						Annotation prev = tv;
 						if( plas ) {
 							ptvn = (ptvn+1)%ptotal;
 						} else {
 							tvn = (tvn+1)%total;
 						}
-						
+
 						tv = c.getNext( tv );
-						
+
 						if( tv != null && tv.start == prev.start ) {
 							System.err.println( tv.getName() + "   " + prev.getName() );
 							System.err.println( tv == prev );
-							
+
 							break;
 						}
-						
+
 						/*if( tv == c.getFirst() ) {
 							break;
 						}*/
 					}
-					
+
 					if( contcheck.isSelected() ) {
 						if (count == 0) {
 							double r = 2.0 * Math.PI * ((c.isPlasmid() ? (double) (total + ptvn) : (double) tvn) / (double) (ptotal + total));
@@ -998,11 +998,11 @@ public class SyntGrad {
 					}
 				}
 			}
-				
+
 			rad += 30;
 			count++;
 		}
-		
+
 		g2.setColor( Color.black );
 		Font oldfont = g2.getFont().deriveFont( Font.ITALIC ).deriveFont( spec2s.size() > 10 ? 22.0f : 42.0f );
 		int val = spec2s.size() > 10 ? 24 : 46;
@@ -1014,26 +1014,26 @@ public class SyntGrad {
 			} else {
 				g2.setFont( oldfont );
 			}
-			
+
 			String specstr = geneset.nameFix( spec );
 			/*if( spec.contains("hermus") ) {
 				int u = spec.indexOf("_uid");
 				if( u == -1 ) u = spec.length();
 				specstr = spec.substring(0, u);
 			} else {
-				Matcher m = Pattern.compile("\\d").matcher(spec); 
+				Matcher m = Pattern.compile("\\d").matcher(spec);
 				int firstDigitLocation = m.find() ? m.start() : 0;
 				if( firstDigitLocation == 0 ) specstr = "Thermus_"+spec;
 				else specstr = "Thermus_" + spec.substring(0,firstDigitLocation) + "_" + spec.substring(firstDigitLocation);
 			}*/
-			
+
 			if( specstr.length() > 30 ) specstr = specstr.substring(0, specstr.lastIndexOf('_'));
-			
+
 			int strw = g2.getFontMetrics().stringWidth( specstr );
 			g2.drawString( specstr, (w-strw)/2, h/2 - spec2s.size()*val/2 + val + k*val );
 			k++;
 		}
-		
+
 		/*if( spec1 != null ) {
 			g2.setColor( Color.black );
 			g2.setFont( g2.getFont().deriveFont( Font.ITALIC ).deriveFont(32.0f) );
@@ -1050,7 +1050,7 @@ public class SyntGrad {
 	final Color darkred = new Color( 128, 0, 0 );
 	final Color darkblue = new Color( 0, 0, 128 );
 	final Color darkmag = new Color( 128, 0, 128 );
-	
+
 	/*public static double invertedGradientRatio( String spec2, Collection<Sequence> contigs2, double ratio, GeneGroup gg ) {
 		int total2 = 0;
 		for( Sequence ctg2 : contigs2 ) {
@@ -1066,26 +1066,26 @@ public class SyntGrad {
 					if( idx == -1 ) {
 						count2 += ctg2.getAnnotationCount();
 					} else {
-						count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx; 
+						count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx;
 						break;
 					}
 				}
 			}
 			double rat2 = (double)count2/(double)total2;
-			 
+
 			if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) ratio2 = rat2;
 			//ratio2 = rat2;
 			//break;
 		}
-		
+
 		if( ratio2 == -1.0 ) {
 			System.err.println( ratio2 + "  " + ratio );
 		}
-		
+
 		return ratio2;
 	}
-	
-	public static Color invertedGradientColor( double ratio ) {		
+
+	public static Color invertedGradientColor( double ratio ) {
 		//float green = (float)(1.0-ratio2);
 		/*if( ratio2 < 0.5 ) {
 			Color c = new Color(0,(float)(ratio2*2.0),1.0f);
@@ -1094,7 +1094,7 @@ public class SyntGrad {
 			Color c = new Color(0,1.0f,(float)((1.0-ratio2)*2.0));
 			g2.setColor( c );
 		}*
-		
+
 		Color c = Color.black;
 		if( ratio < 1.0/6.0 ) {
 			c = new Color(0.0f,(float)(ratio*6.0),1.0f);
@@ -1109,7 +1109,7 @@ public class SyntGrad {
 		} else {
 			c = new Color((float)((1.0-ratio)*6.0),0.0f,1.0f);
 		}
-		
+
 		return c;
 	}*/
 }

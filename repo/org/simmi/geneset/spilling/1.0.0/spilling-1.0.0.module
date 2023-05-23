@@ -10,7 +10,7 @@
   },
   "createdBy": {
     "gradle": {
-      "version": "8.0.1"
+      "version": "8.1.1"
     }
   },
   "variants": [
@@ -27,11 +27,11 @@
         {
           "name": "spilling-1.0.0.jar",
           "url": "spilling-1.0.0.jar",
-          "size": 60589,
-          "sha512": "c886a23887df50ac5bebf64c3cd41e94f8e2d016979a731114db8cc5abc1d67b2023c62bea8763665dc47a36175c11cceae16d6083afafa7f6adaa91d658e0c9",
-          "sha256": "7389f41ace8b1bcf09cd77c73606c872c12923da289a16d355042185c80a01da",
-          "sha1": "92c15836379be1a0c6bc9e8c3069c3d535a36efc",
-          "md5": "b8826907c3410cfedc2e7a9502eb2f14"
+          "size": 60566,
+          "sha512": "bbe3d296449b221b2d0d75167f96035d0ce2afb19e56887608ec44e0f1b4c376d2c2f81ef2ef043e1e2ed5deb2c73da0b85e95e32e4e186d6436ac69d5423dd4",
+          "sha256": "b3f247a02ada27e7efa2867734afc1eeb4b42059e2bf3de728d121e078c6c78d",
+          "sha1": "2a931f621355091fff138a5f56af2d1043b6059b",
+          "md5": "583c2764338a7d24cf46a4f07586ee8b"
         }
       ]
     },
@@ -57,11 +57,11 @@
         {
           "name": "spilling-1.0.0.jar",
           "url": "spilling-1.0.0.jar",
-          "size": 60589,
-          "sha512": "c886a23887df50ac5bebf64c3cd41e94f8e2d016979a731114db8cc5abc1d67b2023c62bea8763665dc47a36175c11cceae16d6083afafa7f6adaa91d658e0c9",
-          "sha256": "7389f41ace8b1bcf09cd77c73606c872c12923da289a16d355042185c80a01da",
-          "sha1": "92c15836379be1a0c6bc9e8c3069c3d535a36efc",
-          "md5": "b8826907c3410cfedc2e7a9502eb2f14"
+          "size": 60566,
+          "sha512": "bbe3d296449b221b2d0d75167f96035d0ce2afb19e56887608ec44e0f1b4c376d2c2f81ef2ef043e1e2ed5deb2c73da0b85e95e32e4e186d6436ac69d5423dd4",
+          "sha256": "b3f247a02ada27e7efa2867734afc1eeb4b42059e2bf3de728d121e078c6c78d",
+          "sha1": "2a931f621355091fff138a5f56af2d1043b6059b",
+          "md5": "583c2764338a7d24cf46a4f07586ee8b"
         }
       ]
     }

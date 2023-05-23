@@ -47,7 +47,7 @@ import javafx.scene.control.TableView;
 
 public class Synteni {
 	final int FASTI = 3632;
-	
+
 	public void syntenyMynd( final GeneSetHead genesethead, final Container comp, final List<Gene> genes ) {
 		GeneSet geneset = genesethead.geneset;
 		Set<String>	tspecies = new HashSet<>();
@@ -62,7 +62,7 @@ public class Synteni {
 				tspecies.add( g.getSpecies() );
 			}
 		}
-		
+
 		final List<String>	selspec = new ArrayList( genesethead.getSelspec( genesethead, new ArrayList<>(tspecies), false, (JCheckBox[])null) );
 		final JTable rowheader = new JTable();
 		TableModel model = new TableModel() {
@@ -107,7 +107,7 @@ public class Synteni {
 		};
 		rowheader.setModel( model );
 		rowheader.setRowHeight( 25 );
-		
+
 		final JComponent c = new JComponent() {
 			Color gr = Color.green;
 			Color dg = Color.green.darker();
@@ -122,44 +122,44 @@ public class Synteni {
 				//if( te != null ) return "<html>"+te.getGene().getName()+ "<br>" + te.getGene().refid+ "<br>" + te.getGene().getGeneGroup().getFunctions() + "<br>" + te.start + ".." + te.stop + "</html>";
 				return null;
 			}
-			
+
 			public void paintComponent( Graphics g ) {
 				super.paintComponent(g);
-				
+
 				Graphics2D g2 = (Graphics2D)g;
 				g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 				g.setFont( g.getFont().deriveFont( 8.0f ) );
-				
+
 				Rectangle clip = this.getVisibleRect(); //g.getClipBounds();
-				
+
 				g.setColor( Color.black );
 				for( int k = 0; k < rowheader.getRowCount(); k++ ) {
 					int l = rowheader.convertRowIndexToModel( k );
 					String spec = selspec.get( l );
-					
+
 					int h = k*rowheader.getRowHeight()+rowheader.getRowHeight()/2;
 					g.fillRect( 0, h, this.getWidth(), 1 );
-					
+
 					int loc = 0;
 					List<Sequence>	cannset = geneset.speccontigMap.get( spec );
 					for( Sequence c : cannset ) {
 						loc += c.getAnnotationCount();
-						
+
 						int nloc = loc*this.getWidth()/FASTI;
 						g.fillRect( nloc, h-2, 1, 5 );
 					}
 				}
-				
+
 				String selsyn = genesethead.syncolorcomb.getSelectionModel().getSelectedItem();
 				if( selsyn != null && selsyn.length() > 0 ) {
 					List<Sequence> scannset = geneset.speccontigMap.get(selsyn);
 					for( int k = 0; k < rowheader.getRowCount(); k++ ) {
 						int l = rowheader.convertRowIndexToModel( k );
 						String spec = selspec.get( l );
-						
+
 						int h = k*rowheader.getRowHeight()+rowheader.getRowHeight()/2;
-						
+
 						int loc = 0;
 						List<Sequence>	cannset = geneset.speccontigMap.get( spec );
 						for( Sequence c : cannset ) {
@@ -168,10 +168,10 @@ public class Synteni {
 									for( int i = c.getAnnotations().size()-1; i >= 0; i-- ) {
 										Tegeval tv = (Tegeval)c.getAnnotation(i);
 										GeneGroup gg = tv.getGene().getGeneGroup();
-										
+
 										if( gg != null ) {
 											int nloc = geneset.getGlobalIndex(tv)*this.getWidth()/FASTI; //(loc+(c.annset.size()-i-1))*this.getWidth()/FASTI;
-											
+
 											double ratio2 = GeneCompare.invertedGradientTotalRatio( scannset, gg.getGenes(selsyn), -1.0 );
 											if( ratio2 != -1 ) {
 												g.setColor( GeneCompare.gradientColor( ratio2 ) );
@@ -183,20 +183,20 @@ public class Synteni {
 									for( int i = 0; i < c.getAnnotations().size(); i++ ) {
 										Annotation tv = c.getAnnotation(i);
 										GeneGroup gg = tv.getGene().getGeneGroup();
-										
+
 										if( gg != null ) {
 											int nloc = geneset.getGlobalIndex(tv)*this.getWidth()/FASTI; //int nloc = (loc+i)*this.getWidth()/FASTI;
-											
+
 											double ratio2 = GeneCompare.invertedGradientTotalRatio( scannset, gg.getGenes(selsyn), -1.0 );
-											
+
 											/*String symb = gg.getCommonSymbol();
 											if( symb != null && symb.contains("polA1") ) {
 												System.err.println( spec + " " + ratio2 );
-												
+
 												g.setColor( GeneCompare.gradientColor( ratio2 ) );
 												g.fillRect(nloc, h-6, 10, 10);
 											}*/
-											
+
 											if( ratio2 != -1 ) {
 												g.setColor( GeneCompare.gradientColor( ratio2 ) );
 												g.fillRect(nloc, h-6, 1, 4);
@@ -205,14 +205,14 @@ public class Synteni {
 									}
 								}
 								loc += c.getAnnotationCount();
-								
+
 								//int nloc = loc*this.getWidth()/3000;
 								//g.fillRect( nloc, h-2, 1, 5 );
 							}
 						}
 					}
 				}
-				
+
 				//g.setColor( Color.blue );
 				if( !genesethead.isGeneview() ) {
 					TableView<GeneGroup> sorting = genesethead.getGeneGroupTable();
@@ -221,18 +221,18 @@ public class Synteni {
 							int l = rowheader.convertRowIndexToModel( k );
 							String spec1 = selspec.get( l );
 							List<Annotation> tvlist = gg.getTegevals( spec1 );
-							
+
 							if( k < rowheader.getRowCount()-1 ) {
 								int rh2 = rowheader.getRowHeight()/2;
 								for( Annotation tv : tvlist ) {
 									int m = rowheader.convertRowIndexToModel( k+1 );
 									String spec2 = selspec.get( m );
 									List<Annotation> tvlist2 = gg.getTegevals( spec2 );
-									
+
 									int gind = geneset.getGlobalIndex( tv )*this.getWidth()/FASTI;
 									for( Annotation tv2 : tvlist2 ) {
 										int gind2 = geneset.getGlobalIndex( tv2 )*this.getWidth()/FASTI;
-										if( tv.ori != tv2.ori ^ tv.getContshort().isReverse() != tv2.getContshort().isReverse() ) g.setColor( Color.red );
+										if( tv.getOri() != tv2.getOri() ^ tv.getContshort().isReverse() != tv2.getContshort().isReverse() ) g.setColor( Color.red );
 										else g.setColor( Color.blue );
 										g.drawLine(gind, k*rowheader.getRowHeight()+rh2, gind2, (k+1)*rowheader.getRowHeight()+rh2 );
 									}
@@ -247,21 +247,21 @@ public class Synteni {
 							int l = rowheader.convertRowIndexToModel( k );
 							String spec1 = selspec.get( l );
 							List<Annotation> tvlist = gene.getGeneGroup().getTegevals( spec1 );
-							
+
 							if( k < rowheader.getRowCount()-1 ) {
 								int rh2 = rowheader.getRowHeight()/2;
 								for( Annotation tv : tvlist ) {
 									int m = rowheader.convertRowIndexToModel( k+1 );
 									String spec2 = selspec.get( m );
 									List<Annotation> tvlist2 = gene.getGeneGroup().getTegevals( spec2 );
-									
+
 									int gind = geneset.getGlobalIndex( tv )*this.getWidth()/FASTI;
 									if( tvlist2.isEmpty() ) {
 										g.setColor( Color.blue );
 										g.drawLine(gind, k*rowheader.getRowHeight()+rh2, gind, k*rowheader.getRowHeight()+rh2+5 );
 									} else for( Annotation tv2 : tvlist2 ) {
 										int gind2 = geneset.getGlobalIndex( tv2 )*this.getWidth()/FASTI;
-										if( tv.ori != tv2.ori ^ tv.getContshort().isReverse() != tv2.getContshort().isReverse() ) g.setColor( Color.red );
+										if( tv.getOri() != tv2.getOri() ^ tv.getContshort().isReverse() != tv2.getContshort().isReverse() ) g.setColor( Color.red );
 										else g.setColor( Color.blue );
 										g.drawLine(gind, k*rowheader.getRowHeight()+rh2, gind2, (k+1)*rowheader.getRowHeight()+rh2 );
 									}
@@ -273,14 +273,14 @@ public class Synteni {
 			}
 		};
 		c.setToolTipText("bleh");
-		
+
 		final AbstractAction	a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				c.repaint();
 			}
 		};
-		
+
 		c.addMouseListener(new MouseAdapter() {
 			Point p;
 
@@ -296,13 +296,13 @@ public class Synteni {
 					Rectangle rect = sorting.getCellRect(p.x, 0, false);
 					rect = rect.union(sorting.getCellRect(np.x, sorting.getColumnCount() - 1, false));
 					sorting.scrollRectToVisible(rect);*/
-					
+
 					//sorting.get
 					//sorting.setRowSelectionInterval(p.x, np.x);
 				}
 			}
 		});
-		
+
 		JPopupMenu	popup = new JPopupMenu();
 		rowheader.setComponentPopupMenu( popup );
 
@@ -324,7 +324,7 @@ public class Synteni {
 						ste.add( Neighbour.hteg.get(i) );
 					}
 					Neighbour.hteg.removeAll( ste );
-					
+
 					rowheader.tableChanged( new TableModelEvent( rowheader.getModel() ) );
 					int rh = rowheader.getRowCount() * rowheader.getRowHeight();//rowheader.getHeight();
 					if (rh == 0) {
@@ -340,7 +340,7 @@ public class Synteni {
 			public void keyReleased(KeyEvent e) {}
 		});
 		scrollpane.setRowHeaderView(rowheader);
-		
+
 		rowheaderscroll.setViewport(scrollpane.getRowHeader());
 		rowheaderscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 		rowheaderscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -365,11 +365,11 @@ public class Synteni {
 		if (rh == 0) {
 			rh = rowheader.getRowCount() * rowheader.getRowHeight();
 		}
-		
+
 		Dimension dim = new Dimension(3000, rh);
 		c.setPreferredSize( dim );
 		c.setSize( dim );
-	
+
 		final JToolBar	toolbar = new JToolBar();
 		toolbar.add( new AbstractAction("+") {
 			@Override
@@ -387,29 +387,29 @@ public class Synteni {
 				c.setSize( dim );
 			}
 		});
-		
+
 		JComponent panel = new JComponent() { private static final long serialVersionUID = 1L; };
 		panel.setLayout( new BorderLayout() );
 		panel.add( toolbar, BorderLayout.NORTH );
 		panel.add( splitpane );
-	
+
 		JFrame frame = new JFrame();
 		frame.addWindowListener( new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {}
-			
+
 			@Override
 			public void windowIconified(WindowEvent e) {}
-			
+
 			@Override
 			public void windowDeiconified(WindowEvent e) {}
-			
+
 			@Override
 			public void windowDeactivated(WindowEvent e) {}
-			
+
 			@Override
 			public void windowClosing(WindowEvent e) {}
-			
+
 			@Override
 			public void windowClosed(WindowEvent e) {
 				try {
@@ -418,7 +418,7 @@ public class Synteni {
 					e1.printStackTrace();
 				}
 			}
-			
+
 			@Override
 			public void windowActivated(WindowEvent e) {}
 		});

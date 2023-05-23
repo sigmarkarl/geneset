@@ -33,15 +33,15 @@ dependencies {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-mllib_2.13:3.3.2") {
+    implementation ("org.apache.spark:spark-mllib_2.13:3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-sql_2.13:3.3.2") {
+    implementation ("org.apache.spark:spark-sql_2.13:3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-kubernetes_2.13:3.3.2") {
+    implementation ("org.apache.spark:spark-kubernetes_2.13:3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }

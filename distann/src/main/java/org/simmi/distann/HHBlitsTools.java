@@ -100,7 +100,7 @@ public class HHBlitsTools {
                         }
                     } else {
                         var allSeqList = geneSet.table.getSelectionModel().getSelectedItems().stream().<String>mapMulti((gg, c) -> {
-                            var tvs = gg.genes;
+                            var tvs = gg.getGenes();
                             var first0 = tvs.stream().filter(p -> p.getId() != null /*&& p.getId().startsWith("QAY")*/).findFirst();
                             if (first0.isPresent()) {
                                 var first = first0.get();
@@ -172,7 +172,7 @@ public class HHBlitsTools {
 					blastpRun(nrun, sb.getBuffer(), dbPath, resPath, "-evalue 0.00001", null, true, geneset.zipfilesystem, geneset.user, primaryStage);*/
             } else {
                 var allSeqList = geneSet.table.getSelectionModel().getSelectedItems().stream().<String>mapMulti((gg, c) -> {
-                    var tvs = gg.genes;
+                    var tvs = gg.getGenes();
                     var first0 = tvs.stream().filter(p -> p.getId() != null /*&& p.getId().startsWith("QAY")*/).findFirst();
                     if (first0.isPresent()) {
                         var first = first0.get();

@@ -76,8 +76,8 @@ public class GeneGroupResultsTable extends TableView<GeneGroup> {
                 if (gg != null) {
                     Teginfo gene2s = gg.getGenes(spec);
                     if( gene2s != null ) {
-                        Annotation tv = gene2s.best;
-                        tv2 = gene2s.best;
+                        SimpleAnnotation tv = gene2s.best;
+                        tv2 = (Annotation)gene2s.best;
                         if (gene2s.tset != null) for (Annotation tv1 : gene2s.tset) {
                             int simcount = 0;
 

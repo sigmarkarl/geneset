@@ -1,23 +1,27 @@
 package org.simmi.javafasta.shared;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-public class BaseGeneGroup extends Cassette implements Serializable {
+public class BaseGeneGroup implements Serializable {
     long id;
-    String name;
+    String groupName;
+    Set<SimpleAnnotation> genes;
 
     static long globalId = 0;
 
     public BaseGeneGroup() {
         id = ++globalId;
+        genes = new HashSet<>();
     }
 
-    public String getName() {
-        return name;
+    public String getGroupName() {
+        return groupName;
     }
 
-    public void setName(String newname) {
-        name = newname;
+    public void setGroupName(String newname) {
+        groupName = newname;
     }
 
     public long getId() {
@@ -26,5 +30,9 @@ public class BaseGeneGroup extends Cassette implements Serializable {
 
     public void setId(long newid) {
         id = newid;
+    }
+
+    public int getGeneCount() {
+        return genes.size();
     }
 }

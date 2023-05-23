@@ -40,11 +40,11 @@ public class GeneSetPopup extends ContextMenu {
     Set<GeneGroup> updateSplit(GeneGroup gg, double d, double l) {
         Set<GeneGroup> ggmap = new HashSet<>();
         Map<String,Integer> blosumMap = JavaFasta.getBlosumMap( true );
-        for( Annotation a : gg.genes ) {
-            if( ggmap.stream().flatMap( f -> f.genes.stream() ).noneMatch( p -> a == p ) ) {
+        for( Annotation a : gg.getGenes() ) {
+            if( ggmap.stream().flatMap( f -> f.getGenes().stream() ).noneMatch( p -> a == p ) ) {
                 Set<Annotation> ggset = new HashSet<>();
                 Sequence seq1 = a.getAlignedSequence();
-                for (Annotation ca : gg.genes) {
+                for (Annotation ca : gg.getGenes()) {
                     Sequence seq2 = ca.getAlignedSequence();
 
                     int[] tscore = GeneCompare.blosumValue(seq1, seq1, seq2, blosumMap);
@@ -70,7 +70,7 @@ public class GeneSetPopup extends ContextMenu {
                 System.err.println( ggset.size() );
 
                 Set<GeneGroup> osubgg = ggmap.stream().filter( f -> {
-                    Set<Annotation> gs = new HashSet<>(ggset); gs.retainAll(f.genes); return gs.size() > 0;
+                    Set<Annotation> gs = new HashSet<>(ggset); gs.retainAll(f.getGenes()); return gs.size() > 0;
                 }).collect(Collectors.toSet());
                 GeneGroup subgg;
                 if( osubgg.size() > 0 ) {
@@ -78,7 +78,7 @@ public class GeneSetPopup extends ContextMenu {
                     subgg = git.next();
                     while( git.hasNext() ) {
                         GeneGroup remgg = git.next();
-                        subgg.addGenes( remgg.genes );
+                        subgg.addGenes( remgg.getGenes() );
                         ggmap.remove( remgg );
                     }
                 } else {
@@ -106,7 +106,7 @@ public class GeneSetPopup extends ContextMenu {
                             //.filter( f -> f.toString().endsWith(".aa") )
                             .filter(f -> {
                                 String filename = f.getFileName().toString();
-                                return gg.stream().flatMap(ggg -> ggg.genes.stream()).anyMatch(g -> g.getId().equals(filename));
+                                return gg.stream().flatMap(ggg -> ggg.getGenes().stream()).anyMatch(g -> g.getId().equals(filename));
                             }).forEach(p -> {
                                 try {
                                     Files.deleteIfExists(p);
@@ -132,7 +132,7 @@ public class GeneSetPopup extends ContextMenu {
 						}*/
                 final Path p = root.resolve("/aligned");
                 for (GeneGroup fgg : c) {
-                    Path np = p.resolve(fgg.genes.iterator().next().getId());
+                    Path np = p.resolve(fgg.getGenes().iterator().next().getId());
                     try (Writer w = Files.newBufferedWriter(np)) {
                         fgg.getFasta(w, false);
                     }
@@ -140,7 +140,7 @@ public class GeneSetPopup extends ContextMenu {
 
                 var clustersPath = root.resolve("simpleclusters.txt");
                 try(var fos = Files.newBufferedWriter(clustersPath, StandardOpenOption.TRUNCATE_EXISTING)) {
-                    var gset = geneSetHead.geneset.allgenegroups.stream().map(ggg -> ggg.genes.stream().map(Annotation::getId).collect(Collectors.toSet()));
+                    var gset = geneSetHead.geneset.allgenegroups.stream().map(ggg -> ggg.getGenes().stream().map(Annotation::getId).collect(Collectors.toSet()));
                     geneSetHead.geneset.writeClusters(fos, gset);
                 }
                 break;
@@ -158,7 +158,7 @@ public class GeneSetPopup extends ContextMenu {
             for( Path root : zfsystem.getRootDirectories() ) {
                 var clustersPath = root.resolve("simpleclusters.txt");
                 try(var fos = Files.newBufferedWriter(clustersPath, StandardOpenOption.TRUNCATE_EXISTING)) {
-                    var gset = geneSetHead.geneset.allgenegroups.stream().map(ggg -> ggg.genes.stream().map(Annotation::getId).collect(Collectors.toSet()));
+                    var gset = geneSetHead.geneset.allgenegroups.stream().map(ggg -> ggg.getGenes().stream().map(Annotation::getId).collect(Collectors.toSet()));
                     geneSetHead.geneset.writeClusters(fos, gset);
                 }
                 break;
@@ -224,7 +224,7 @@ public class GeneSetPopup extends ContextMenu {
             final ObservableList<GeneGroup> gg = geneSetHead.table.getSelectionModel().getSelectedItems();
             list.setItems( gg );
 
-            Label groupsize = new Label(""/*+gg.genes.size()*/);
+            Label groupsize = new Label(""/*+gg.getGenes().size()*/);
             grid.add(groupsize, 0, 3, 2, 1);
 
             id.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -288,7 +288,7 @@ public class GeneSetPopup extends ContextMenu {
             var firstGG = ogg.get(0);
             for (int i = 1; i < ogg.size(); i++) {
                 var ngg = ogg.get(i);
-                firstGG.addGenes(ngg.genes);
+                firstGG.addGenes(ngg.getGenes());
                 geneSetHead.geneset.allgenegroups.remove(ngg);
             }
             saveSimpleClusters();
@@ -301,7 +301,7 @@ public class GeneSetPopup extends ContextMenu {
             var firstGG = ogg.get(0);
             for (int i = 1; i < ogg.size(); i++) {
                 var ngg = ogg.get(i);
-                firstGG.mergeAnnotations(ngg.genes);
+                firstGG.mergeAnnotations(ngg.getGenes());
                 geneSetHead.geneset.allgenegroups.remove(ngg);
             }
             saveSimpleClusters();
@@ -323,7 +323,7 @@ public class GeneSetPopup extends ContextMenu {
             try {
                 geneSetHead.geneset.zipfilesystem = FileSystems.newFileSystem( geneSetHead.geneset.zipuri, env );
                 for( Path root : geneSetHead.geneset.zipfilesystem.getRootDirectories() ) {
-                    for( Annotation a : gg.genes ) {
+                    for( Annotation a : gg.getGenes() ) {
                         Gene g = a.getGene();
                         if( g.keggpathway != null ) {
                             String sub = g.keggpathway.substring(0,3);
@@ -349,7 +349,7 @@ public class GeneSetPopup extends ContextMenu {
             }
 
             if( !shown ) {
-                for( Annotation a : gg.genes ) {
+                for( Annotation a : gg.getGenes() ) {
                     Gene g = a.getGene();
                     if (g != null && g.keggpathway != null) {
                         String[] keggsplit = g.keggpathway.split(";");
@@ -417,7 +417,7 @@ public class GeneSetPopup extends ContextMenu {
             geneSetHead.geneset.deset.add( val );
             if(geneSetHead.isGeneview()) {
                 for (Gene g : geneSetHead.gtable.getSelectionModel().getSelectedItems()) {
-                    g.getTegeval().designation = val;
+                    g.getTegeval().setDesignation(val);
                     if (g.id != null) {
                         geneSetHead.geneset.designations.put(g.id, val);
                     } else {
@@ -427,9 +427,9 @@ public class GeneSetPopup extends ContextMenu {
                 }
             } else {
                 for (GeneGroup gg : geneSetHead.table.getSelectionModel().getSelectedItems()) {
-                    gg.genes.stream().filter(g -> g.getId() != null).forEach(g -> {
+                    gg.getGenes().stream().filter(g -> g.getId() != null).forEach(g -> {
                         geneSetHead.geneset.designations.put(g.getId(), val);
-                        if(g.getGene()!=null && g.getGene().getTegeval()!=null) g.getGene().getTegeval().designation = val;
+                        if(g.getGene()!=null && g.getGene().getTegeval()!=null) g.getGene().getTegeval().setDesignation(val);
                     });
                 }
             }

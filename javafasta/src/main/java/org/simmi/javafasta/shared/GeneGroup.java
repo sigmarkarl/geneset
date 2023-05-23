@@ -2,8 +2,10 @@ package org.simmi.javafasta.shared;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
@@ -11,13 +13,12 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-public class GeneGroup extends BaseGeneGroup {
+public class GeneGroup extends Cassette implements Serializable {
 	String							label;
 	double							pageRank;
 	String							connected;
-	GenomeSet						geneset;
-	public Set<Annotation>          genes = new HashSet<>();
-	public Map<String, Teginfo>  	species = new TreeMap<>();
+	transient GenomeSet				geneset;
+	transient public Map<String, Teginfo>  	species = new TreeMap<>();
 	public int                	 	groupIndex;
 	public boolean					triangle = false;
 	int                 			groupCount = -1;
@@ -28,7 +29,7 @@ public class GeneGroup extends BaseGeneGroup {
 	Map<String,Cog>					cogmap;
 	Map<String,Cog>					pfammap;
 	Map<String,Set<String>>			biosystemsmap;
-	BooleanProperty selected = new SimpleBooleanProperty();
+	transient BooleanProperty selected = new SimpleBooleanProperty();
 
 	/*Map<String,String>				cazyaamap;
 	Map<String,String>				cazycemap;
@@ -79,7 +80,7 @@ public class GeneGroup extends BaseGeneGroup {
 	public String toString() {
 		return this.getName() + " " + genes.size() + "  " + this.getMaxLength();
 	}
-	
+
 	public void setSpecSet( Map<Set<String>,ShareNum> specset ) {
 		this.specset = specset;
 	}
@@ -91,7 +92,7 @@ public class GeneGroup extends BaseGeneGroup {
 	public Set<GeneGroup> getNext() {
 		var ret = new HashMap<GeneGroup,Integer>();
 		var bret = new HashMap<GeneGroup,Integer>();
-		for (Annotation a : genes) {
+		for (Annotation a : getGenes()) {
 			var an = a.getNext();
 			if (an!=null && an.getContig() == a.getContig() && an.getGeneGroup()!=null) {
 				ret.merge(an.getGeneGroup(), 1, Integer::sum);
@@ -119,7 +120,7 @@ public class GeneGroup extends BaseGeneGroup {
 	public Set<GeneGroup> getPrevious() {
 		var ret = new HashMap<GeneGroup,Integer>();
 		var bret = new HashMap<GeneGroup,Integer>();
-		for (Annotation a : genes) {
+		for (Annotation a : getGenes()) {
 			var ap = a.getPrevious();
 			if (ap!=null && ap.getContig() == a.getContig() && ap.getGeneGroup()!=null) {
 				ret.merge(ap.getGeneGroup(), 1, Integer::sum);
@@ -137,24 +138,29 @@ public class GeneGroup extends BaseGeneGroup {
 	public Map<Set<String>,ShareNum> getSpecSet() {
 		return specset;
 	}
-	
+
+	public Set<Annotation> getGenes() {
+		var ann = (Set<? extends SimpleAnnotation>)genes;
+		return (Set<Annotation>)ann;
+	}
+
 	public boolean containsDirty() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( a.isDirty() ) return true;
 		}
 		return false;
 	}
-	
+
 	public String getFasta( boolean id ) throws IOException {
 		StringWriter sb = new StringWriter();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			a.getGene().getFasta( sb, id );
 		}
 		return sb.toString();
 	}
-	
+
 	public void getFasta( Writer w, boolean id ) throws IOException {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			var g = a.getGene();
 			if (g != null) g.getFasta( w, id );
 		}
@@ -162,7 +168,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public void getAlignedFasta( Writer w, boolean id ) throws IOException {
 		int prev = -1;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			var alseq = a.getAlignedSequence();
 			if (alseq!=null) {
 				int len = alseq.writeSequence(w, id ? a.getId() : a.getName());
@@ -176,28 +182,28 @@ public class GeneGroup extends BaseGeneGroup {
 			}
 		}
 	}
-	
+
 	public int getMaxCyc() {
 		int max = -1;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.getMaxCyc() > max ) max = g.getMaxCyc();
 		}
 		return max;
 	}
-	
+
 	public int getMaxLength() {
 		int max = -1;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( a.getProteinLength() > max ) max = a.getProteinLength();
 		}
 		return max;
 	}
-	
+
 	public Annotation getLongestSequence() {
 		int max = 0;
 		Annotation seltv = null;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			int unalen = a.getAlignedSequence().getUnalignedLength();
 			if( unalen > max ) {
 				seltv = a;
@@ -206,16 +212,16 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return seltv;
 	}
-	
+
 	public Teginfo getTes( String spec ) {
 		return species.get( spec );
 	}
-	
+
 	public List<Annotation> getTegevals( Set<String> sortspecies ) {
 		List<Annotation>	ltv = new ArrayList<>();
-		
+
 		for( String sp : sortspecies )
-		/*for( Gene g : genes ) {
+		/*for( Gene g : getGenes() ) {
 			Teginfo stv = g.species.get(sp);
 			if( stv == null ) {
 				//System.err.println( sp );
@@ -226,16 +232,16 @@ public class GeneGroup extends BaseGeneGroup {
 			}
 		}*/
 			ltv.addAll( getTegevals( sp ) );
-		
+
 		return ltv;
 	}
-	
+
 	public List<Annotation> getTegevals( String specs ) {
 		List<Annotation>	ltv = new ArrayList();
-		
+
 		Teginfo genes = species.get( specs );
 		if( genes != null ) ltv.addAll(genes.tset);
-		
+
 		return ltv;
 	}
 
@@ -247,23 +253,23 @@ public class GeneGroup extends BaseGeneGroup {
 			return new Islinfo("");
 		}
 	}
-	
+
 	public List<Annotation> getTegevals() {
-		return new ArrayList<>(genes);
+		return new ArrayList<>(getGenes());
 	}
-	
+
 	public void setIndex( int i ) {
 		this.index = i;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
-	
+
 	public double getAvgGCPerc() {
 		double gc = 0.0;
 		int count = 0;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			gc += a.getGCPerc();
 			count++;
 		}
@@ -273,11 +279,11 @@ public class GeneGroup extends BaseGeneGroup {
 	public double getAvggcp() {
 		return getAvgGCPerc();
 	}
-	
+
 	public double getStddevGCPerc( double avggc ) {
 		double gc = 0.0;
 		int count = 0;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			double val = a.getGCPerc()-avggc;
 			gc += val*val;
 			count++;
@@ -287,13 +293,13 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getDesignation() {
 		StringBuilder ret = new StringBuilder();
-		var set = genes.stream().map(a -> a.designation).filter(d -> d!=null && d.length()>0).collect(Collectors.toSet());
+		var set = getGenes().stream().map(a -> a.designation).filter(d -> d!=null && d.length()>0).collect(Collectors.toSet());
 		return set.size() > 0 ? set.toString() : "";
 	}
-	
+
 	public Set<Function> getFunctions() {
 		Set<Function>	funcset = new HashSet();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.funcentries != null && g.funcentries.size() > 0 ) {
 				//Function f = funcmap.get( go );
@@ -302,24 +308,24 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return funcset;
 	}
-	
+
 	public String getCommonGO( boolean breakb, boolean withinfo, Set<Function> allowedFunctions ) {
 		String ret = "";
 		Set<String> already = new HashSet<>();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g.funcentries != null && g.funcentries.size() > 0 ) {
 				for( Function f : g.funcentries ) {
 					//Function f = funcmap.get( go );
-					
+
 					if( allowedFunctions == null || allowedFunctions.contains(f) ) {
 						String name = f.getGo(); //getName().replace('/', '-').replace(",", "");
 						if( withinfo && f.getName() != null ) name += "-"+f.getName().replace(",", "");
-							
+
 						//System.err.println( g.getName() + "  " + go );
 						if( ret.length() == 0 ) ret = name;
 						else if( !already.contains(name) ) ret += ","+name;
-						
+
 						already.add( name );
 					}
 				}
@@ -328,18 +334,18 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return ret;
 	}
-	
+
 	public String getCommonFunction( boolean breakb, Set<Function> allowedFunctions ) {
 		StringBuilder ret = new StringBuilder();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g.funcentries != null && g.funcentries.size() > 0 ) {
 				for( Function f : g.funcentries ) {
 					//Function f = funcmap.get( go );
-					
+
 					if( allowedFunctions == null || allowedFunctions.contains(f) ) {
 						String name = f.getName().replace('/', '-').replace(",", "");
-							
+
 						//System.err.println( g.getName() + "  " + go );
 						if( ret.length() == 0 ) ret.append(name);
 						else ret.append(",").append(name);
@@ -350,28 +356,28 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return ret.toString();
 	}
-	
+
 	public boolean isOnAnyPlasmid() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Contig ctg = a.getContshort();
 			if( ctg!=null && ctg.isPlasmid() ) return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean isInAnyPhage() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( a.isPhage() ) return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public String getCommonNamespace() {
 		StringBuilder ret = new StringBuilder();
 		Set<String>	included = new HashSet<>();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g.funcentries != null ) for( Function f : g.funcentries ) {
 				//Function f = funcmap.get( go );
@@ -386,22 +392,22 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return ret.toString();
 	}
-	
+
 	public String getOrigin() {
 		String ret = null;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if(g != null) {
 				ret = a.getGene().getSpecies();
 				break;
 			}
 		}
-		
+
 		return ret;
 	}
-	
+
 	public String getCommonTag() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if(g != null) {
 				String tag = g.getTag();
@@ -410,16 +416,16 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return null;
 	}
-	
+
 	public String getCommonId() {
 		String ret = null;
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			String id = a.getId();
 			if( ret == null ) ret = id;
 			else {
 				boolean jsome = (ret.startsWith("J") || ret.startsWith("A") || ret.startsWith("L") || ret.startsWith("B")) && ret.charAt(4) == '0';
 				boolean isome = id != null && (id.startsWith("J") || id.startsWith("A") || id.startsWith("L") || id.startsWith("B")) && id.charAt(4) == '0';
-				if( ((jsome || ret.contains("contig") || ret.contains("scaffold") || ret.contains("uid")) && !ret.contains(":")) || 
+				if( ((jsome || ret.contains("contig") || ret.contains("scaffold") || ret.contains("uid")) && !ret.contains(":")) ||
 						(id != null && !(isome || id.contains("contig") || id.contains("scaffold") || id.contains("uid") || id.contains("unnamed") || id.contains("hypot")) )) ret = id;
 			}
 		}
@@ -487,10 +493,11 @@ public class GeneGroup extends BaseGeneGroup {
 
 	@Override
 	public String getName() {
-		if (name==null) {
+		var retname = super.getGroupName();
+		if (retname==null) {
 			String ret = "";
 			if (genes.size() > 0) {
-				for (Annotation a : genes) {
+				for (Annotation a : getGenes()) {
 					String name = a.getName();
 					if (name != null) {
 						if (ret.length() == 0) ret = name;
@@ -535,7 +542,7 @@ public class GeneGroup extends BaseGeneGroup {
 			/*if( ret == null || ret.length() == 0 ) {
 				System.err.println();
 
-				for( Gene g : genes ) {
+				for( Gene g : getGenes() ) {
 					String name = g.getName();
 					if( ret == null ) ret = name;
 					else if( (ret.contains("contig") || ret.contains("scaffold")) || !(name.contains("contig") || name.contains("scaffold") || name.contains("unnamed") || name.contains("hypot")) ) ret = name;
@@ -545,9 +552,9 @@ public class GeneGroup extends BaseGeneGroup {
 				ret = getTegevals().stream().map(Annotation::getName).collect(Collectors.joining(","));
 			}
 
-			name = ret;
-			if (name.startsWith("Phage protein") || name.contains("hypoth") || name.contains("-contig0")) {
-				for (Annotation a : genes) {
+			setGroupName(ret);
+			if (ret.startsWith("Phage protein") || ret.contains("hypoth") || ret.contains("-contig0")) {
+				for (Annotation a : getGenes()) {
 					var g = a.getGene();
 					if(g!=null&&g.hhblits!=null&&g.hhblits.length()>0) {
 						var bil = g.hhblits.indexOf(' ');
@@ -556,7 +563,7 @@ public class GeneGroup extends BaseGeneGroup {
 						if (eix>0) {
 							try {
 								var evl = Double.parseDouble(g.hhblits.substring(eix + 8).trim());
-								if (evl < 1.0) name = g.hhblits.substring(bil + 1, tab);
+								if (evl < 1.0) setGroupName(g.hhblits.substring(bil + 1, tab));
 							} catch(NumberFormatException ne) {
 
 							}
@@ -565,39 +572,39 @@ public class GeneGroup extends BaseGeneGroup {
 					}
 				}
 			}
+			retname = ret;
 		}
-		
-		return name;
+		return retname;
 	}
-	
+
 	public Cog getCog( Map<String,Cog> cogmap ) {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cogmap.containsKey( a.getId() ) ) {
 				return cogmap.get( a.getId() );
 			}
 		}
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.cog != null ) return g.cog;
 		}
 		return null;
 	}
-	
+
 	public String getCogname() {
 		Cog cog = getCog( cogmap );
 		return cog != null ? cog.name : null;
 	}
-	
+
 	public String getCog() {
 		Cog cog = getCog( cogmap );
 		return cog != null ? cog.id : null;
 	}
-	
+
 	public String getCoganno() {
 		Cog cog = getCog( cogmap );
 		return cog != null ? cog.annotation : null;
 	}
-	
+
 	public String getCogsymbol() {
 		Cog cog = getCog( cogmap );
 		return cog != null ? cog.genesymbol : null;
@@ -609,10 +616,10 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public Cog getPfamId( Map<String,Cog> pfammap ) {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( pfammap.containsKey( a.getId() ) ) return pfammap.get( a.getId() );
 		}
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null & g.cog != null ) return g.cog;
 		}
@@ -638,20 +645,20 @@ public class GeneGroup extends BaseGeneGroup {
 		Cog pfam = getPfamId( pfammap );
 		return pfam != null ? pfam.genesymbol : null;
 	}
-	
+
 	public int getPresentin() {
 		return getSpecies().size();
 	}
-	
+
 	public String getCommonCazy( Map<String,String> cazymap ) {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazymap.containsKey( a.getId() ) ) return cazymap.get( a.getId() );
 		}
 		return null;
 	}
 
 	public String getCazy() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.cazy != null && g.cazy.length() > 0 ) return g.cazy;
 		}
@@ -659,7 +666,7 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getPhaster() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.phaster != null && g.phaster.length() > 0 ) return g.phaster;
 		}
@@ -667,7 +674,7 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getPhrog() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.getPhrog() != null && g.getPhrog().length() > 0 ) return g.getPhrog();
 		}
@@ -675,7 +682,7 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getHhblits() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.hhblits != null && g.hhblits.length() > 0 ) return g.hhblits;
 		}
@@ -683,7 +690,7 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getHhblitsuni() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.hhblitsuni != null && g.hhblitsuni.length() > 0 ) return g.hhblitsuni;
 		}
@@ -691,7 +698,7 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getDbcan() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.dbcan != null && g.dbcan.length() > 0 ) return g.dbcan;
 		}
@@ -700,7 +707,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getCazyAA() {
 		Map<String,String> cazyaamap = geneset.getCazyAAMap();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazyaamap.containsKey( a.getId() ) ) return cazyaamap.get( a.getId() );
 		}
 		return null;
@@ -708,7 +715,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getCazyCE() {
 		Map<String,String> cazycemap = geneset.getCazyCEMap();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazycemap.containsKey( a.getId() ) ) return cazycemap.get( a.getId() );
 		}
 		return null;
@@ -716,7 +723,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getCazyGH() {
 		Map<String,String> cazyghmap = geneset.getCazyGHMap();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazyghmap.containsKey( a.getId() ) ) return cazyghmap.get( a.getId() );
 		}
 		return null;
@@ -724,7 +731,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getCazyGT() {
 		Map<String,String> cazygtmap = geneset.getCazyGTMap();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazygtmap.containsKey( a.getId() ) ) return cazygtmap.get( a.getId() );
 		}
 		return null;
@@ -732,36 +739,36 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getCazyPL() {
 		Map<String,String> cazyplmap = geneset.getCazyPLMap();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			if( cazyplmap.containsKey( a.getId() ) ) return cazyplmap.get( a.getId() );
 		}
 		return null;
 	}
 
 	public String getKo() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.koid != null && g.koid.length() > 0 ) return g.koid;
 		}
 		return null;
 	}
-	
+
 	public String getRefid() {
-		var ret = genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(Gene::getRefid).filter(refid->refid != null && refid.length() > 0 && !refid.contains("scaffold") && !refid.contains("contig")).collect(Collectors.joining(","));
+		var ret = getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(Gene::getRefid).filter(refid->refid != null && refid.length() > 0 && !refid.contains("scaffold") && !refid.contains("contig")).collect(Collectors.joining(","));
 		return ret;
 	}
-	
+
 	public String getUnid() {
-		return genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(g->g.uniid).filter(p->p!=null&&p.length()>0).collect(Collectors.joining(","));
+		return getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(g->g.uniid).filter(p->p!=null&&p.length()>0).collect(Collectors.joining(","));
 	}
 
 	public String getGenid() {
-		return genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(g->g.genid).filter(p->p!=null&&p.length()>0).collect(Collectors.joining(","));
+		return getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(g->g.genid).filter(p->p!=null&&p.length()>0).collect(Collectors.joining(","));
 	}
-	
+
 	public String getSymbol() {
 		Set<String> s = new HashSet<>();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.symbol != null ) s.add( g.symbol );
 		}
@@ -785,10 +792,10 @@ public class GeneGroup extends BaseGeneGroup {
 			return ret.substring(1, ret.length()-1 );
 		}
 	}
-	
+
 	public String getKsymbol() {
 		Set<String> s = new HashSet<>();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			//if( g.koname != null && g.koname.length() > 0 && g.koname.length() < 7 ) {
 					//if( sel == null || (g.koname != null && g.koname.length() > 0 && g.koname.length() < 7 && (sel.length() >= 7 || g.koname.length() > sel.length())) ) {
@@ -816,7 +823,7 @@ public class GeneGroup extends BaseGeneGroup {
 			return ret.substring(1, ret.length()-1 );
 		}
 	}
-	
+
 	public String getKoname() {
 		String ko = this.getKo();
 		if( ko != null ) {
@@ -826,9 +833,9 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return this.getSymbol();
 	}
-	
+
 	public String getEc() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.ecid != null && g.ecid.length() > 0 ) return g.ecid;
 		}
@@ -836,32 +843,32 @@ public class GeneGroup extends BaseGeneGroup {
 	}
 
 	public String getPfam() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.pfamid != null && g.pfamid.length() > 0 ) return g.pfamid;
 		}
 		return null;
 	}
-	
+
 	public String getCommonSignalP() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.signalp ) return "Y";
 		}
 		return null;
 	}
-	
+
 	public String getCommonTransM() {
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.transm ) return "Y";
 		}
 		return null;
 	}
-	
+
 	public String getKeggid() {
 		StringBuilder ret = new StringBuilder();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.keggid != null ) {
 				if( ret.length() == 0 ) ret.append(g.keggid);
@@ -873,7 +880,7 @@ public class GeneGroup extends BaseGeneGroup {
 
 	public String getGoid() {
 		StringBuilder ret = new StringBuilder();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.goid != null ) {
 				if( ret.length() == 0 ) ret.append(g.goid);
@@ -882,10 +889,10 @@ public class GeneGroup extends BaseGeneGroup {
 		}
 		return ret.toString();
 	}
-	
+
 	public String getKeggPathway() {
 		StringBuilder ret = new StringBuilder();
-		for( Annotation a : genes ) {
+		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.keggpathway != null ) {
 				if( ret.length() == 0 ) ret.append(g.keggpathway);
@@ -904,27 +911,27 @@ public class GeneGroup extends BaseGeneGroup {
 	public int size() {
 		return genes.size();
 	}
-	
+
 	public Set<String> getSpecies() {
 		return species.keySet();
 	}
-	
+
 	public boolean isSingluar() {
 		return this.getGroupCount() == this.getGroupCoverage();
 	}
-    
+
     public Teginfo getGenes( String spec ) {
         return species.get( spec );
     }
 
 	public void addGenes(Collection<Annotation> genes) {
-		for (Annotation gene : genes) {
+		for (Annotation gene : getGenes()) {
 			addGene(gene);
 		}
 	}
 
 	public void mergeAnnotations(Collection<Annotation> genes) {
-		for (Annotation gene : genes) {
+		for (Annotation gene : getGenes()) {
 			mergeAnnotation(gene);
 		}
 	}
@@ -987,15 +994,15 @@ public class GeneGroup extends BaseGeneGroup {
 	public Map<String,Set<String>> getBiosystemsmap() {
 		return this.biosystemsmap;
 	}
-	
+
 	/*public void addSpecies( String species ) {
 		this.species.add( species );
 	}
-	
+
 	public void addSpecies( Set<String> species ) {
 		this.species.addAll( species );
 	}*/
-	
+
 	public GeneGroup( GenomeSet geneset, int i, Map<Set<String>,ShareNum> specset, Map<String,Cog> cogmap, Map<String,Cog> pfammap, Map<String,String> konamemap, Map<String,Set<String>> biosystemsmap ) {
 		super();
 		this.groupIndex = i;
@@ -1010,30 +1017,30 @@ public class GeneGroup extends BaseGeneGroup {
 	public GeneGroup() {
 		this( null,-1, null, null, null, null, null );
 	}
-	
+
 	public int getGroupIndex() {
 		return this.groupIndex;
 	}
-	
+
 	public Integer getGroupCoverage() {
 		return this.species.size();
 	}
-	
+
 	public void setGroupCount( int count ) {
 		this.groupCount = count;
 	}
-	
+
 	public int getGroupCount() {
 		if( groupCount == -1 ) {
 			this.groupCount = genes.size();
 		}
 		return this.groupCount;
 	}
-	
+
 	public int getGroupGeneCount() {
 		return this.genes.size();//this.groupGeneCount;
 	}
-	
+
 	public ShareNum getSharingNumber() {
 		return specset.get( getSpecies() );
 	}

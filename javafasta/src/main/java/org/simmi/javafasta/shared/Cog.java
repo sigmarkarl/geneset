@@ -2,12 +2,13 @@ package org.simmi.javafasta.shared;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Cog {
+public class Cog implements Serializable {
 	public static Map<String,String>	charcog = new HashMap<>();
 	public static Map<String,String>	cogchar = new HashMap<>();
 	public static Map<String,Set<String>> coggroups = new TreeMap<>();
@@ -15,22 +16,22 @@ public class Cog {
 	public static Map<String,Color> charcogcol = new HashMap<>();
 	public static Map<String,String> mapToCog;
 	static {
-		try {
-			mapToCog = Files.lines(Paths.get("/Users/sigmar/cog-20.def2.tab")).map(s -> s.split("\t")).collect(Collectors.toMap(s -> s[0],s -> s[1]));
+		try (var stream = Files.lines(Paths.get("/Users/sigmar/cog-20.def2.tab"))) {
+			mapToCog = stream.map(s -> s.split("\t")).collect(Collectors.toMap(s -> s[0],s -> s[1]));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		coggroups.put( "CELLULAR PROCESSES AND SIGNALING", new HashSet<>( Arrays.asList( new String[] {"D","M","N","O","T","U","V","W","X","Y","Z"} ) ) );
-		coggroups.put( "INFORMATION STORAGE AND PROCESSING", new HashSet<>( Arrays.asList( new String[] {"A","B","J","K","L"} ) ) );
-		coggroups.put( "METABOLISM", new HashSet<>( Arrays.asList( new String[] {"C","E","F","G","H","I","P","Q"} ) ) );
-		coggroups.put( "POORLY CHARACTERIZED", new HashSet<>( Arrays.asList( new String[] {"R","S","-"} ) ) );
+		coggroups.put( "CELLULAR PROCESSES AND SIGNALING", new HashSet<>( Arrays.asList("D","M","N","O","T","U","V","W","X","Y","Z") ) );
+		coggroups.put( "INFORMATION STORAGE AND PROCESSING", new HashSet<>( Arrays.asList("A","B","J","K","L") ) );
+		coggroups.put( "METABOLISM", new HashSet<>( Arrays.asList("C","E","F","G","H","I","P","Q") ) );
+		coggroups.put( "POORLY CHARACTERIZED", new HashSet<>( Arrays.asList("R","S","-") ) );
 
 		coggroupshort.put("CELLULAR PROCESSES AND SIGNALING","CP");
 		coggroupshort.put("INFORMATION STORAGE AND PROCESSING","IS");
 		coggroupshort.put("METABOLISM","MB");
 		coggroupshort.put("POORLY CHARACTERIZED","PC");
-		
+
 		/*
 		CELLULAR PROCESSES AND SIGNALING
 		[D] Cell cycle control, cell division, chromosome partitioning
@@ -128,10 +129,10 @@ public class Cog {
 		charcogcol.put("R", Color.decode("#E0E0E0"));
 		charcogcol.put("S", Color.decode("#CCCCCC"));
 		charcogcol.put("-", Color.decode("#000000"));
-		
+
 		cogchar.put( "Cell envelope biogenesis, outer membrane", "M" );
 		cogchar.put( "Cell wall", "M" );
-		cogchar.put( "Cell motility and secretion", "N" );	
+		cogchar.put( "Cell motility and secretion", "N" );
 		cogchar.put( "Cell division and chromosome partitioning", "D" );
 		cogchar.put( "DNA replication, recombination and repair", "L" );
 		cogchar.put( "DNA replication, recombination, and repair", "L" );
@@ -147,7 +148,7 @@ public class Cog {
 		cogchar.put( "3-hydroxymyristoyl", "M" );
 		cogchar.put( "Signal transduction", "T");
 	}
-	
+
 	public Cog( String id, String symbol, String name, String annotation ) {
 		int idx = id.indexOf('@');
 		this.id = id.substring(0,idx==-1?id.length():idx);
@@ -162,7 +163,7 @@ public class Cog {
 		}
 		if(mapToCog!=null) cogsymbol = mapToCog.getOrDefault(this.id, symbol.equals("-") ? "S" : symbol);
 	}
-	
+
 	public String	id;
 	public String 	symbol;
 	public String	cogsymbol;

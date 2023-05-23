@@ -1,5 +1,6 @@
 package org.simmi.javafasta.shared;
 
+import org.jetbrains.annotations.NotNull;
 import scala.xml.dtd.impl.Base;
 
 import java.awt.Color;
@@ -8,34 +9,26 @@ import java.io.Writer;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Annotation implements Comparable<Object> {
-	Sequence		seq;
-	private Sequence		alignedsequence;
-	private String			name;
-	private String			note;
-	private String			id;
-	private String			tag;
+public class Annotation extends SimpleAnnotation implements Comparable<Object> {
+	transient Sequence				seq;
+	transient private Sequence		alignedsequence;
+
 	public StringBuilder	desc;
 	public String			type;
 	private String			group;
 	public Set<String>		dbref;
-	public int				start;
-	public int				stop;
-	public int				ori;
-	public Object			color = Color.green;
+	transient public Object			color = Color.green;
 	public String			md5;
-	private Gene			gene;
+	transient private Gene	gene;
 	public boolean			selected = false;
 	double					gc = -1.0;
 	private double			gcskew = -1.0;
 	public boolean			dirty = false;
-	public double 			eval;
 	public int				num;
 	public boolean			backgap = false;
 	public boolean			frontgap = false;
-	public String	designation;
 	public int indexOf = -1;
-	public GeneGroup gg;
+	transient public GeneGroup gg;
 
 	public void setId(String id) {
 		this.id = id;
@@ -56,11 +49,11 @@ public class Annotation implements Comparable<Object> {
 	public boolean isPhage() {
 		return designation != null && designation.contains("phage");
 	}
-	
+
 	public boolean isSelected() {
 		return selected;
 	}
-	
+
 	public void setSelected( boolean sel ) {
 		this.selected = sel;
 	}
@@ -109,11 +102,11 @@ public class Annotation implements Comparable<Object> {
 	public String toString() {
 		return "name: "+name+" id: "+id+" tag: "+tag;
 	}
-	
+
 	public Annotation( Annotation a ) {
 		this( a, 0 );
 	}
-	
+
 	public Annotation( Annotation a, int offset ) {
 		start = a.start+offset;
 		stop = a.stop+offset;
@@ -132,7 +125,7 @@ public class Annotation implements Comparable<Object> {
 		gc = a.gc;
 		gcskew = a.gcskew;
 	}
-	
+
 	public Annotation( String type ) {
 		this.type = type;
 	}
@@ -156,13 +149,13 @@ public class Annotation implements Comparable<Object> {
 		this.name = name;
 		this.color = color;
 		this.seq = seq;
-		
+
 		if( add && seq != null ) {
 			seq.addAnnotation( this );
 		}
 		if( mann != null ) mann.put( name, this );
 	}
-	
+
 	public String getSpecies() {
 		if(seq instanceof Contig) {
 			Contig contig = (Contig) seq;
@@ -173,7 +166,7 @@ public class Annotation implements Comparable<Object> {
 	public Sequence getAlignedSequence() {
 		return alignedsequence;
 	}
-	
+
 	public void setAlignedSequence( Sequence alseq ) {
 		//if( seq != null ) System.err.println( "set aligned seq " + seq.getName() + "  " + alseq.length() );
 		//else System.err.println( "seq null" );
@@ -182,38 +175,38 @@ public class Annotation implements Comparable<Object> {
 		if(seq != null) alseq.name = seq.getGroup();
 		if(alseq.group == null) alseq.group = group;
 	}
-	
+
 	public void writeFasta( Writer w ) throws IOException {
 		w.write( ">"+name+"\n" );
 		w.write( getSequence()+"\n" );
 	}
-	
+
 	public Sequence getProteinSubsequence( int u, int e ) {
 		return seq.getProteinSequence( start+u, start+e, ori );
 	}
-	
+
 	public Color getBackFlankingGapColor() {
 		//if( ori == 1 ) return new Color( 1.0f, 1.0f, 1.0f );
-		
+
 		//int i = contshort.tlist.indexOf(this);
 		//if( i == 0 || i == contshort.tlist.size()-1 ) return Color.blue;
 		//else if( unresolvedGap() > 0 ) return Color.red;
 		return backgap ? Color.red : Color.lightGray;
 	}
-	
+
 	public Color getFrontFlankingGapColor() {
 		//if( ori == 1 ) return new Color( 1.0f, 1.0f, 1.0f );
-		
+
 		//int i = contshort.tlist.indexOf(this);
 		//if( i == 0 || i == contshort.tlist.size()-1 ) return Color.blue;
 		//else if( unresolvedGap() > 0 ) return Color.red;
 		return frontgap ? Color.red : Color.lightGray;
 	}
-	
+
 	public int getProteinLength() {
 		return getLength()/3;
 	}
-	
+
 	public int getNum() {
 		return num;
 	}
@@ -221,7 +214,7 @@ public class Annotation implements Comparable<Object> {
 	public void setNum(int i) {
 		num = i;
 	}
-	
+
 	public double gcPerc() {
 		int gc = 0;
 		int total = 0;
@@ -233,7 +226,7 @@ public class Annotation implements Comparable<Object> {
 		}
 		return (double)gc/(double)total;
 	}
-	
+
 	public double getGCPerc() {
 		if (gc == -1.0) {
 			gc = gcPerc();
@@ -284,7 +277,7 @@ public class Annotation implements Comparable<Object> {
 	public void setGCSkew(double gcskew) {
 		this.gcskew = gcskew;
 	}
-	
+
 	public double getGCSkew() {
 		if (gcskew == -1.0) {
 			gcskew = calcGcSkew();
@@ -301,7 +294,7 @@ public class Annotation implements Comparable<Object> {
 	}
 
 	public Color getGCColor(GeneGroup gg) {
-		var seqlist = gg.genes.parallelStream().map(Annotation::getSeq).filter(Objects::nonNull).flatMap(s -> s.partof.parallelStream()).collect(Collectors.toList());
+		var seqlist = gg.getGenes().parallelStream().map(Annotation::getSeq).filter(Objects::nonNull).flatMap(s -> s.partof.parallelStream()).collect(Collectors.toList());
 		float min = (float)calcMinGC(seqlist);
 		float max = (float)calcMaxGC(seqlist);
 		float diff = max-min;
@@ -309,7 +302,7 @@ public class Annotation implements Comparable<Object> {
 		if( isDirty() ) return Color.red;
 		double gcp = Math.min( Math.max( min, gc ), max );
 		return new Color( (float)(max-gcp)/diff, (float)(gcp-min)/diff, 1.0f );
-		
+
 		/*double gcp = Math.min( Math.max( 0.35, gc ), 0.55 );
 		return new Color( (float)(0.55-gcp)/0.2f, (float)(gcp-0.35)/0.2f, 1.0f );*/
 	}
@@ -326,22 +319,22 @@ public class Annotation implements Comparable<Object> {
 		/*double gcp = Math.min( Math.max( 0.35, gc ), 0.55 );
 		return new Color( (float)(0.55-gcp)/0.2f, (float)(gcp-0.35)/0.2f, 1.0f );*/
 	}
-	
+
 	public boolean isDirty() {
 		return dirty;
 	}
-	
+
 	public Color getGCSkewColor() {
 		return new Color( (float)Math.min( 1.0, Math.max( 0.0, 0.5+5.0*getGCSkew() ) ), 0.5f, (float)Math.min( 1.0, Math.max( 0.0, 0.5-5.0*getGCSkew() ) ) );
 	}
-	
+
 	public void setGene( Gene gen ) {
 		if(gene!=gen) {
 			gene = gen;
 			gene.setTegeval(this);
 		}
 	}
-	
+
 	public Gene getGene() {
 		return gene;
 	}
@@ -349,7 +342,7 @@ public class Annotation implements Comparable<Object> {
 	public boolean isPseudo() {
 		return getGene() == null && start == 0;
 	}
-	
+
 	public Sequence getProteinSequence() {
 		Sequence ret = seq == null ? null : seq.getProteinSequence(start, stop, ori);
 		if( ret != null && this.name != null ) {
@@ -360,31 +353,31 @@ public class Annotation implements Comparable<Object> {
 		}
 		return ret;
 	}
-	
+
 	public void addDbRef( String val ) {
 		if( dbref == null ) dbref = new HashSet<>();
 		dbref.add( val );
 	}
-	
+
 	public int getSubstringOffset( int u, int e ) {
 		return seq.getSubstringOffset(start+u, start+e, ori);
 	}
-	
+
 	public String getPaddedSubstring( int u, int e ) {
 		return seq.getPaddedSubstring(start+u, start+e, ori);
 	}
-	
+
 	public String getSubstring( int u, int e ) {
 		return seq.getSubstring(start+u, start+e, ori);
 	}
-	
+
 	public Sequence createSequence() {
 		String seqstr = getSequence();
 		Sequence seq = new Sequence(this.id, this.name,null);
 		seq.append(seqstr);
 		return seq;
 	}
-	
+
 	public String getSequence() {
 		return seq.getSubstring(start, stop, ori);
 	}
@@ -396,24 +389,24 @@ public class Annotation implements Comparable<Object> {
 	public void setSeq(Sequence seq) {
 		this.seq = seq;
 	}
-	
+
 	public Annotation( Sequence seq, int start, int stop, int ori, String name ) {
 		this.seq = seq;
 		this.name = name;
 		this.start = start;
 		this.stop = stop;
 		this.ori = ori;
-		
+
 		/*if( seq != null ) {
 			seq.addAnnotation( this );
 		}*/
 		//if( mann != null ) mann.put( name, this );
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName( String name ) {
 		this.name = name;
 	}
@@ -425,11 +418,11 @@ public class Annotation implements Comparable<Object> {
 	public void setNote( String note ) {
 		this.note = note;
 	}
-	
+
 	public String getType() {
 		return type;
 	}
-	
+
 	public Sequence getContig() {
 		return seq;
 	}
@@ -446,19 +439,19 @@ public class Annotation implements Comparable<Object> {
 	public Contig getContshort() {
 		return (Contig)getContig();
 	}
-	
+
 	public void setContig( Sequence contig ) {
 		this.seq = contig;
 	}
-	
+
 	public Annotation getNext() {
-		if( seq != null ) 
+		if( seq != null )
 			return getContig().getNext( this );
 		return null;
 	}
-	
+
 	public Annotation getPrevious() {
-		if( seq != null ) 
+		if( seq != null )
 			return getContig().getPrev( this );
 		return null;
 	}
@@ -496,39 +489,39 @@ public class Annotation implements Comparable<Object> {
 		}*/
 		return ret;
 	}
-	
+
 	public boolean isReverse() {
 		return ori == -1;
 	}
-	
+
 	public boolean isGlobal() {
 		return seq == null;
 	}
-	
+
 	public int getLength() {
 		return stop-start;
 	}
-	
+
 	public int getStart() {
 		return start;
 	}
-	
+
 	public int getEnd() {
 		return stop;
 	}
-	
+
 	public void setStart( int start ) {
 		this.start = start;
 	}
-	
+
 	public void setStop( int stop ) {
 		this.stop = stop;
 	}
-	
+
 	public void setOri( int ori ) {
 		this.ori = ori;
 	}
-	
+
 	public void setGroup( String group ) {
 		this.group = group;
 	}
@@ -536,31 +529,38 @@ public class Annotation implements Comparable<Object> {
 	public String getGroup() {
 		return group;
 	}
-	
+
 	public void setType( String type ) {
 		this.type = type;
 	}
-	
+
 	public int getCoordStart() {
 		return (seq != null ? seq.getStart() : 0)+start;
 	}
-	
+
 	public int getCoordEnd() {
 		return (seq != null ? seq.getStart() : 0)+stop;
 	}
-	
+
 	public void appendDesc( String astr ) {
 		if( desc == null ) desc = new StringBuilder( astr );
 		else desc.append( astr );
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(@NotNull Object o) {
 		if(o==null) {
 			return -1;
+		} else if(o instanceof HashSet) {
+			HashSet<Annotation> set = (HashSet<Annotation>)o;
+			Annotation a = set.iterator().next();
+			Contig cont = getContshort();
+			Contig acont = a.getContshort();
+			int ret = cont.compareTo(acont);
+			return ret == 0 ? Integer.compare(start, a.start) : ret;
 		} else if(!(o instanceof Annotation)) {
 			Teg teg = (Teg)o;
-			Annotation a = teg.getBest();
+			Annotation a = (Annotation)teg.getBest();
 			Contig cont = getContshort();
 			Contig acont = a.getContshort();
 			int ret = cont.compareTo(acont);
@@ -593,7 +593,7 @@ public class Annotation implements Comparable<Object> {
 		}
 		return indexOf;
 	}
-	
+
 	@Override
 	public boolean equals( Object o ) {
 		return compareTo(o) == 0 && (start > 0 || this == o);

@@ -866,7 +866,7 @@ public class Island extends Cassette {
     public static void initIslands(List<GeneGroup> allgenegroups) {
         for (var gg : allgenegroups) {
             var ggsetcount = new HashSet<Set<GeneGroup>>();
-            for (Annotation a : gg.genes) {
+            for (Annotation a : gg.getGenes()) {
                 var next = a.getNext();
                 var prev = a.getPrevious();
 

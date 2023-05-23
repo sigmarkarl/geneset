@@ -66,15 +66,15 @@ public class Neighbour {
 
 	public Neighbour( Set<GeneGroup> sgg ) {
 		selectedGenesGroups = sgg;
-		
+
 		hteg = new ArrayList<>();
 		for( GeneGroup selectedGeneGroup : selectedGenesGroups ) {
-			for( Annotation selectedGene : selectedGeneGroup.genes ) {
+			for( Annotation selectedGene : selectedGeneGroup.getGenes() ) {
 				hteg.add( selectedGene );
 			}
 		}
 	}
-	
+
 	public void recenter( JTable rowheader, JComponent c ) {
 		selectedGenesGroups = new HashSet<>();
 		selectedGenesGroups.add( currentTe.getGene().getGeneGroup() );
@@ -82,7 +82,7 @@ public class Neighbour {
 		hteg.clear();
 		hteg = new ArrayList<>();
 		for( GeneGroup selectedGeneGroup : selectedGenesGroups ) {
-			for( Annotation selectedGene : selectedGeneGroup.genes ) {
+			for( Annotation selectedGene : selectedGeneGroup.getGenes() ) {
 				hteg.add( selectedGene );
 			}
 		}
@@ -99,16 +99,16 @@ public class Neighbour {
 		}
 		c.setPreferredSize( new Dimension(DIM_X, rh) );
 		c.setSize(DIM_X, rh);
-		
+
 		int i = hteg.indexOf( currentTe );
 		if( i != -1 ) {
 			int r = rowheader.convertRowIndexToView( i );
 			rowheader.setRowSelectionInterval(r, r);
 		}
-		
+
 		c.repaint();
 	}
-	
+
 	public Annotation getSelectedTe( Point p, JTable rowheader, JRadioButton sequenceView, JRadioButton realView, List<Annotation> lte, int rowheight ) {
 		if( sequenceView.isSelected() || realView.isSelected() ) {
 			for( int y = 0; y < rowheader.getRowCount(); y++ ) {
@@ -121,16 +121,16 @@ public class Neighbour {
 						for( Tegeval te : ti.tset ) {*/
 				//for( Tegeval te : lte ) {
 				int xoff = XOFF_START;
-				
+
 				Annotation te = lte.get(r);
 				Annotation next = te;
 				//int k = 0;
 				while( next != null && xoff < END_X ) {
-					double len = next.getProteinLength()*neighbourscale;											
+					double len = next.getProteinLength()*neighbourscale;
 					Rectangle rect = new Rectangle(xoff, y * rowheight+2, (int)len, rowheight - 4);
-					
+
 					if( rect.contains( p ) ) return next;
-					
+
 					Annotation thenext = next.getNext();
 					int bil = 10;
 					if( thenext != null && realView.isSelected() ) {
@@ -138,7 +138,7 @@ public class Neighbour {
 						bil = (int)(neighbourscale*bil/3);
 					}
 					xoff += len+bil;
-					
+
 					if( thenext == null ) {
 						Sequence ncont = next.getContig();
 						if (ncont!=null) {
@@ -158,19 +158,19 @@ public class Neighbour {
 						//if( c.isReverse() ) thenext = c.annset.get( c.annset.size()-1 );
 						//else thenext = c.annset.get(0);
 					}
-					
+
 					next = thenext;
 				}
-				
+
 				Annotation prev = te.getPrevious();
 				int bil = 10;
 				if( prev != null && realView.isSelected() ) {
 					bil = prev.getContig().isReverse() ? Math.abs( prev.start-te.stop ) : Math.abs( prev.stop-te.start );
 					bil = (int)(neighbourscale*bil/3);
-					
+
 					//if( prev.getContig().getSpec().contains("2127") ) System.err.println( "bl " + bil );
 				}
-				
+
 				if( prev == null ) {
 					Sequence prevcontig = te.getContig();
 					if( prevcontig.isChromosome() ) {
@@ -189,12 +189,12 @@ public class Neighbour {
 						prev = c.getLast();
 					}
 				}
-				
+
 				xoff = XOFF_START;
 				//int k = 0;
-				while( prev != null && xoff > 5 ) {					
+				while( prev != null && xoff > 5 ) {
 					double len = prev.getProteinLength()*neighbourscale;
-					
+
 					Annotation theprev = prev.getPrevious();
 					xoff -= len+bil;
 					bil = 10;
@@ -202,13 +202,13 @@ public class Neighbour {
 						bil = prev.getContig().isReverse() ? Math.abs( theprev.start-prev.stop ) : Math.abs( theprev.stop-prev.start );
 						bil = (int)(neighbourscale*bil/3);
 					}
-					
+
 					Rectangle rect = new Rectangle(xoff, y * rowheight+2, (int)len, rowheight - 4);
 					if( rect.contains( p ) ) return prev;
-					
+
 					if( theprev == null ) {
 						Sequence prevcontig = prev.getContig();
-						
+
 						/*System.err.println( prevcontig.getSpec() );
 						if( prevcontig.getSpec().contains("eggertsoni") ) {
 							System.err.println();
@@ -229,7 +229,7 @@ public class Neighbour {
 							theprev = c.getLast();
 						}
 					}
-					
+
 					prev = theprev;
 				}
 				//break;
@@ -246,21 +246,21 @@ public class Neighbour {
 					if( tes != null ) val = (int)(tes.getProteinLength()*neighbourscale);
 					if( val > max ) max = val;
 				}
-				
+
 				for( int y = 0; y < rowheader.getRowCount(); y++ ) {
 					int r = rowheader.convertRowIndexToModel( y );
 					Annotation te = hteglocal.get(r);
 					Annotation next = te;
-					
+
 					if( next != null ) {
-						double len = next.getProteinLength()*neighbourscale;										
+						double len = next.getProteinLength()*neighbourscale;
 						Rectangle rect = new Rectangle(xoff, y * rowheight+2, (int)len, rowheight - 4);
-						
+
 						if( rect.contains( p ) ) return next;
 					}
 				}
 				xoff += max+10;
-				
+
 				for( int i = 0; i < hteglocal.size(); i++ ) {
 					Annotation te = hteglocal.get(i);
 					if( te != null ) {
@@ -284,7 +284,7 @@ public class Neighbour {
 					//if( te.getLength() > max ) max = te.getLength();
 				}
 			}
-			
+
 			hteglocal.clear();
 			for( Annotation te : lte ) {
 				hteglocal.add( te.getPrevious() );
@@ -300,20 +300,20 @@ public class Neighbour {
 					if( val > max ) max = val;
 				}
 				xoff -= max+10;
-				
+
 				for( int y = 0; y < rowheader.getRowCount(); y++ ) {
 					int r = rowheader.convertRowIndexToModel( y );
 					Annotation te = hteglocal.get(r);
 					Annotation next = te;
-					
+
 					if( next != null ) {
-						double len = next.getProteinLength()*neighbourscale;										
+						double len = next.getProteinLength()*neighbourscale;
 						Rectangle rect = new Rectangle(xoff, y * rowheight+2, (int)len, rowheight - 4);
-						
+
 						if( rect.contains( p ) ) return next;
 					}
 				}
-				
+
 				for( int i = 0; i < hteglocal.size(); i++ ) {
 					Annotation te = hteglocal.get(i);
 					if( te != null ) {
@@ -332,33 +332,33 @@ public class Neighbour {
 							}
 							theprev = c.getLast();
 						}
-						
+
 						//System.err.println( theprev.name );
 						hteglocal.set( i, theprev );
 					}
 					//if( te.getLength() > max ) max = te.getLength();
 				}
 			}
-					
+
 			/*		xoff = 3000;
 					Tegeval prev = te.getPrevious();
 					//int k = 0;
-					while( prev != null && xoff > 5 ) {					
+					while( prev != null && xoff > 5 ) {
 						double len = prev.getProteinLength()*neighbourscale;
 						xoff -= len+10;
-						
+
 						Rectangle rect = new Rectangle(xoff, y * rowheight+2, (int)len, rowheight - 4);
 						if( rect.contains( p ) ) return prev;
-						
+
 						prev = prev.getPrevious();
 					}
 				}
 			}*/
 		}
-		
+
 		return null;
 	}
-	
+
 	public void injectForward( JComponent c ) {
 		if( currentTe != null ) {
 			if( currentTe.getContig().isReverse() ) {
@@ -379,7 +379,7 @@ public class Neighbour {
 			c.repaint();
 		}
 	}
-	
+
 	public void injectBack( JComponent c ) {
 		if( currentTe != null ) {
 			if( currentTe.getContig().isReverse() ) {
@@ -400,7 +400,7 @@ public class Neighbour {
 			c.repaint();
 		}
 	}
-	
+
 	public void deleteForward( JComponent c ) {
 		if( currentTe != null ) {
 			if( currentTe.getContig().isReverse() ) {
@@ -432,7 +432,7 @@ public class Neighbour {
 		}
 		return ret;
 	}
-	
+
 	public void deleteBack( JComponent c ) {
 		if( currentTe != null ) {
 			if( currentTe.getContig().isReverse() ) {
@@ -464,7 +464,7 @@ public class Neighbour {
 		}
 		return ret;
 	}
-	
+
 	double rowheight;
 	double fsize;
 	int total = 0;
@@ -472,14 +472,14 @@ public class Neighbour {
 	public void initContigs( String spec1, GeneSet geneset ) {
 		if( spec1 != null && geneset.speccontigMap.containsKey( spec1 ) ) {
 			final List<Sequence> lcont = geneset.speccontigMap.get( spec1 );
-			
+
 			ptotal = 0;
 			total = 0;
 			//List<Sequence> contigs = new ArrayList<Sequence>();
 			for( Sequence ctg : lcont ) {
 				total += ctg.getAnnotationCount();
 			}
-			
+
 			if( lcont.size() <= 3 ) {
 				int max = 0;
 				Sequence chromosome = null;
@@ -489,28 +489,28 @@ public class Neighbour {
 						chromosome = ctg;
 					}
 				}
-				
+
 				ptotal = total - chromosome.getAnnotationCount();
 				total = chromosome.getAnnotationCount();
 			}
 		}
 	}
-	
+
 	public BufferedImage getImage( GeneSet geneset, int rowheight, int imwidth ) {
 		int size = 0;
 		for( GeneGroup gg : selectedGenesGroups ) {
-			size += gg.genes.size();
+			size += gg.getGenes().size();
 		}
 		BufferedImage bimg = new BufferedImage(imwidth, size*rowheight, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2 = bimg.createGraphics();
-		
+
 		Rectangle clip = new Rectangle(0,0,imwidth,size*rowheight);
 		makeStuff(g2, clip, geneset, rowheight, size, "Default names", true );
-		
+
 		g2.dispose();
 		return bimg;
 	}
-	
+
 	public void setZoomLevel( double level ) {
 		neighbourscale = level;
 	}
@@ -524,7 +524,7 @@ public class Neighbour {
 		else if (design.contains("Tail morphogenesis")) return new Color(0.7f, 0.2f, 0.2f);
 		else return Color.lightGray; //g.setColor(new Color(0.7f,0.2f,0.2f));
 	}
-	
+
 	public void makeStuff( Graphics g, Rectangle clip, GeneSet geneset, int rowheight, int rowcount, String showNames, boolean seqView ) {
 		Graphics2D g2 = (Graphics2D) g;
 		Map<String,Integer>	offsetMap = new HashMap<>();
@@ -558,14 +558,14 @@ public class Neighbour {
 		int 		rs = rowheader.getSelectedRow();
 		if( rs >= 0 && rs < rowheader.getRowCount() ) spec1 = (String)rowheader.getValueAt(rs, 0);
 		initContigs( spec1, geneset );
-		
+
 		if( seqView || realView.isSelected() ) {
 			//int y = 0;
 			for( int i = Math.max(0, clip.y/rowheight); i < Math.min( (clip.y+clip.height)/rowheight+1, rowcount ); i++ ) {
 				int r = rowheader.getRowCount() == 0 ? i : rowheader.convertRowIndexToModel( i );
 			//	String species = speclist.get( r );
 				//for( String species : selectedGene.species.keySet() ) {
-				
+
 				/*if( speclist == null ) {
 					speclist = new ArrayList<String>();
 					for( Gene selGene : selectedGenes ) {
@@ -574,18 +574,18 @@ public class Neighbour {
 						}
 					}
 				}*
-				
+
 				for( Gene selectedGene : selectedGenes ) {
 					if( selectedGene.species.containsKey(species) ) {
 						g.setColor( Color.black );
 						g.drawLine( 0, y*rowheight+8, this.getWidth(), y*rowheight+8 );
-						
+
 						Teginfo ti = selectedGene.species.get( species );
 						for( Tegeval te : ti.tset ) {*/
 			//for( Tegeval te : hteg ) {
 				Annotation te = hteg.get(r);
 				int xoff = XOFF_START;
-				
+
 				if( clip.x+clip.width > xoff ) {
 					Annotation next = te;
 					//int k = 0;
@@ -649,7 +649,7 @@ public class Neighbour {
 									g.setColor( Color.lightGray );
 								}
 							} else if( sgradcol.isSelected() ) {
-								if( spec1 != null ) {													
+								if( spec1 != null ) {
 									//StringBuilder seq = next.seq;
 									Color rc = Color.black;
 									GeneGroup gg = next.getGene() != null ? next.getGene().getGeneGroup() : null;
@@ -662,14 +662,14 @@ public class Neighbour {
 									if( ltv != null && ltv.size() > 0 ) {
 										//String spec2 = next.getSpecies();
 										final Collection<Sequence> contigs = /*spec1.equals(spec2) ? contigs :*/geneset.speccontigMap.get( spec1 );
-										
+
 										/*double ratio = 0.0;
 										double pratio = 0.0;
 										if( ptotal > 0 ) {
 											if( ctg.getAnnotationCount() == total ) {
 												int val = count - offset;
 												if( val < 0 ) val = total + (count-offset);
-												
+
 												ratio = (double)(val-current)/(double)total;
 											} else {
 												if( count - total >= 0 ) {
@@ -681,10 +681,10 @@ public class Neighbour {
 										} else {
 											int val = count - offset;
 											if( val < 0 ) val = total + (count-offset);
-											
+
 											ratio = (double)val/(double)total;
 										}*/
-										
+
 										//int offset2 = 0;
 										//if( offsetMap.containsKey( spec2 ) ) offset2 = offsetMap.get(spec2);
 										//rc = GeneCompare.gradientColor( spec1, spec2, contigs2, 0.0, 0.0, offset2, gg );
@@ -705,7 +705,7 @@ public class Neighbour {
 								Map<GeneGroup,Integer>	shanmap = new HashMap<>();
 								shanmap.clear();
 								double res = 0.0;
-								
+
 								List<Annotation> tegevals = next.getGene().getGeneGroup().getTegevals();
 								int total = tegevals.size();
 								for( Annotation tev : tegevals ) {
@@ -720,7 +720,7 @@ public class Neighbour {
 									double p = (double)val/(double)total;
 									res -= p*Math.log(p)/Math.log(2.0);
 								}
-								
+
 								if( next.getNext() != null ) {
 									tegevals = next.getNext().getGene().getGeneGroup().getTegevals();
 									total = tegevals.size();
@@ -753,15 +753,15 @@ public class Neighbour {
 									g.setColor( rc );
 								}*/
 							}
-							
+
 							Sequence ncont = next.getContig();
-							boolean revis = (next.ori == -1) ^ (ncont != null && ncont.isReverse());
+							boolean revis = (next.getOri() == -1) ^ (ncont != null && ncont.isReverse());
 							int addon = revis ? -5 : 5;
 							int offset = revis ? 5 : 0;
-							
+
 							int y = i;
-							
-							if( gene == null || next.ori == 0 ) { //next.type != null && next.type.equals("mummer") ) {
+
+							if( gene == null || next.getOri() == 0 ) { //next.type != null && next.type.equals("mummer") ) {
 								g.fillRect(xoff+offset, y*rowheight+2, (int)len, rowheight-4);
 								g.setColor( next.isSelected() ? Color.black : Color.gray );
 								g.drawRect(xoff+offset, y*rowheight+2, (int)len, rowheight-4);
@@ -796,7 +796,7 @@ public class Neighbour {
 								g.setColor( next.isSelected() ? Color.black : Color.gray );
 								g.drawPolygon(xPoints, yPoints, nPoints);
 							}
-					
+
 							/*int gap = next.unresolvedGap();
 							g.setColor( Color.red );
 							if( (gap & 1) > 0 ) {
@@ -809,7 +809,7 @@ public class Neighbour {
 								if( !next.getContig().isReverse() ) g.fillRect(xPoints[2]+1, yPoints[2]-2, 5, 5);
 								else g.fillRect(xPoints[0]-4, yPoints[2]-2, 5, 5);
 							}*/
-							
+
 							Color fc = next.getFrontFlankingGapColor();
 							if( fc == Color.red ) {
 								g.setColor( fc );
@@ -820,7 +820,7 @@ public class Neighbour {
 									g.fillRect(xPoints[2]+1, yPoints[2]-2, val, val);
 								}
 							}
-							
+
 							Color bc = next.getBackFlankingGapColor();
 							if( bc == Color.red ) {
 								g.setColor( bc );
@@ -831,10 +831,10 @@ public class Neighbour {
 									g.fillRect(xPoints[0]+1, yPoints[2]-2, val, val);
 								}
 							}
-							
+
 							g.setColor( Color.black );
 							//g.fillRect(xoff, y * rowheight+2, (int)len, rowheight - 4);
-							
+
 							int strlen = g.getFontMetrics().stringWidth( genename );
 							while( strlen > len ) {
 								genename = genename.substring(0, genename.length()-1);
@@ -858,18 +858,18 @@ public class Neighbour {
 							}
 						}
 						//}
-						
+
 						Annotation thenext = next.getNext();
 						int bil = 10;
 						if( thenext != null && realView.isSelected() ) {
 							/*if( next.getGene().getGeneGroup().getName().contains("Elongation") && next.getSpecies().contains("antranik") ) {
 								System.err.println();
 							}*/
-							
+
 							bil = next.getContig().isReverse() ? Math.abs( thenext.stop-next.start ) : Math.abs( thenext.start-next.stop );
 							bil = (int)(neighbourscale*bil/3);
 						}
-						
+
 						if( thenext == null ) {
 							Sequence ncont = next.getContig();
 							if( ncont != null ) {
@@ -887,16 +887,16 @@ public class Neighbour {
 									//if( c.isReverse() ) thenext = c.annset.get( c.annset.size()-1 );
 									//else thenext = c.annset.get(0);
 								}
-								
+
 								g.setColor( Color.black );
 								g.fillRect(xPoints[2]+5, yPoints[2]-7, 3, rowheight-4);
 							}
 						}
-						
+
 						/*if( thenext != null && thenext.getNext() == next ) {
 							thenext = null;
 						}*/
-						
+
 						xoff += len + bil;
 						next = thenext;
 						/*if( tev == null ) {
@@ -905,7 +905,7 @@ public class Neighbour {
 						} else next = tev;*/
 					}
 				}
-				
+
 				xoff = XOFF_START;
 				if( clip.x < xoff ) {
 					Annotation prev = te != null ? te.getPrevious() : null;
@@ -915,11 +915,11 @@ public class Neighbour {
 						bil = prev.getContig().isReverse() ? Math.abs( prev.start-te.stop ) : Math.abs( prev.stop-te.start );
 						//bil = Math.abs( theprev.stop-prev.start );
 						bil = (int)(neighbourscale*bil/3);
-						
+
 						//if( prev.getContig().getSpec().contains("2127") ) System.err.println( bil );
 						//xoff -= bil;
 					}
-					
+
 					if( prev == null && te != null ) {
 						Sequence prevcont = te.getContig();
 						if( prevcont != null ) {
@@ -947,15 +947,15 @@ public class Neighbour {
 								}
 								prev = c.getLast();
 							}
-							
+
 							int xp = xoff;
 							int yp = i * rowheight+2+(rowheight-4)/2;
-							
+
 							g.setColor( Color.black );
 							g.fillRect(xp-5, yp-7, 3, rowheight-4);
 						}
 					}
-					
+
 					//int k = 0;
 					while( prev != null && xoff >= MARGIN_X && clip.x < xoff ) {
 						double len = prev.getProteinLength()*neighbourscale;
@@ -966,16 +966,16 @@ public class Neighbour {
 							/*if( prev.getGene().getGeneGroup().getName().contains("Elongation") && prev.getSpecies().contains("antranik") ) {
 								System.err.println();
 							}*/
-							
+
 							bil = prev.getContig().isReverse() ? Math.abs( theprev.start-prev.stop ) : Math.abs( theprev.stop-prev.start );
 							//bil = Math.abs( theprev.stop-prev.start );
 							bil = (int)(neighbourscale*bil/3);
 						}
-						
+
 						/*if( theprev != null && theprev.getPrevious() == prev ) {
 							theprev = null;
 						}*/
-						
+
 						Gene gene = prev.getGene();
 						//if( gene != null ) {
 						/*String genename = prev.getGene().getName();
@@ -1018,14 +1018,14 @@ public class Neighbour {
 								}
 								if (rc != null) g.setColor(rc);
 							} else if( designcol.isSelected() ) {
-								if( prev != null && prev.designation != null && prev.designation.length() > 0 ) {
-									var d = prev.designation;
+								if( prev != null && prev.getDesignation() != null && prev.getDesignation().length() > 0 ) {
+									var d = prev.getDesignation();
 									g.setColor(designColor(d));
 								} else {
 									g.setColor( Color.lightGray );
 								}
 							} else if( sgradcol.isSelected() ) {
-								if( spec1 != null ) {													
+								if( spec1 != null ) {
 									//StringBuilder seq = next.seq;
 									Color rc = Color.black;
 									GeneGroup gg = prev.getGene() != null ? prev.getGene().getGeneGroup() : null;
@@ -1033,7 +1033,7 @@ public class Neighbour {
 										List<Annotation> ltv = gg.getTegevals( spec1 );
 										if( ltv != null && ltv.size() > 0 ) {
 											final Collection<Sequence> contigs = /*spec1.equals(spec2) ? contigs :*/geneset.speccontigMap.get( spec1 );
-											
+
 											double ratio = GeneCompare.invertedGradientRatio(spec1, contigs, -1.0, gg, prev);
 											//rc = GeneCompare.invertedGradientColor( ratio );
 											if( ratio == -1 ) {
@@ -1050,7 +1050,7 @@ public class Neighbour {
 								Map<GeneGroup,Integer>	shanmap = new HashMap<>();
 								shanmap.clear();
 								double res = 0.0;
-								
+
 								List<Annotation> tegevals = prev.getGene() != null ? prev.getGene().getGeneGroup().getTegevals() : Collections.emptyList();
 								int total = tegevals.size();
 								for( Annotation tev : tegevals ) {
@@ -1065,7 +1065,7 @@ public class Neighbour {
 									double p = (double)val/(double)total;
 									res -= p*Math.log(p)/Math.log(2.0);
 								}
-								
+
 								if( prev.getNext() != null ) {
 									tegevals = prev.getNext().getGene().getGeneGroup().getTegevals();
 									total = tegevals.size();
@@ -1082,7 +1082,7 @@ public class Neighbour {
 										res -= p*Math.log(p)/Math.log(2.0);
 									}
 								}
-								
+
 								float gc = Math.min( 1.0f, Math.max( 0.0f, (float)res/20.0f ) );
 								Color rc = new Color( 1.0f, 1.0f-gc, 1.0f-gc );
 								g.setColor( rc );
@@ -1099,14 +1099,14 @@ public class Neighbour {
 									g.setColor( rc );
 								}*/
 							}
-							
-							boolean revis = (prev.ori == -1) ^ (prev.getContig() != null && prev.getContig().isReverse());
+
+							boolean revis = (prev.getOri() == -1) ^ (prev.getContig() != null && prev.getContig().isReverse());
 							int addon = revis ? -5 : 5;
 							int offset = revis ? 5 : 0;
 							//g.fillRect(xoff, y * rowheight+2, (int)len, rowheight - 4);
 							int y = i;
-							
-							if( gene == null || prev.ori == 0 ) {
+
+							if( gene == null || prev.getOri() == 0 ) {
 								g.fillRect(xoff+offset, y*rowheight+2, (int)len, rowheight-4);
 								g.setColor( prev.isSelected() ? Color.black : Color.gray );
 								g.drawRect(xoff+offset, y*rowheight+2, (int)len, rowheight-4);
@@ -1121,7 +1121,7 @@ public class Neighbour {
 								g.setColor( prev.isSelected() ? Color.black : Color.gray );
 								g.drawPolygon(xPoints, yPoints, nPoints);
 							}
-							
+
 							/*int gap = prev.unresolvedGap();
 							g.setColor( Color.red );
 							if( (gap & 1) > 0 ) {
@@ -1134,7 +1134,7 @@ public class Neighbour {
 								if( !prev.getContig().isReverse() ) g.fillRect(xPoints[2]+1, yPoints[2]-2, 5, 5);
 								else g.fillRect(xPoints[0]-4, yPoints[2]-2, 5, 5);
 							}*/
-							
+
 							Color fc = prev.getFrontFlankingGapColor();
 							if( fc != Color.lightGray ) {
 								g.setColor( fc );
@@ -1145,7 +1145,7 @@ public class Neighbour {
 									g.fillRect(xPoints[2]+1, yPoints[2]-2, val, val);
 								}
 							}
-							
+
 							Color bc = prev.getBackFlankingGapColor();
 							if( bc != Color.lightGray ) {
 								g.setColor( bc );
@@ -1156,9 +1156,9 @@ public class Neighbour {
 									g.fillRect(xPoints[0]+1, yPoints[2]-2, val, val);
 								}
 							}
-							
+
 							g.setColor( Color.black );
-							
+
 							int strlen = g.getFontMetrics().stringWidth( genename );
 							while( strlen > len ) {
 								genename = genename.substring(0, genename.length()-1);
@@ -1182,7 +1182,7 @@ public class Neighbour {
 							}
 						}
 						//}
-						
+
 						if( theprev == null ) {
 							Sequence prevcont = prev.getContig();
 							if (prevcont!=null) {
@@ -1206,10 +1206,10 @@ public class Neighbour {
 								g.fillRect(xPoints[0] - 5, yPoints[2] - 7, 3, rowheight - 4);
 							}
 						}
-						
+
 						prev = theprev;
 						//xoff -= len + bil;
-						
+
 						/*if( prev != null ) {
 							len = prev.getProteinLength()*neighbourscale;
 							xoff -= len+10;
@@ -1219,8 +1219,8 @@ public class Neighbour {
 				//y++;
 			}
 		} else if( realView.isSelected() ) {
-			
-		} else {					
+
+		} else {
 			/*for( Gene selectedGene : selectedGenes ) {
 				for( String species : speclist ) {
 					if( selectedGene.species.containsKey(species) ) {
@@ -1262,12 +1262,12 @@ public class Neighbour {
 				for( int i = Math.max(0, clip.y/rowheight); i < Math.min( (clip.y+clip.height)/rowheight+1, rowcount ); i++ ) {
 					int r = rowheader.getRowCount() == 0 ? i : rowheader.convertRowIndexToModel( i );
 					Annotation te = hteglocal.get(r);
-					
+
 					//int y = 0;
 					//for( Tegeval te : hteglocal ) {
 					//g.setColor( Color.black );
 					//g.drawLine( 0, y*rowheight+8, this.getWidth(), y*rowheight+8 );
-					
+
 					if( te != null ) {
 						Annotation next = te;
 
@@ -1298,7 +1298,7 @@ public class Neighbour {
 							if (geneset.panmap.containsKey(jstr)) genename = geneset.panmap.get(jstr);
 							else genename = geneset.getGeneName(showNames, next.getGene());
 							var id = next.getId();
-							var d = next.designation;
+							var d = next.getDesignation();
 							/*if( names.getSelectedItem().equals("Default names") ) {
 								genename = next.getGene().getName();
 								//if( commonname.isSelected() && genename.contains("_") ) genename = next.getGene().getGeneGroup().getName();
@@ -1312,9 +1312,9 @@ public class Neighbour {
 							} else if( names.getSelectedItem().equals("Cazy") ) {
 								genename = next.getGene().getGeneGroup().getCommonCazy(geneset.cazymap);
 							}*/
-							
+
 							double len = te.getProteinLength()*neighbourscale;
-							
+
 							if( clip.x+clip.width+9500 > xoff ) {
 								boolean b = false;
 								if( funcol.isSelected() ) {
@@ -1357,7 +1357,7 @@ public class Neighbour {
 											b = hteglocal.stream().anyMatch(te2 -> {
 												var gg =  te2.getGeneGroup();
 												if (gg != null) {
-													if (!gg.genes.contains(te)) {
+													if (!gg.getGenes().contains(te)) {
 														var des2 = gg.getDesignation();
 														g.setColor(designColor(des2));
 														return true;
@@ -1373,14 +1373,14 @@ public class Neighbour {
 										g.setColor( Color.lightGray );
 									}
 								} else if( sgradcol.isSelected() ) {
-									if( spec1 != null ) {								
+									if( spec1 != null ) {
 										//StringBuilder seq = next.seq;
 										Color rc = Color.black;
 										GeneGroup gg = next.getGene().getGeneGroup();
 										List<Annotation> ltv = gg.getTegevals( spec1 );
 										if( ltv != null && ltv.size() > 0 ) {
 											final Collection<Sequence> contigs = /*spec1.equals(spec2) ? contigs :*/geneset.speccontigMap.get( spec1 );
-											
+
 											double ratio = GeneCompare.invertedGradientRatio(spec1, contigs, -1.0, gg, next);
 											//rc = GeneCompare.invertedGradientColor( ratio );
 											if( ratio == -1 ) {
@@ -1396,7 +1396,7 @@ public class Neighbour {
 									Map<GeneGroup,Integer>	shanmap = new HashMap<>();
 									shanmap.clear();
 									double res = 0.0;
-									
+
 									List<Annotation> tegevals = next.getGene().getGeneGroup().getTegevals();
 									int total = tegevals.size();
 									for( Annotation tev : tegevals ) {
@@ -1411,7 +1411,7 @@ public class Neighbour {
 										double p = (double)val/(double)total;
 										res -= p*Math.log(p)/Math.log(2.0);
 									}
-									
+
 									if( next.getNext() != null ) {
 										GeneGroup nextgg = next.getNext().getGeneGroup();
 										if (nextgg!=null) {
@@ -1431,7 +1431,7 @@ public class Neighbour {
 											}
 										}
 									}
-									
+
 									float gc = Math.min( 1.0f, Math.max( 0.0f, (float)res/20.0f ) );
 									Color rc = new Color( 1.0f, 1.0f-gc, 1.0f-gc );
 									g.setColor( rc );
@@ -1453,8 +1453,8 @@ public class Neighbour {
 									g.translate(0, 500);
 
 									if (i == 0) {
-										if (next.designation != null && next.designation.length() > 0) {
-											var set = new HashSet<>(Arrays.asList(next.designation.split(";")));
+										if (next.getDesignation() != null && next.getDesignation().length() > 0) {
+											var set = new HashSet<>(Arrays.asList(next.getDesignation().split(";")));
 											var od = set.stream().filter(p -> !p.contains("express-")).findAny();
 											if (od.isPresent()) {
 												var currentD = od.get();
@@ -1464,7 +1464,7 @@ public class Neighbour {
 													firstx = xoff;
 													lastx = xoff;
 												} else {
-													var nset = new HashSet<>(Arrays.asList(firstSomething.designation.split(";")));
+													var nset = new HashSet<>(Arrays.asList(firstSomething.getDesignation().split(";")));
 													var firstD = nset.stream().filter(p -> !p.contains("express-")).findAny().get();
 													if (firstD.equals(currentD)) {
 														lastSomething = next;
@@ -1498,7 +1498,7 @@ public class Neighbour {
 
 
 								var prevColor = g.getColor();
-								boolean revis = (next.ori == -1) ^ (next.getContig() != null && next.getContig().isReverse());
+								boolean revis = (next.getOri() == -1) ^ (next.getContig() != null && next.getContig().isReverse());
 								int addon = revis ? -5 : 5;
 								int offset = revis ? 5 : 0;
 								//g.fillRect(xoff, y * rowheight+2, (int)len, rowheight - 4);
@@ -1735,7 +1735,7 @@ public class Neighbour {
 						g.setColor( te.isSelected() ? Color.black : Color.gray );
 						g.drawPolygon(xPoints, yPoints, nPoints);
 						g.setColor( Color.black );
-						
+
 						int strlen = g.getFontMetrics().stringWidth( genename );
 						while( strlen > len ) {
 							genename = genename.substring(0, genename.length()-1);
@@ -1748,7 +1748,7 @@ public class Neighbour {
 					//y++;
 				}
 				xoff += max+10;
-				
+
 				for( int i = 0; i < hteglocal.size(); i++ ) {
 					Annotation te = hteglocal.get(i);
 					if( te != null ) {
@@ -1765,7 +1765,7 @@ public class Neighbour {
 							thenext = c.getFirst();
 							//if( c.isReverse() ) thenext = c.annset.get( c.annset.size()-1 );
 							//else thenext = c.annset.get(0);
-							
+
 							int r = rowheader.getRowCount() == 0 ? i : rowheader.convertRowIndexToView( i );
 							g.setColor( Color.black );
 							g.fillRect(xoff-10, r*rowheight+2, 3, rowheight-4);
@@ -1782,7 +1782,7 @@ public class Neighbour {
 					//if( te.getLength() > max ) max = te.getLength();
 				}
 			}
-			
+
 			hteglocal.clear();
 			hteglocal.addAll( hteg );
 			for( int i = 0; i < hteglocal.size(); i++ ) {
@@ -1792,7 +1792,7 @@ public class Neighbour {
 				}
 				//if( te.getLength() > max ) max = te.getLength();
 			}
-			/************* 
+			/*************
 			hteg.clear();
 			hteg = new ArrayList<Tegeval>();
 			for( Gene selectedGene : selectedGenes ) {
@@ -1823,18 +1823,18 @@ public class Neighbour {
 					Annotation te = hteglocal.get(r);
 					//g.setColor( Color.black );
 					//g.drawLine( 0, y*rowheight+8, this.getWidth(), y*rowheight+8 );
-					
+
 					if( te != null ) {
 						Annotation prev = te;
 						if( te.getGene() != null ) {
 							String genename = geneset.getGeneName( showNames, prev.getGene() );
 							var id = prev.getId();
-							var d = prev.designation;
+							var d = prev.getDesignation();
 							var b = false;
 							/*String genename = prev.getGene().getName();
 							if( commonname.isSelected() && genename.contains("_") ) genename = prev.getGene().getGeneGroup().getName();
 							genename = genename.contains("hypothetical") ? "hth-p" : genename;*/
-							
+
 							double len = te.getProteinLength()*neighbourscale;
 							/*g.setColor( Color.green );
 							Set<Function> funcset = te.getGene().getGeneGroup().getFunctions();
@@ -1847,7 +1847,7 @@ public class Neighbour {
 									funcMap.put( funcset, rc );
 								}
 							}*/
-							
+
 							int y = i;
 							//g.fillRect(xoff, y * rowheight+2, len, rowheight - 4);
 							if( funcol.isSelected() ) {
@@ -1879,7 +1879,7 @@ public class Neighbour {
 										b = hteglocal.stream().anyMatch(te2 -> {
 											var gg =  te2.getGeneGroup();
 											if (gg != null) {
-												if (!gg.genes.contains(te)) {
+												if (!gg.getGenes().contains(te)) {
 													var des2 = gg.getDesignation();
 													g.setColor(designColor(des2));
 													return true;
@@ -1895,14 +1895,14 @@ public class Neighbour {
 									g.setColor( Color.lightGray );
 								}
 							} else if( sgradcol.isSelected() ) {
-								if( spec1 != null ) {													
+								if( spec1 != null ) {
 									//StringBuilder seq = next.seq;
 									Color rc = Color.black;
 									GeneGroup gg = prev.getGene().getGeneGroup();
 									List<Annotation> ltv = gg.getTegevals( spec1 );
 									if( ltv != null && ltv.size() > 0 ) {
 										if (gg.size()==3) {
-											if(gg.genes.stream().anyMatch(gggu -> gggu.start == 67712)) {
+											if(gg.getGenes().stream().anyMatch(gggu -> gggu.start == 67712)) {
 												System.err.println();
 											}
 										}
@@ -1923,7 +1923,7 @@ public class Neighbour {
 								Map<GeneGroup,Integer>	shanmap = new HashMap<>();
 								shanmap.clear();
 								double res = 0.0;
-								
+
 								List<Annotation> tegevals = prev.getGene().getGeneGroup().getTegevals();
 								int total = tegevals.size();
 								for( Annotation tev : tegevals ) {
@@ -1938,7 +1938,7 @@ public class Neighbour {
 									double p = (double)val/(double)total;
 									res -= p*Math.log(p)/Math.log(2.0);
 								}
-								
+
 								if( prev.getNext() != null ) {
 									GeneGroup nextgg = prev.getNext().getGeneGroup();
 									if (nextgg!=null) {
@@ -1958,7 +1958,7 @@ public class Neighbour {
 										}
 									}
 								}
-								
+
 								float gc = Math.min( 1.0f, Math.max( 0.0f, (float)res/20.0f ) );
 								Color rc = new Color( 1.0f, 1.0f-gc, 1.0f-gc );
 								g.setColor( rc );
@@ -1980,8 +1980,8 @@ public class Neighbour {
 								g.translate(0, 500);
 
 								if (i == 0) {
-									if (prev.designation != null && prev.designation.length() > 0) {
-										var set = new HashSet<>(Arrays.asList(prev.designation.split(";")));
+									if (prev.getDesignation() != null && prev.getDesignation().length() > 0) {
+										var set = new HashSet<>(Arrays.asList(prev.getDesignation().split(";")));
 										var od = set.stream().filter(p -> !p.contains("express-")).findAny();
 										if (od.isPresent()) {
 											var currentD = od.get();
@@ -1990,7 +1990,7 @@ public class Neighbour {
 												firstPrevX = xoff;
 												lastPrevX = xoff;
 											} else {
-												var nset = new HashSet<>(Arrays.asList(firstPrev.designation.split(";")));
+												var nset = new HashSet<>(Arrays.asList(firstPrev.getDesignation().split(";")));
 												var firstD = nset.stream().filter(p -> !p.contains("express-")).findAny().get();
 												if (firstD.equals(currentD)) {
 													lastPrevX = xoff;
@@ -2018,7 +2018,7 @@ public class Neighbour {
 								}
 							}
 							var prevColor = g.getColor();
-							boolean revis = (prev.ori == -1) ^ (prev.getContig() != null && prev.getContig().isReverse());
+							boolean revis = (prev.getOri() == -1) ^ (prev.getContig() != null && prev.getContig().isReverse());
 							int addon = revis ? -5 : 5;
 							int offset = revis ? 5 : 0;
 
@@ -2250,12 +2250,12 @@ public class Neighbour {
 						}
 					}
 				}
-				
+
 				for( int i = 0; i < hteglocal.size(); i++ ) {
 					Annotation te = hteglocal.get(i);
 					if( te != null ) {
 						Annotation theprev = te.getPrevious();
-						
+
 						if( theprev == null && te.getContig() != null ) {
 							Sequence prevcont = te.getContig();
 							List<Sequence> partof = prevcont.partof;
@@ -2269,12 +2269,12 @@ public class Neighbour {
 								c = partof.get(k);
 							}
 							theprev = c.getLast();
-							
+
 							int r = rowheader.getRowCount() == 0 ? i : rowheader.convertRowIndexToView( i );
 							g.setColor( Color.black );
 							g.fillRect(xoff-10, r*rowheight+2, 3, rowheight-4);
 						}
-						
+
 						/*if( theprev != null && theprev.getPrevious() == te ) {
 							theprev = null;
 						}*/
@@ -2312,10 +2312,10 @@ public class Neighbour {
 			g.translate(-5000,-650);
 		}
 	}
-	
+
 	public void forward() {
 		for( Annotation te : hteg ) {
-			boolean rev = te.ori == -1 ^ (te.getContig()!=null&&te.getContig().isReverse());
+			boolean rev = te.getOri() == -1 ^ (te.getContig()!=null&&te.getContig().isReverse());
 			if( rev ) {
 				List<Sequence>	partof = te.getContig().partof;
 				for( Sequence ctg : partof ) {
@@ -2325,7 +2325,7 @@ public class Neighbour {
 			}
 		}
 	}
-	
+
 	final int		nPoints = 6;
 	final int[]		xPoints = new int[ nPoints ];
 	final int[]		yPoints = new int[ nPoints ];
@@ -2333,7 +2333,7 @@ public class Neighbour {
 	final int		nlPoints = 3;
 	final int[]		xlPoints = new int[ nlPoints ];
 	final int[]		ylPoints = new int[ nlPoints ];
-	
+
 	final JRadioButtonMenuItem funcol = new JRadioButtonMenuItem("Functions");
 	final JRadioButtonMenuItem gccol = new JRadioButtonMenuItem("GC%");
 	final JRadioButtonMenuItem gcskewcol = new JRadioButtonMenuItem("GC skew");
@@ -2342,19 +2342,19 @@ public class Neighbour {
 	final JRadioButtonMenuItem sgradcol = new JRadioButtonMenuItem("Synteny gradient");
 	final JRadioButtonMenuItem precol = new JRadioButtonMenuItem("Proximity preservation");
 	final JRadioButtonMenuItem designcol = new JRadioButtonMenuItem("Designation");
-	
+
 	final Map<Set<Function>,Color>	funcMap = new HashMap<>();
 	final Random rand = new Random();
 	final JTable rowheader = new JTable();
 	final Map<String,Integer> blosumap = JavaFasta.getBlosumMap();
-	
+
 	final JRadioButton	sequenceView = new JRadioButton("Sequence");
 	final JRadioButton	blocksView = new JRadioButton("Blocks");
 	final JRadioButton	realView = new JRadioButton("Real");
 
 	final JCheckBox circleView = new JCheckBox();
 	final JCheckBox vertNames = new JCheckBox();
-	
+
 	public final JComboBox<String>			names = new JComboBox<>();
 	JComponent c;
 	double neighbourscale = 1.0;
@@ -2456,9 +2456,9 @@ public class Neighbour {
 
 	public void neighbourMynd( final GeneSetHead genesethead, final Container comp, final List<Gene> genes, final Map<String,Sequence> contigmap ) throws IOException {
 		GeneSet geneset = genesethead.geneset;
-		
+
 		final TableView<GeneGroup> sorting = genesethead.getGeneGroupTable();
-		
+
 		final JButton	zoomIn = new JButton("+");
 		final JButton	zoomOut = new JButton("-");
 		final JButton	zoomInSmall = new JButton("++");
@@ -2469,30 +2469,30 @@ public class Neighbour {
 
 		final JButton	clearInserts = new JButton("Clear");
 		final JButton	saveInserts = new JButton("Save");
-		
+
 		final JMenuBar	mbr = new JMenuBar();
 		final JMenu		seqsmenu = new JMenu("Show");
 		final JMenu		mnu = new JMenu("Colors");
 		final JMenu		mvmnu = new JMenu("Move");
 		final JMenu		selmnu = new JMenu("Select");
 		final JButton	turn = new JButton("Forward");
-		
+
 		final JButton	backTen = new JButton("<<");
 		final JButton	back = new JButton("<");
 		final JButton	forw = new JButton(">");
 		final JButton	forwTen = new JButton(">>");
-		
+
 		//final JCheckBox		commonname = new JCheckBox("Group names");
 		//final JCheckBox		noname = new JCheckBox("No names");
-		
+
 		final JButton	smallerRows = new JButton("^");
 		final JButton	largerRows = new JButton("v");
-		
+
 		mbr.add( seqsmenu );
 		mbr.add( mnu );
 		mbr.add( mvmnu );
 		mbr.add( selmnu );
-		
+
 		ButtonGroup bg = new ButtonGroup();
 		bg.add( funcol );
 		bg.add( gccol );
@@ -2510,23 +2510,23 @@ public class Neighbour {
 		mnu.add( sgradcol );
 		mnu.add( precol );
 		mnu.add( designcol );
-		
+
 		final JFrame frame = new JFrame();
 		JSplitPane splitpane = new JSplitPane();
 		if (true) { //gsplitpane == null) {
 			//hteg = loadContigs( genes, null );
 			//hteg.clear();
-			
+
 			/*speclist = new ArrayList<String>();
 			for( Gene selectedGene : selectedGenes ) {
 				for( String species : selectedGene.species.keySet() ) {
 					if( !speclist.contains( species ) ) speclist.add( species );
 				}
 			}*/
-			
+
 			//final int hey = genes.size(); // ltv.get(ltv.size()-1).stop/1000;
 			rowheight = rowheader.getRowHeight();
-			
+
 			c = new JComponent() {
 				Color gr = Color.green;
 				Color dg = Color.green.darker();
@@ -2548,25 +2548,25 @@ public class Neighbour {
 					}
 					return null;
 				}
-				
+
 				public void paintComponent( Graphics g ) {
 					super.paintComponent(g);
-					
+
 					g.setFont( g.getFont().deriveFont((float)fsize) );
-					
+
 					Graphics2D g2 = (Graphics2D)g;
 					g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 					g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 					//g.setFont( g.getFont().deriveFont( 8.0f ) );
-					
+
 					Rectangle clip = this.getVisibleRect(); //g.getClipBounds();
 					makeStuff( g, clip, geneset, rowheader.getRowHeight(), rowheader.getRowCount(), names.getSelectedItem().toString(), sequenceView.isSelected() );
-					
+
 					/*Rectangle rc = g.getClipBounds();
 					for (int i = (int) rc.getMinX(); i < (int) Math.min(sorting.getRowCount(), rc.getMaxX()); i++) {
 						int r = sorting.convertRowIndexToModel(i);
 						Gene gene = genes.get(r);
-						
+
 						if (gene.species != null) {
 							for (int y = (int) (rc.getMinY() / rowheader.getRowHeight()); y < rc.getMaxY() / rowheader.getRowHeight(); y++) {
 								String contig = (String) rowheader.getValueAt(y, 0);
@@ -2588,10 +2588,10 @@ public class Neighbour {
 					/*
 					 * Color color; int i = 0; for( Tegeval tv : ltv ) { if(
 					 * tv.ori < 0 ) color = Color.red; else color = Color.green;
-					 * 
+					 *
 					 * if( (++i)%2 == 0 ) { color = color.darker(); }
 					 * g.setColor( color );
-					 * 
+					 *
 					 * if( (tv.stop-tv.start)/1000 > 100 ) {
 					 * System.out.println("hund"); } g.fillRect(tv.start/1000,
 					 * 0, (tv.stop-tv.start)/10, 20); } System.out.println( i );
@@ -2602,20 +2602,20 @@ public class Neighbour {
 				 * public Rectangle getBounds() { Rectangle r =
 				 * super.getBounds(); r.width = hey; r.height =
 				 * rowheader.getHeight(); return r; }
-				 * 
+				 *
 				 * public void setBounds( int x, int y, int w, int h ) {
 				 * super.setBounds(x, y, hey, rowheader.getHeight()); }
 				 */
 			};
 			c.setToolTipText("bleh");
-			
+
 			c.addKeyListener( new KeyListener() {
 				@Override
 				public void keyTyped(KeyEvent e) {}
-				
+
 				@Override
 				public void keyReleased(KeyEvent e) {}
-				
+
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if( e.getKeyCode() == KeyEvent.VK_SPACE ) {
@@ -2638,7 +2638,7 @@ public class Neighbour {
 				}
 			});
 			fsize = 8.0;//c.getFont().getSize();
-			
+
 			final AbstractAction	a = new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -2650,21 +2650,21 @@ public class Neighbour {
 			gcskewcol.setAction( a );
 			abucol.setAction( a );
 			precol.setAction( a );
-			
+
 			names.addItemListener(e -> c.repaint());
-			
+
 			//commonname.setAction( a );
 			//noname.setAction( a );
-			
+
 			funcol.setText("Functions");
 			gccol.setText("GC%");
 			gcskewcol.setText("GC skew");
 			abucol.setText("Abundance");
 			precol.setText("Proximity preservation");
-			
+
 			//commonname.setText("Group names");
 			//noname.setText( "No names" );
-			
+
 			names.addItem("No names");
 			names.addItem("Default names");
 			names.addItem("Group names");
@@ -2673,7 +2673,7 @@ public class Neighbour {
 			names.addItem("Cog");
 			names.addItem("Cazy");
 			names.addItem("Designated");
-			
+
 			smallerRows.addActionListener( new AbstractAction("^") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -2684,7 +2684,7 @@ public class Neighbour {
 					c.repaint();
 				}
 			});
-			
+
 			largerRows.addActionListener( new AbstractAction("v") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -2695,7 +2695,7 @@ public class Neighbour {
 					c.repaint();
 				}
 			});
-			
+
 			turn.setAction( new AbstractAction("Forward") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -2704,18 +2704,18 @@ public class Neighbour {
 					c.repaint();
 				}
 			});
-			
+
 			mvmnu.add( new AbstractAction("Connect contig")  {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					List<Sequence> contigs = genesethead.getSelspecContigs(null, geneset.speccontigMap, currentTe.getSpecies());
 					if( contigs.size() > 0 ) {
 						Sequence sctg = contigs.get(0);
-						
+
 						Sequence ctg = currentTe.getContig();
 						int i = ctg.partof.indexOf( ctg );
 						int k = ctg.annset.indexOf( currentTe );
-						
+
 						if( k == 0 || ctg.isReverse() ) {
 							ctg.partof.remove( sctg );
 							ctg.partof.add(i, sctg);
@@ -2764,17 +2764,17 @@ public class Neighbour {
 				public void actionPerformed(ActionEvent e) {
 					Map<String,Integer>	spind = new HashMap<String,Integer>();
 					Map<String,Sequence>  ctind = new HashMap<String,Sequence>();
-					
+
 					for( GeneGroup gg : selectedGenesGroups ) {
 						for( String sp : gg.species.keySet() ) {
 							Teginfo ti = gg.species.get( sp );
-							
-							Sequence ct = ti.best.getContig();
+
+							Sequence ct = ((Annotation)ti.best).getContig();
 							ctind.put( sp, ct );
 							spind.put( sp, ct.annset.indexOf( ti.best ) );
 						}
 					}
-					
+
 					for( int i = 1; i < 20; i++ ) {
 						for( String spec : ctind.keySet() ) {
 							Sequence ct = ctind.get( spec );
@@ -2912,7 +2912,7 @@ public class Neighbour {
 					stepAlign();
 				}
 			});
-			
+
 			selmnu.add( new AbstractAction("Clear selection") {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -2994,7 +2994,7 @@ public class Neighbour {
 								k = (k+1)%cont.partof.size();
 							//}
 							currentTe = cont.partof.get(k).getFirst();
-							
+
 							/*for( int i = k+1; i < tv.getContig().annset.size(); i++ ) {
 								Tegeval tv2 = tv.getContig().annset.get(i);
 								currentTe = tv2;
@@ -3033,7 +3033,7 @@ public class Neighbour {
 					c.repaint();
 				}
 			});
-			
+
 			zoomIn.setAction( new AbstractAction("+") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3063,7 +3063,7 @@ public class Neighbour {
 					c.repaint();
 				}
 			});
-			
+
 			backTen.setAction( new AbstractAction("<<") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3097,7 +3097,7 @@ public class Neighbour {
 					Annotation te = hteg.get( i );
 					currentTe = te.getNext() == null ? te : te.getNext();
 					recenter( rowheader, c );
-					
+
 				}
 			});
 			forwTen.setAction( new AbstractAction(">>") {
@@ -3115,7 +3115,7 @@ public class Neighbour {
 					recenter( rowheader, c );
 				}
 			});
-			
+
 			recenter.setAction( new AbstractAction("Recenter") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -3142,7 +3142,7 @@ public class Neighbour {
 							if( ct != null ) include.add( te );
 						}
 						hteg.addAll( include );
-						
+
 						rowheader.tableChanged( new TableModelEvent( rowheader.getModel() ) );
 						int rh = rowheader.getRowCount() * rowheader.getRowHeight();//rowheader.getHeight();
 						if (rh == 0) {
@@ -3218,7 +3218,7 @@ public class Neighbour {
 					}
 				}
 			});
-			
+
 			final JMenuItem	showseqs = new JMenuItem("Sequences");
 			final JMenuItem	showdnaseqs = new JMenuItem("DNA sequences");
 			final JMenuItem	showselectedseqs = new JMenuItem("Selected sequences");
@@ -3282,27 +3282,27 @@ public class Neighbour {
 								/*if( tv2.getSpecies().contains("antra") && tv2.getGene().getGeneGroup().getName().contains("Elongation") ) {
 									System.err.println();
 								}*/
-								
-								if( prev != null && prev.isSelected() && prev.ori == 1 ) {
+
+								if( prev != null && prev.isSelected() && prev.getOri() == 1 ) {
 									int start = prev.stop;
 									int stop = tv2.start;
-									
+
 									if( stop > start && start >= 0 && stop < tv2.getContig().length() ) {
 										Sequence seq = new Sequence( prev.getGene().getGeneGroup().getName(), null );
 										seq.append( prev.getContig().getSequence().substring(start, stop) );
 										serifier.addSequence( seq );
 									}
-								} else if( tv2 != null && tv2.isSelected() && tv2.ori == -1 ) {
+								} else if( tv2 != null && tv2.isSelected() && tv2.getOri() == -1 ) {
 									int start = prev != null ? prev.stop : 0;
 									int stop = tv2.start;
-									
+
 									if( stop > start && start >= 0 && stop < tv2.getContig().length() ) {
 										Sequence seq = new Sequence( tv2.getGene().getGeneGroup().getName(), null );
 										seq.append( tv2.getContig().getSequence().substring(start, stop) );
 										serifier.addSequence( seq );
 									}
 								}
-								
+
 								//prevprev = prev;
 								prev = tv2;
 							}
@@ -3325,27 +3325,27 @@ public class Neighbour {
 								/*if( tv2.getSpecies().contains("antra") && tv2.getGene().getGeneGroup().getName().contains("Elongation") ) {
 									System.err.println();
 								}*/
-								
-								if( prev != null && prev.isSelected() && prev.ori == -1 ) {
+
+								if( prev != null && prev.isSelected() && prev.getOri() == -1 ) {
 									int start = prev.stop;
 									int stop = tv2.start;
-									
+
 									if( stop > start && start >= 0 && stop < tv2.getContig().length() ) {
 										Sequence seq = new Sequence( prev.getGene().getGeneGroup().getName(), null );
 										seq.append( prev.getContig().getSequence().substring(start, stop) );
 										serifier.addSequence( seq );
 									}
-								} else if( tv2 != null && tv2.isSelected() && tv2.ori == 1 ) {
+								} else if( tv2 != null && tv2.isSelected() && tv2.getOri() == 1 ) {
 									int start = prev.stop;
 									int stop = tv2.start;
-									
+
 									if( stop > start && start >= 0 && stop < tv2.getContig().length() ) {
 										Sequence seq = new Sequence( tv2.getGene().getGeneGroup().getName(), null );
 										seq.append( tv2.getContig().getSequence().substring(start, stop) );
 										serifier.addSequence( seq );
 									}
 								}
-								
+
 								//prevprev = prev;
 								prev = tv2;
 							}
@@ -3360,20 +3360,20 @@ public class Neighbour {
 					Serifier serifier = new Serifier();
 					List<Sequence> lseq = new ArrayList<>();
 					int[] rr = rowheader.getSelectedRows();
-					
+
 					int upph = -8000;
 					int endh = 16000;
-					
+
 					Color cg = new Color(100,150,100);
 					Color cdg = new Color(50,100,50);
 					Color cr = new Color(150,100,100);
 					Color cdr = new Color(100,50,50);
 					Color cb = new Color(100,100,150);
 					Color cdb = new Color(50,50,100);
-					
+
 					Set<Color> darkColors = new HashSet<>( Arrays.asList(Color.gray,cdg,cdr,cdb) );
 					Set<Color> colors = new HashSet<>( Arrays.asList(Color.lightGray,cg,cr,cb) );
-					
+
 					if( rr == null || rr.length == 0 ) {
 						for( GeneGroup gg : selectedGenesGroups ) {
 							List<Annotation> ltv = gg.getTegevals();
@@ -3381,25 +3381,25 @@ public class Neighbour {
 								String seqname = Sequence.nameFix(tv.getSpecies(),true);
 								boolean aq = false;
 								System.err.println( seqname );
-							
+
 								if( seqname.contains("calidit") ) {
 									aq = true;
 								}
-								
-								int uh = tv.ori != -1 ? upph : -endh;
-								int eh = tv.ori != -1 ? endh : -upph;
+
+								int uh = tv.getOri() != -1 ? upph : -endh;
+								int eh = tv.getOri() != -1 ? endh : -upph;
 								//int start = Math.max( 0, tv.start-3000 );
 								//int stop = Math.min( tv.getContig().sb.length(), tv.stop+3000 );
-								Sequence seq = new Sequence( seqname+(tv.ori == 1 ? "->" : "<-"), null );
-								String str = tv.ori == -1 ? tv.getPaddedSubstring(-endh-tv.start+tv.stop-1, -upph-tv.start+tv.stop-1) : tv.getPaddedSubstring(upph, endh);
+								Sequence seq = new Sequence( seqname+(tv.getOri() == 1 ? "->" : "<-"), null );
+								String str = tv.getOri() == -1 ? tv.getPaddedSubstring(-endh-tv.start+tv.stop-1, -upph-tv.start+tv.stop-1) : tv.getPaddedSubstring(upph, endh);
 								seq.append( str ); //tv.getLength()+3000) );
-								
+
 								int offset = 0; //tv.ori == -1 ? tv.getSubstringOffset(-endh-tv.start+tv.stop-1, -upph-tv.start+tv.stop-1) : tv.getSubstringOffset(upph, endh);;
 								/*if( str.length() < endh-upph ) {
 									offset = endh-upph-str.length();
 									offset = -offset;
 								}*/
-								
+
 								//if( tv.ori == -1 ) {
 									Gene tgene = tv.getGene();
 									String symb = null;
@@ -3419,22 +3419,22 @@ public class Neighbour {
 									}
 									if( name != null && name.contains("hypo") ) name = "hth";
 									//name += tv.ori == 1 ? "->" : "<-";
-									
+
 									Annotation newann = new Annotation(seq, -upph+offset, -upph+offset+tv.stop-tv.start, 1, name);
 									newann.setGroup(tv.getGene() != null && tv.getGene().getGeneGroup() != null ? Integer.toString(tv.getGene().getGeneGroup().index) : "");
-									newann.designation = tv.designation;
+									newann.setDesignation(tv.getDesignation());
 									Color color = tv.type != null && tv.type.contains("mummer") ? cdb : tv.isPhage() ? cdg : tv.getSeq().isPlasmid() ? cdr : Color.gray;
 									newann.color = color;
 									seq.addAnnotation( newann );
 									serifier.addAnnotation(newann);
-									
+
 									// = tv.type != null && tv.type.contains("mummer") ? cb : tv.isPhage() ? cg : tv.seq.isPlasmid() ? cr : Color.lightGray;
 									Annotation ntev = tv.getNext();
-									int bil = ntev != null ? (tv.ori == -1 ? ntev.stop-tv.start : ntev.start-tv.start) : -1;
+									int bil = ntev != null ? (tv.getOri() == -1 ? ntev.stop-tv.start : ntev.start-tv.start) : -1;
 									//int bil2 = tv.ori != -1 ? ntev.stop-tv.start : ntev.start-tv.start;
 									while( ntev != null && bil < eh && bil > uh ) {
 										if( aq ) System.err.println( bil + " nxt " + (ntev.getGene() != null ? ntev.getGene().getGeneGroup().getName() : "") );
-										
+
 										//name = ntev.gene == null ? ntev.name : ntev.gene.getGeneGroup().getName();
 										//name += ntev.ori == 1 ? "->" : "<-";
 										name = null;
@@ -3454,11 +3454,11 @@ public class Neighbour {
 											name = symb != null ? symb : ntev.getGene() == null ? ntev.getName() : ntev.getGene().getGeneGroup().getName();
 										}
 										if( name != null && name.contains("hypo") ) name = "hth";
-										
-										if( tv.ori == -1 ) {
+
+										if( tv.getOri() == -1 ) {
 											//int bil = ntev.stop-tv.start;
 											int len = tv.stop-tv.start;
-											
+
 											int start = -upph+offset+len-bil;
 											int nlen = ntev.stop-ntev.start;
 											newann = new Annotation(seq, start, start+nlen, 1, name);
@@ -3466,39 +3466,39 @@ public class Neighbour {
 											//int bil = ntev.start-tv.start;
 											newann = new Annotation(seq, -upph+offset+bil, -upph+offset+bil+ntev.stop-ntev.start, 1, name);
 										}
-										
+
 										if( colors.contains(color) ) color = ntev.type != null && ntev.type.contains("mummer") ? cdb : ntev.isPhage() ? cdg : ntev.getSeq().isPlasmid() ? cdr : Color.gray;
 										else color = ntev.type != null && ntev.type.contains("mummer") ? cb : ntev.isPhage() ? cg : ntev.getSeq().isPlasmid() ? cr : Color.lightGray;
-										
+
 										newann.setGroup(ntev.getGene() != null && ntev.getGene().getGeneGroup() != null ? Integer.toString(ntev.getGene().getGeneGroup().index) : "");
 										newann.color = color;
 										seq.addAnnotation( newann );
 										serifier.addAnnotation(newann);
-										
+
 										ntev = ntev.getNext();
-										
+
 										if( ntev != null ) {
-											bil = tv.ori == -1 ? ntev.stop-tv.start : ntev.start-tv.start;
+											bil = tv.getOri() == -1 ? ntev.stop-tv.start : ntev.start-tv.start;
 											//bil2 = tv.ori != -1 ? ntev.stop-tv.start : ntev.start-tv.start;
-											
+
 											if( aq ) {
 												System.err.println( "nxt2 " + (ntev.getGene() != null ? ntev.getGene().getGeneGroup().getName() : "") );
 												System.err.println( bil + "  " + "  " + uh + "  " + eh );
 											}
 										}
 									}
-									
+
 									color = tv.type != null && tv.type.contains("mummer") ? cdb : tv.isPhage() ? cdg : tv.getSeq().isPlasmid() ? cdr : Color.darkGray;;
 									ntev = tv.getPrevious();
-									bil = ntev != null ? (tv.ori == -1 ? ntev.start-tv.stop : ntev.start-tv.start) : -1;
-									int bbil = ntev != null ? (tv.ori == -1 ? ntev.stop-tv.start : ntev.start-tv.start) : -1;
+									bil = ntev != null ? (tv.getOri() == -1 ? ntev.start-tv.stop : ntev.start-tv.start) : -1;
+									int bbil = ntev != null ? (tv.getOri() == -1 ? ntev.stop-tv.start : ntev.start-tv.start) : -1;
 									//bil2 = tv.ori != -1 ? ntev.stop-tv.start : ntev.start-tv.start;
 									while( ntev != null && bil < eh && bil > uh ) {
 										if( aq ) System.err.println( bil + "prv " + (ntev.getGene() != null ? ntev.getGene().getGeneGroup().getName() : "") );
-										
+
 										//name = ntev.gene == null ? ntev.name : ntev.gene.getGeneGroup().getName();
 										//name += ntev.ori == 1 ? "->" : "<-";
-										
+
 										name = null;
 										symb = null;
 										tgene = ntev.getGene();
@@ -3516,8 +3516,8 @@ public class Neighbour {
 											name = symb != null ? symb : ntev.getGene() == null ? ntev.getName() : ntev.getGene().getGeneGroup().getName();
 										}
 										if( name != null && name.contains("hypo") ) name = "hyp";
-										
-										if( tv.ori == -1 ) {
+
+										if( tv.getOri() == -1 ) {
 											//int bil = ntev.stop-tv.start;
 											int len = tv.stop-tv.start;
 											int start = -upph+offset+len-bbil;
@@ -3527,22 +3527,22 @@ public class Neighbour {
 											//int bil = ntev.start-tv.start;
 											newann = new Annotation(seq, -upph+offset+bbil, -upph+offset+bbil+ntev.stop-ntev.start, 1, name);
 										}
-										
+
 										if( colors.contains(color) ) color = ntev.type != null && ntev.type.contains("mummer") ? cdb : ntev.isPhage() ? cdg : ntev.getSeq().isPlasmid() ? cdr : Color.gray;
 										else color = ntev.type != null && ntev.type.contains("mummer") ? cb : ntev.isPhage() ? cg : ntev.getSeq().isPlasmid() ? cr : Color.lightGray;
-										
+
 										newann.setGroup(ntev.getGene() != null && ntev.getGene().getGeneGroup() != null ? Integer.toString(ntev.getGene().getGeneGroup().index) : "");
 										newann.color = color;
 										seq.addAnnotation( newann );
 										serifier.addAnnotation(newann);
-										
+
 										ntev = ntev.getPrevious();
-										
+
 										if( ntev != null ) {
-											bil = tv.ori == -1 ? ntev.start-tv.stop : ntev.start-tv.start;
-											bbil = tv.ori == -1 ? ntev.stop-tv.start : ntev.start-tv.start;
+											bil = tv.getOri() == -1 ? ntev.start-tv.stop : ntev.start-tv.start;
+											bbil = tv.getOri() == -1 ? ntev.stop-tv.start : ntev.start-tv.start;
 											if( aq ) System.err.println( bil + "prv " + (ntev.getGene() != null ? ntev.getGene().getGeneGroup().getName() : "") + ntev.start + "  " + ntev.stop + "  " + tv.start );
-											
+
 											//bil2 = tv.ori != -1 ? ntev.stop-tv.start : ntev.start-tv.start;
 										}
 									}
@@ -3550,24 +3550,24 @@ public class Neighbour {
 									Annotation newann = new Annotation(seq, 3000, 3000+tv.stop-tv.start, 1, tv.name);
 									seq.addAnnotation( newann );
 									serifier.addAnnotation(newann);
-									
+
 									Tegeval ntev = tv.getNext();
 									while( ntev != null && ntev.start-tv.start < 5000 && ntev.stop-tv.start > -3000 ) {
 										int bil = ntev.start-tv.start;
 										newann = new Annotation(seq, 3000+bil, 3000+bil+ntev.stop-ntev.start, 1, ntev.name);
 										seq.addAnnotation( newann );
 										serifier.addAnnotation(newann);
-										
+
 										ntev = ntev.getNext();
 									}
-									
+
 									ntev = tv.getPrevious();
 									while( ntev != null && ntev.start-tv.start < 5000 && ntev.stop-tv.start > -3000 ) {
 										int bil = ntev.start-tv.start;
 										newann = new Annotation(seq, 3000+bil, 3000+bil+ntev.stop-ntev.start, 1, ntev.name);
 										seq.addAnnotation( newann );
 										serifier.addAnnotation(newann);
-										
+
 										ntev = ntev.getPrevious();
 									}
 								}*/
@@ -3583,7 +3583,7 @@ public class Neighbour {
 							serifier.addSequence( seq );
 						}
 					}
-					
+
 					for( Sequence seq : serifier.lseq ) {
 						if( seq.getAnnotations() != null ) {
 							Collections.sort( seq.getAnnotations() );
@@ -3592,7 +3592,7 @@ public class Neighbour {
 					genesethead.showSomeSequences( serifier );
 				}
 			});
-			
+
 			seqsmenu.add( showseqs );
 			seqsmenu.add( showdnaseqs );
 			seqsmenu.addSeparator();
@@ -3602,7 +3602,7 @@ public class Neighbour {
 			seqsmenu.add( showbackflankingseqs );
 			seqsmenu.addSeparator();
 			seqsmenu.add( showareaseqs );
-			
+
 			sequenceView.setAction( a );
 			blocksView.setAction( a );
 			realView.setAction( a );
@@ -3612,21 +3612,21 @@ public class Neighbour {
 
 			circleView.setText("Circle");
 			vertNames.setText("Vertical");
-			
+
 			sequenceView.setSelected( true );
-			
+
 			bg = new ButtonGroup();
 			bg.add( sequenceView );
 			bg.add( blocksView );
 			bg.add( realView );
-			
+
 			c.addMouseListener(new MouseAdapter() {
 				Point p;
 
 				public void mousePressed(MouseEvent me) {
 					p = me.getPoint();
 					c.requestFocus();
-					
+
 					Annotation te = getSelectedTe( p, rowheader, sequenceView, realView, hteg, rowheader.getRowHeight() );
 					//System.err.println();
 					if( te != null ) {
@@ -3656,15 +3656,15 @@ public class Neighbour {
 					if (p != null && np.x > p.x) {
 						//Rectangle rect = sorting.getCellRect(p.x, 0, false);
 						//rect = rect.union(sorting.getCellRect(np.x, sorting.getColumnCount() - 1, false));
-						
+
 						sorting.scrollTo(0); /*object*/
-						
+
 						//sorting.scrollRectToVisible(rect);
 						//sorting.setRowSelectionInterval(p.x, np.x);
 					}
 				}
 			});
-			
+
 			JPopupMenu	popup = new JPopupMenu();
 			popup.add( new AbstractAction("Reverse") {
 				@Override
@@ -3675,19 +3675,19 @@ public class Neighbour {
 						Annotation te = hteg.get( i );
 						Sequence contig = te.getContig();
 						contig.setReverse( !contig.isReverse() );
-						
+
 						Sequence nextc = contig.next;
 						while( nextc != null ) {
 							nextc.setReverse( !nextc.isReverse() );
 							nextc = nextc.next;
 						}
-						
+
 						Sequence prevc = contig.prev;
 						while( prevc != null ) {
 							prevc.setReverse( !prevc.isReverse() );
 							prevc = prevc.prev;
 						}
-						
+
 						/*for( Gene selectedGene : selectedGenes ) {
 							String spec = (String)rowheader.getValueAt(r, 0);
 							if( selectedGene.species.containsKey( spec ) ) {
@@ -3721,13 +3721,13 @@ public class Neighbour {
 					Annotation te = hteg.get( i );
 					Sequence 	cont = te.getContig();
 					String		spec = cont.getSpec();
-					
+
 					final List<Sequence>	specont = new ArrayList<>();
 					for( String name : contigmap.keySet() ) {
 						Sequence c = contigmap.get( name );
 						if( c != cont && spec.equals( c.getSpec() ) ) specont.add( c );
 					}
-					
+
 					JTable	table = new JTable();
 					table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 					table.setAutoCreateRowSorter( true );
@@ -3764,7 +3764,7 @@ public class Neighbour {
 
 						@Override
 						public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-							
+
 						}
 
 						@Override
@@ -3779,7 +3779,7 @@ public class Neighbour {
 					JCheckBox	forward = new JCheckBox( "forward" );
 					Object[] message = { scroll, reverse, forward };
 					JOptionPane.showMessageDialog( frame, message, "Select contig", JOptionPane.PLAIN_MESSAGE );
-					
+
 					r = table.getSelectedRow();
 					i = -1;
 					if( r != -1 ) i = table.convertRowIndexToModel( r );
@@ -3789,7 +3789,7 @@ public class Neighbour {
 							while( con != null ) {
 								cont = con.getContig();
 								con = cont.isReverse() ? cont.getStartAnnotation().getPrevious() : cont.getEndAnnotation().getNext();
-								
+
 								if( con != null && con.getContig().equals( cont ) ) {
 									break;
 								}
@@ -3799,16 +3799,16 @@ public class Neighbour {
 							while( con != null ) {
 								cont = con.getContig();
 								con = cont.isReverse() ? cont.getStartAnnotation().getPrevious() : cont.getEndAnnotation().getNext();
-								
+
 								if( con != null && con.getContig().equals( cont ) ) {
 									break;
 								}
 							}
 						}
-						
+
 						cont.setConnection( specont.get(i), reverse.isSelected(), forward.isSelected() );
 					}
-					
+
 					c.repaint();
 				}
 			});
@@ -3822,7 +3822,7 @@ public class Neighbour {
 						ste.add( hteg.get(i) );
 					}
 					hteg.removeAll( ste );
-					
+
 					rowheader.tableChanged( new TableModelEvent( rowheader.getModel() ) );
 					int rh = rowheader.getRowCount() * rowheader.getRowHeight();//rowheader.getHeight();
 					if (rh == 0) {
@@ -3878,7 +3878,7 @@ public class Neighbour {
 							ste.add( hteg.get(i) );
 						}
 						hteg.removeAll( ste );
-						
+
 						rowheader.tableChanged( new TableModelEvent( rowheader.getModel() ) );
 						int rh = rowheader.getRowCount() * rowheader.getRowHeight();//rowheader.getHeight();
 						if (rh == 0) {
@@ -3963,7 +3963,7 @@ public class Neighbour {
 			// rowheader.getTableHeader() );
 
 			rowheader.getRowSorter().addRowSorterListener(e -> c.repaint());
-			
+
 			DataFlavor tdf = null;
 			try {
 				tdf = new DataFlavor( DataFlavor.javaJVMLocalObjectMimeType );
@@ -4020,15 +4020,15 @@ public class Neighbour {
 					return false;
 				}
 			};
-			
+
 			TransferHandler th = new TransferHandler() {
 				private static final long serialVersionUID = 1L;
-				
+
 				public int getSourceActions(JComponent c) {
 					return TransferHandler.COPY_OR_MOVE;
 				}
 
-				public boolean canImport(TransferHandler.TransferSupport support) {					
+				public boolean canImport(TransferHandler.TransferSupport support) {
 					return true;
 				}
 
@@ -4040,11 +4040,11 @@ public class Neighbour {
 				public boolean importData(TransferHandler.TransferSupport support) {
 					try {
 						System.err.println( rowheader.getSelectedRows().length );
-						
-						if( support.isDataFlavorSupported( ndf ) ) {						
+
+						if( support.isDataFlavorSupported( ndf ) ) {
 							Object obj = support.getTransferable().getTransferData( ndf );
 							List<Annotation>	seqs = (ArrayList<Annotation>)obj;
-							
+
 							List<Annotation> newlist = new ArrayList<>(hteg.size());
 							for( int r = 0; r < rowheader.getRowCount(); r++ ) {
 								int i = rowheader.convertRowIndexToModel(r);
@@ -4052,21 +4052,21 @@ public class Neighbour {
 							}
 							hteg.clear();
 							hteg = newlist;
-							
+
 							Point p = support.getDropLocation().getDropPoint();
 							int k = rowheader.rowAtPoint( p );
-							
+
 							hteg.removeAll( seqs );
 							for( Annotation tv : seqs ) {
 								hteg.add(k++, tv);
 							}
-							
+
 							TableRowSorter<TableModel>	trs = (TableRowSorter<TableModel>)rowheader.getRowSorter();
 							trs.setSortKeys( null );
-							
+
 							rowheader.tableChanged( new TableModelEvent( rowheader.getModel()) );
 							c.repaint();
-							
+
 							return true;
 						}
 					} catch (UnsupportedFlavorException | IOException e) {
@@ -4096,12 +4096,12 @@ public class Neighbour {
 			c.setPreferredSize(new Dimension(DIM_X, rh));
 			c.setSize(DIM_X, rh);
 		}
-		
+
 		/*JComponent panel = new JComponent() {};
 		panel.setLayout( new BorderLayout() );
 		panel.add( toolbar, BorderLayout.NORTH );
 		panel.add( gsplitpane );*/
-		
+
 		JToolBar	toolbar = new JToolBar();
 		toolbar.add( sequenceView );
 		toolbar.add( blocksView );
@@ -4127,7 +4127,7 @@ public class Neighbour {
 		//toolbar.add( noname );
 		toolbar.add( smallerRows );
 		toolbar.add( largerRows );
-		
+
 		JComponent panel = new JComponent() {};
 		panel.setLayout( new BorderLayout() );
 		panel.add( toolbar, BorderLayout.NORTH );
@@ -4136,19 +4136,19 @@ public class Neighbour {
 		frame.addWindowListener( new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {}
-			
+
 			@Override
 			public void windowIconified(WindowEvent e) {}
-			
+
 			@Override
 			public void windowDeiconified(WindowEvent e) {}
-			
+
 			@Override
 			public void windowDeactivated(WindowEvent e) {}
-			
+
 			@Override
 			public void windowClosing(WindowEvent e) {}
-			
+
 			@Override
 			public void windowClosed(WindowEvent e) {
 				try {
@@ -4157,7 +4157,7 @@ public class Neighbour {
 					e1.printStackTrace();
 				}
 			}
-			
+
 			@Override
 			public void windowActivated(WindowEvent e) {}
 		});

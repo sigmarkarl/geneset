@@ -96,7 +96,7 @@ public class ActionCollection {
 		Set<GeneGroup>	pan = new HashSet<>();
 		Set<GeneGroup>	core = new HashSet<>();
 		StringBuilder	restext = new StringBuilder();
-		
+
 		for( String spec : selspec ) {
 			String newspec = geneset.nameFix( spec );
 			StackBarData sbd = geneset.new StackBarData();
@@ -113,14 +113,14 @@ public class ActionCollection {
 			}*/
 			lsbd.add( sbd );
 		}
-		
+
 		/*Collections.sort( lsbd, new Comparator<StackBarData>() {
 			@Override
 			public int compare(StackBarData o1, StackBarData o2) {
 				return o1.name.compareTo( o2.name );
 			}
 		});*/
-		
+
 		boolean avg = false;
 		if( avg ) {
 			for( int i = 0; i < lsbd.size(); i++ ) {
@@ -128,18 +128,18 @@ public class ActionCollection {
 					StackBarData 	sbd = lsbd.get(i);
 					String spec = 	sbd.oname;
 					Set<GeneGroup> 	ggset = geneset.specGroupMap.get( spec );
-					
+
 					if( ggset != null ) {
 						Set<GeneGroup> 	theset = new HashSet<>();
 						for( GeneGroup gg : ggset ) {
-							for( Annotation a : gg.genes ) {
+							for( Annotation a : gg.getGenes() ) {
 								if( a.getProteinLength() >= 100 ) {
 									theset.add( gg );
 									break;
 								}
 							}
 						}
-					
+
 						pan.addAll( theset );
 						if( core.isEmpty() ) core.addAll( theset );
 						else core.retainAll( theset );
@@ -151,13 +151,13 @@ public class ActionCollection {
 			for( int i = 0; i < lsbd.size(); i++ ) {
 				StackBarData sbd = lsbd.get(i);
 				String spec = sbd.oname;
-				
+
 				restext.append( ",\n['"+sbd.name+"', " );
 				Set<GeneGroup> ggset = geneset.specGroupMap.get( spec );
-				
+
 				Set<GeneGroup> theset = new HashSet<>();
 				for( GeneGroup gg : ggset ) {
-					for( Annotation a : gg.genes ) {
+					for( Annotation a : gg.getGenes() ) {
 						if( a.getProteinLength() >= 100 ) {
 							theset.add( gg );
 							break;
@@ -171,7 +171,7 @@ public class ActionCollection {
 
 				restext.append(core.size()).append(", ");
 				restext.append(pan.size() - core.size()).append("]");
-				
+
 				sbd.b.put( "Core: ", core.size() );
 				sbd.b.put( "Accessory: ", pan.size()-core.size() );
 			}
@@ -179,7 +179,7 @@ public class ActionCollection {
 		}
 		return restext;
 	}
-	
+
 	public static void priv() {
 		/*AccessController.doPrivileged( new PrivilegedAction<String>() {
 			@Override
@@ -188,11 +188,11 @@ public class ActionCollection {
 				Runnable run = new Runnable() {
 					@Override
 					public void run() {
-						
+
 					}
 				};
 				NativeRun nrun = new NativeRun( run );
-				
+
 				//File makeblastdb = new File( "c:\\\\Program files\\NCBI\\blast-2.2.28+\\bin\\makeblastdb.exe" );
 				//if( !makeblastdb.exists() ) makeblastdb = new File( "/opt/ncbi-blast-2.2.28+/bin/makeblastdb" );
 				//if( makeblastdb.exists() ) {
@@ -203,20 +203,20 @@ public class ActionCollection {
 					e.printStackTrace();
 				}
 				//}
-				
+
 				return "";
 			}
 		});*/
 	}
-	
+
 	public static void seqstats( GeneSetHead genesethead ) {
 		GeneSet geneset = genesethead.geneset;
-		
+
 		Workbook workbook = new XSSFWorkbook();
 		Sheet sheet = workbook.createSheet("genome");
-		
+
 		//List<Row>	rows = new ArrayList<Row>();
-		
+
 		//int i = 0;
 		Row row = sheet.createRow(0);
 		Cell cell = row.createCell(0);
@@ -231,17 +231,17 @@ public class ActionCollection {
 		cell.setCellValue("plasmid");
 		cell = row.createCell(5);
 		cell.setCellValue("GC%");
-		
+
 		//Row row1 = sheet.createRow(1);
-		
+
 		List<List<Object>>	lobj = new ArrayList<>();
 		int k = 2;
 		Set<String> specs = genesethead.getSelspec(genesethead, geneset.specList);
 		for( String spc : specs ) {
 			List<Sequence> sctg = geneset.speccontigMap.get(spc);
-			
+
 			Collections.sort( sctg, (o1, o2) -> o2.length() - o1.length());
-			
+
 			int totallen = 0;
 			int totalgen = 0;
 			int totalgap = 0;
@@ -258,9 +258,9 @@ public class ActionCollection {
 			int val = 0;
 			for( Sequence ctg : sctg ) {
 				tot += ctg.length();
-				
+
 				if( val == 0 && tot > totallen/2 ) val = ctg.length();
-				
+
 				Row nrow = sheet.createRow(k);
 				/*if( k >= rows.size() ) {
 					nrow = sheet.createRow(k);
@@ -283,47 +283,47 @@ public class ActionCollection {
 				k++;
 			}
 			k++;
-			
+
 			List<Object> lobjs = new ArrayList<Object>();
 			lobjs.add( geneset.nameFix(spc) );
-			
+
 			row = sheet.createRow(k++);
 			cell = row.createCell(0);
 			cell.setCellValue( sctg.size() );
 			lobjs.add( sctg.size() );
-			
+
 			cell = row.createCell(1);
 			cell.setCellValue( totallen );
 			lobjs.add( totallen );
-			
+
 			cell = row.createCell(2);
 			cell.setCellValue( totalgen );
 			lobjs.add( totalgen );
-			
+
 			cell = row.createCell(3);
 			cell.setCellValue(totalgap);
 			lobjs.add( totalgap );
-			
+
 			cell = row.createCell(4);
 			cell.setCellValue(totalpla);
 			lobjs.add( totalpla );
-			
+
 			cell = row.createCell(5);
 			double tgcp = Math.floor(totalgcc*10000.0/(double)totallen)/100;
 			cell.setCellValue(tgcp);
 			lobjs.add( tgcp );
-			
+
 			cell = row.createCell(6);
 			cell.setCellValue("N50");
 			cell = row.createCell(7);
 			cell.setCellValue(val);
 			lobjs.add( val );
-			
+
 			lobj.add( lobjs );
-			
+
 			k++;
 		}
-		
+
 		row = sheet.createRow(k++);
 		row.createCell(0).setCellValue("Name");
 		row.createCell(1).setCellValue("Count");
@@ -333,7 +333,7 @@ public class ActionCollection {
 		row.createCell(5).setCellValue("Plas");
 		row.createCell(6).setCellValue("GC%");
 		row.createCell(7).setCellValue("N50");
-		
+
 		for( List<Object> lobjs : lobj ) {
 			row = sheet.createRow(k++);
 			int u = 0;
@@ -341,11 +341,11 @@ public class ActionCollection {
 				if( o instanceof String ) row.createCell(u).setCellValue((String)o);
 				else if( o instanceof Integer ) row.createCell(u).setCellValue((Integer)o);
 				else if( o instanceof Double ) row.createCell(u).setCellValue((Double)o);
-				
+
 				u++;
 			}
 		}
-		
+
 		String userhome = System.getProperty("user.home");
 		File f = new File( userhome );
 		File nf = new File(f, "wb.xlsx");
@@ -358,11 +358,11 @@ public class ActionCollection {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public static void stats( Container comp, GeneSetHead genesethead, Map<String,List<Sequence>> speccontigMap ) {
 		final GeneSet geneset = genesethead.geneset;
 		final List<String>			species = new ArrayList<>( speccontigMap.keySet() );
-		
+
 		TableModel model = new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -406,32 +406,32 @@ public class ActionCollection {
 			public void removeTableModelListener(TableModelListener l) {}
 		};
 		JTable table = new JTable( model );
-		
+
 		table.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
 		JScrollPane	scroll = new JScrollPane( table );
-		
+
 		FlowLayout flowlayout = new FlowLayout();
 		JComponent c = new JComponent() {};
 		c.setLayout( flowlayout );
-		
+
 		c.add( scroll );
-		
+
 		JOptionPane.showMessageDialog(comp, c);
-		
+
 		final List<String>	selspecs = new ArrayList<>();
 		int[] rr = table.getSelectedRows();
 		for( int r : rr ) {
 			String spec = (String)table.getValueAt(r, 0);
 			selspecs.add( spec );
 		}
-		
+
 		String htmlstr = null;
 		try {
 			htmlstr = htmlTable( geneset, selspecs, speccontigMap, true );
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
-		
+
 		JSObject window = null;
 		if( window != null ) {
 			try {
@@ -458,7 +458,7 @@ public class ActionCollection {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		/*if( !succ ) {
 			SwingUtilities.invokeLater(new Runnable() {
                  @Override
@@ -468,7 +468,7 @@ public class ActionCollection {
             });
 		}*/
 	}
-	
+
 	public static String htmlTable( GeneSet geneset, Collection<String> selspecs, Map<String,List<Sequence>> speccontigMap, boolean withHtml ) throws IOException {
 		Workbook wb = new XSSFWorkbook();
 		Sheet sh = wb.createSheet("genome stats");
@@ -478,7 +478,7 @@ public class ActionCollection {
 		Row rw = sh.createRow(rr++);
 		rw.createCell(k).setCellValue("Species");
 		k++;
-		
+
 		final StringWriter fw = new StringWriter();
 		if( withHtml ) fw.write("<html><head></head><body>");
 		fw.write("<table border=1><tr><td>Species</td>");
@@ -487,11 +487,11 @@ public class ActionCollection {
 			//if( i == -1 ) i = spec.length();
 			String specstr = geneset.nameFix( spec ); //spec.substring(0, i);
 			fw.write( "<td colspan=2>"+specstr+"</td>" );
-			
+
 			rw.createCell(k).setCellValue(specstr);
 			k+=2;
 		}
-		
+
 		k=1;
 		rw = sh.createRow(rr++);
 		//rw.createCell(1).setCellValue("");
@@ -499,33 +499,33 @@ public class ActionCollection {
 		for( String spec : selspecs ) {
 			fw.write( "<td>Number</td>" );
 			fw.write( "<td>% of total</td>" );
-			
+
 			rw.createCell(k++).setCellValue("Number");
 			rw.createCell(k++).setCellValue("% of total");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("DNA, total number of bases");
 		fw.write("</tr><tr><td>DNA, total number of bases</td>");
 		for( String spec : selspecs) {
 			List<Sequence> lcont = speccontigMap.get(spec);
-			
+
 			for( Sequence c : lcont ) {
 				System.err.println( c );
 			}
-			
+
 			int len = 0;
 			for( Sequence ct : lcont ) {
 				len += ct.length();
 			}
 			fw.write( "<td>"+len+"</td>" );
 			fw.write( "<td>100%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(len);
 			rw.createCell(k++).setCellValue("100%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("DNA coding number of bases");
@@ -544,11 +544,11 @@ public class ActionCollection {
 			double d = (double)len/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(len);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("DNA, G+C number of bases");
@@ -568,11 +568,11 @@ public class ActionCollection {
 			double d = (double)len/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(len);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("DNA contigs");
@@ -582,11 +582,11 @@ public class ActionCollection {
 			int size = lcont != null ? lcont.size() : 0;
 			fw.write( "<td>"+size+"</td>" );
 			fw.write( "<td>100%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(size);
 			rw.createCell(k++).setCellValue(100+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Genes total number");
@@ -602,11 +602,11 @@ public class ActionCollection {
 			}
 			fw.write( "<td>"+total+"</td>" );
 			fw.write( "<td>100%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(total);
 			rw.createCell(k++).setCellValue("100%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes");
@@ -627,7 +627,7 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
@@ -726,7 +726,7 @@ public class ActionCollection {
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("RNA genes");
@@ -747,11 +747,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("rRNA genes");
@@ -772,11 +772,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("5S rRNA");
@@ -799,11 +799,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("16S rRNA");
@@ -835,11 +835,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("23S rRNA");
@@ -864,11 +864,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("tRNA genes");
@@ -889,11 +889,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Genes in paralog clusters");
@@ -910,7 +910,7 @@ public class ActionCollection {
 							int cc = 0;
 							//String spec = tv.getGene().getSpecies();
 							GeneGroup gg = tv.getGeneGroup();
-							if(gg!=null) for (Annotation a : gg.genes) {
+							if(gg!=null) for (Annotation a : gg.getGenes()) {
 								Gene g = a.getGene();
 								if (g != null && g.getSpecies() != null && g.getSpecies().equals(spec)) cc++;
 							}
@@ -930,11 +930,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes with enzyme/function prediction");
@@ -949,7 +949,7 @@ public class ActionCollection {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
 							GeneGroup gg = tv.getGeneGroup();
-							if(gg!=null) for (Annotation a : gg.genes) {
+							if(gg!=null) for (Annotation a : gg.getGenes()) {
 								Gene g = a.getGene();
 								if ((g != null && g.funcentries != null && g.funcentries.size() > 0) || (g.ecid != null && g.ecid.length() > 0)) {
 									count++;
@@ -969,11 +969,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes with function prediction");
@@ -1010,7 +1010,7 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
@@ -1154,7 +1154,7 @@ public class ActionCollection {
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes with enzymes");
@@ -1189,7 +1189,7 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
@@ -1234,7 +1234,7 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
@@ -1434,7 +1434,7 @@ public class ActionCollection {
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes connected to MetaCyc pathways");
@@ -1467,11 +1467,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes connected to KEGG reactions");
@@ -1515,11 +1515,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes connected to KEGG pathways");
@@ -1533,9 +1533,9 @@ public class ActionCollection {
 					for( Annotation ann : ct.getAnnotations() ) {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
-							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().genes != null) {
+							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getGenes() != null) {
 								boolean found = false;
-								for (Annotation a : tv.getGeneGroup().genes) {
+								for (Annotation a : tv.getGeneGroup().getGenes()) {
 									Gene g = a.getGene();
 									if(g.keggpathway!=null&&g.keggpathway.length()>0) {
 										found = true;
@@ -1629,7 +1629,7 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
@@ -1647,9 +1647,9 @@ public class ActionCollection {
 					for( Annotation ann : ct.getAnnotations() ) {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
-							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().genes != null) {
+							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getGenes() != null) {
 								boolean found = false;
-								for (Annotation a : tv.getGeneGroup().genes) {
+								for (Annotation a : tv.getGeneGroup().getGenes()) {
 									Gene g = a.getGene();
 									if(g.keggpathway!=null&&g.keggpathway.length()>0) {
 										found = true;
@@ -1766,9 +1766,9 @@ public class ActionCollection {
 					for( Annotation ann : ct.getAnnotations() ) {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
-							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().genes != null) {
+							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getGenes() != null) {
 								boolean found = false;
-								for (Annotation a : tv.getGeneGroup().genes) {
+								for (Annotation a : tv.getGeneGroup().getGenes()) {
 									Gene g = a.getGene();
 									if(g.keggpathway!=null&&g.keggpathway.length()>0) {
 										found = true;
@@ -1871,7 +1871,7 @@ public class ActionCollection {
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes connected to KEGG Orthology (KO)");
@@ -1886,9 +1886,9 @@ public class ActionCollection {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
 							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getFunctions() != null) {
-								if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().genes != null) {
+								if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getGenes() != null) {
 									boolean found = false;
-									for (Annotation a : tv.getGeneGroup().genes) {
+									for (Annotation a : tv.getGeneGroup().getGenes()) {
 										Gene g = a.getGene();
 										if (g.koid != null && g.koid.length() > 0) {
 											found = true;
@@ -1951,13 +1951,13 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
 		fw.write("</tr></table>" );
 		if( withHtml ) fw.write("</body></html>");
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Paralogous groups");
@@ -1975,7 +1975,7 @@ public class ActionCollection {
 							int cc = 0;
 							//String spec = tv.getGene().getSpecies();
 							GeneGroup gg = tv.getGeneGroup();
-							if(gg!=null) for (Annotation a : gg.genes) {
+							if(gg!=null) for (Annotation a : gg.getGenes()) {
 								Gene g = a.getGene();
 								if (g != null && g.getSpecies() != null && g.getSpecies().equals(spec)) {
 									if (gset.add(a)) cc++;
@@ -1997,11 +1997,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Genes with signal peptides");
@@ -2019,7 +2019,7 @@ public class ActionCollection {
 								count++;
 							}
 						}
-						/*for( Gene g : tv.getGene().getGeneGroup().genes ) {
+						/*for( Gene g : tv.getGene().getGeneGroup().getGenes() ) {
 							if( g.getSpecies().equals(spec) ) {
 								if( gset.add(g) ) cc++;
 							}
@@ -2036,11 +2036,11 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		k=0;
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Genes with transmembrane helices");
@@ -2058,7 +2058,7 @@ public class ActionCollection {
 								count++;
 							}
 						}
-						/*for( Gene g : tv.getGene().getGeneGroup().genes ) {
+						/*for( Gene g : tv.getGene().getGeneGroup().getGenes() ) {
 							if( g.getSpecies().equals(spec) ) {
 								if( gset.add(g) ) cc++;
 							}
@@ -2075,37 +2075,37 @@ public class ActionCollection {
 			double d = (double)count/(double)total;
 			d = Math.round( d*10000.0 )/100.0;
 			fw.write( "<td>"+d+"%</td>" );
-			
+
 			rw.createCell(k++).setCellValue(count);
 			rw.createCell(k++).setCellValue(d+"%");
 		}
-		
+
 		String userhome = System.getProperty("user.home");
 		File df = new File( userhome );
 		File f = new File( df, "genstat.xlsx" );
 		FileOutputStream fos = new FileOutputStream( f );
 		wb.write( fos );
 		fos.close();
-		
+
 		try {
 			Desktop.getDesktop().open(f);
 		} catch( Exception e ) {
 			e.printStackTrace();
 		}
-		
+
 		return fw.toString();
 	}
-	
-	public static void addAll( Menu menu, 
-			final Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap, 
-			final GeneSetHead genesethead, final Map<String,List<Sequence>> speccontigMap, 
+
+	public static void addAll( Menu menu,
+			final Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap,
+			final GeneSetHead genesethead, final Map<String,List<Sequence>> speccontigMap,
 			final TableView<GeneGroup> table, final Container comp, final ChatServer cs ) {
 		GeneSet geneset = genesethead.geneset;
 		//JButton matrixbutton = new JButton(matrixaction);
-		
+
 		MenuItem codregaction = new MenuItem("Coding regions");
 		codregaction.setOnAction( actionEvent -> new CodingRegions().coderegPlot( genesethead, comp ) );
-		
+
 		MenuItem freqdistaction = new MenuItem("Freq dist");
 		freqdistaction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> {
 			JFrame f = new JFrame("Genome frequency distribution");
@@ -2220,7 +2220,7 @@ public class ActionCollection {
 			f.setVisible( true );*/
 		}));
 		//JButton freqdistbutton = new JButton(freqdistaction);
-		
+
 		MenuItem gcpaction = new MenuItem("Gene GC% histogram");
 		gcpaction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> {
 			JFrame f = new JFrame("Gene GC% histogram");
@@ -2417,7 +2417,7 @@ public class ActionCollection {
 						}
 					}
 				}
-					
+
 					/*StringBuilder sb = new StringBuilder();
 					for( String s : sbmap.keySet() ) {
 						sb.append( ">"+s+"\n" );
@@ -2462,7 +2462,7 @@ public class ActionCollection {
 			f.setVisible(true);
 		});
 		//JButton presabsbutton = new JButton( presabsaction );
-		
+
 		MenuItem pangraphaction = new MenuItem("Export PanGraph");
 		pangraphaction.setOnAction( actionEvent -> {
 			SwingUtilities.invokeLater(() -> {
@@ -2584,7 +2584,7 @@ public class ActionCollection {
 					try { geneset.zipfilesystem.close(); } catch( Exception e1 ) { e1.printStackTrace(); };
 				}*/
 		});
-		
+
 		MenuItem genomestataction = new MenuItem("Genome statistics");
 		genomestataction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> stats( comp, genesethead, speccontigMap )));
 		MenuItem	seqstat = new MenuItem("Sequence statistics");
@@ -2619,16 +2619,16 @@ public class ActionCollection {
 				for( int y = 0; y < speclist.size(); y++ ) {
 					mat[ y*speclist.size()+y ] = 0.0;
 				}
-				
+
 				for( int y = 0; y < speclist.size(); y++ ) {
 					String spec1 = speclist.get(y);
 					List<Sequence> lcont1 = speccontigMap.get( spec1 );
-					
+
 					for( int x = y+1; x < speclist.size(); x++ ) {
 						String spec2 = speclist.get(x);
-					
+
 						int count = 0;
-						
+
 						for( Sequence c : lcont1 ) {
 							List<Annotation> ltv = c.getAnnotations();
 							if( ltv != null ) {
@@ -2638,7 +2638,7 @@ public class ActionCollection {
 									if( prev != null ) {
 										GeneGroup gg = tv.getGene().getGeneGroup();
 										GeneGroup pg = prev.getGene().getGeneGroup();
-										
+
 										List<Annotation> ltv2 = gg.getTegevals( spec2 );
 										boolean bp = true;
 										for( Annotation tv2 : ltv2 ) {
@@ -2657,12 +2657,12 @@ public class ActionCollection {
 								}
 							}
 						}
-						
+
 						mat[ y*speclist.size() + x ] = count;
 						mat[ x*speclist.size() + y ] = count;
 					}
 				}
-				
+
 				StringBuilder sb = new StringBuilder();
 				sb.append( "\t"+speclist.size() );
 				for( int i = 0; i < mat.length; i++ ) {
@@ -2670,7 +2670,7 @@ public class ActionCollection {
 					else sb.append( "\t"+mat[i] );
 				}
 				sb.append( "\n" );
-				
+
 				String 				tree = sb.toString();
 				if( cs.getConnections().size() > 0 ) {
 					cs.sendToAll( tree );
@@ -2704,10 +2704,10 @@ public class ActionCollection {
 					}
 					Tegeval.locsort = true;
 					Collections.sort(ltv);
-					
+
 					for( int x = y+1; x < speclist.size(); x++ ) {
 						String spec2 = speclist.get(x);
-						
+
 						final List<Tegeval> subltv = new ArrayList<Tegeval>();
 						for (Gene g : genelist) {
 							Tegeval tv = g.tegeval;
@@ -2724,34 +2724,34 @@ public class ActionCollection {
 						}
 						Tegeval.locsort = true;
 						Collections.sort(subltv);
-						
+
 						int count = 0;
 						for( int i = 0; i < ltv.size()-1; i++ ) {
 							Tegeval tv1 = ltv.get(i);
 							Tegeval tv2 = ltv.get(i+1);
-							
+
 							GeneGroup gg1 = tv1.getGene().getGeneGroup();
 							GeneGroup gg2 = tv2.getGene().getGeneGroup();
-							
+
 							if( gg1 == null || gg2 == null ) {
 								System.err.println( tv1 + "   " + tv2 );
 							}
-							
+
 							if( gg1 != null && gg1.getGroupGeneCount() < 500 && gg2 != null && gg2.getGroupGeneCount() < 500 ) {
 								for( int k = 0; k < subltv.size()-1; k++ ) {
 									Tegeval subtv1 = subltv.get(k);
 									Tegeval subtv2 = subltv.get(k+1);
-									
+
 									GeneGroup sgg1 = subtv1.getGene().getGeneGroup();
 									GeneGroup sgg2 = subtv2.getGene().getGeneGroup();
-									
+
 									if( (sgg1 == gg1 && sgg2 == gg2) || (sgg1 == gg2 && sgg2 == gg1) ) {
 										count++;
 										break;
 									}
 								}
 							}
-							
+
 							/*if( gg1.species.contains(spec2) && gg2.species.contains(spec2) ) {
 								final List<Tegeval> ltv1 = new ArrayList<Tegeval>();
 								for( Gene g : gg1.genes ) {
@@ -2781,7 +2781,7 @@ public class ActionCollection {
 										}
 									}
 								}
-								
+
 								for( Tegeval tev1 : ltv1 ) {
 									for( Tegeval tev2 : ltv2 ) {
 										System.err.println( tev1.cont + "  " + tev2.cont );
@@ -2795,18 +2795,18 @@ public class ActionCollection {
 						mat[ x*speclist.size() + y ] = count;
 					}
 				}
-				
+
 				System.err.print("\t"+speclist.size());
 				for( int i = 0; i < mat.length; i++ ) {
 					if( i % speclist.size() == 0 ) System.err.print("\n"+speclist.get(i/speclist.size())+"\t"+(mat[i] == 0 ? 0.0 : 2100-mat[i]));
 					else System.err.print("\t"+(mat[i] == 0 ? 0.0 : 2100-mat[i]));
 				}
 				System.err.println();
-				
-				/*				
+
+				/*
 				List<Tegeval>	spec1eval = new ArrayList<Tegeval>();
 				List<Tegeval>	spec2eval = new ArrayList<Tegeval>();
-				
+
 				double[] mat = new double[selspec.size()*selspec.size()];
 				for( int y = 0; y < speclist.size(); y++ ) {
 					String spec1 = speclist.get(y);
@@ -2865,27 +2865,27 @@ public class ActionCollection {
 					}
 					distmat.append("\n");
 				}*/
-				
+
 				/*Set<String>	emap = null;
 				for( Set<String> gmap : ggSpecMap.keySet() ) {
 					if( emap == null || emap.size() < gmap.size() ) emap = gmap;
 				}
 				List<GeneGroup>	lgg = ggSpecMap.get( emap );
 				List<GeneGroup>	slgg = new ArrayList<GeneGroup>();*/
-				
+
 				/*for( GeneGroup gg : lgg ) {
 					for( Gene g : gg.genes ) {
 						if( g.groupCoverage == g.groupCount ) {
 							System.err.println( g.groupCount );
 							slgg.add( gg );
 						}
-						
+
 						break;
 					}
 				}*/
-				
+
 				//System.err.println( "slgg " + slgg.size() + "  " + lgg.size() );
-				
+
 				/*Set<String>	selspec = geneset.getSelspec( applet, new ArrayList( species ) );
 				StringBuilder distmat = new StringBuilder();
 				distmat.append("\t"+selspec.size()+"\n");
@@ -2894,13 +2894,13 @@ public class ActionCollection {
 					for( String spec2 : selspec ) {
 						if( spec1.equals(spec2) ) distmat.append( "\t0.0" );
 						else {
-							
-							
+
+
 							int total = 0;
 							int count = 0;
 							for( Set<String> specset : clusterMap.keySet() ) {
 								System.err.println("asdf");
-								
+
 								/*if( !check.isSelected() || containmentCount(specset, selspec) < selspec.size() ) {
 									boolean b1 = specset.contains(spec1);
 									boolean b2 = specset.contains(spec2);
@@ -2918,25 +2918,25 @@ public class ActionCollection {
 					}
 					distmat.append("\n");
 				}
-				
+
 				boolean	succ = true;
 				String restext = distmat.toString();
-				
+
 				//TreeUtil treeutil = new TreeUtil();
 				//treeutil.neighborJoin( newcorr, corrInd, null, true, true );
-				
+
 				try {
 					JSObject win = JSObject.getWindow( (Applet)comp );
 					win.call("showTree", new Object[] { restext });
 				} catch( Exception e1 ) {
 					succ = false;
 				}
-				
+
 				if( !succ ) {
 					JFrame f = new JFrame("Shuffle tree");
 					f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 					f.setSize( 800, 600 );
-					
+
 					JTextArea	ta = new JTextArea();
 					ta.setText( restext );
 					JScrollPane	sp = new JScrollPane(ta);
@@ -2945,7 +2945,7 @@ public class ActionCollection {
 				}*/
 		});
 		//JButton	shuffletreebutton = new JButton( shuffletreeaction );
-		
+
 		MenuItem cazyexportaction = new MenuItem("Export cazy ids");
 		cazyexportaction.setOnAction( actionEvent -> {
 				Set<String> cz = new TreeSet<String>();
@@ -2958,12 +2958,12 @@ public class ActionCollection {
 						cz.add( cazy );
 					}
 				}
-				
+
 				for( String cazy : cz ) {
 					System.err.println( cazy );
 				}
 		});
-		
+
 		MenuItem koexportaction = new MenuItem("Export pathway ids");
 		koexportaction.setOnAction( actionEvent -> {
 				JCheckBox	kobtn = new JCheckBox("KO");
@@ -2975,13 +2975,13 @@ public class ActionCollection {
 				JCheckBox	gibtn = new JCheckBox("GI");
 				gibtn.setSelected( true );
 				JTextField	tf = new JTextField("#0000ff");
-				
+
 				JTextArea	conflict = new JTextArea();
 				JScrollPane	scroll = new JScrollPane( conflict );
-				
+
 				Object[] objs = new Object[] { kobtn, ecbtn, cogbtn, gibtn, tf, scroll };
 				JOptionPane.showMessageDialog( null, objs, "Select id types", JOptionPane.PLAIN_MESSAGE );
-				
+
 				Set<String> ids = new HashSet<String>();
 				//int[] rr = genesethead.table.getSelectedRows();
 				for( GeneGroup gg : genesethead.table.getSelectionModel().getSelectedItems() ) {
@@ -2989,19 +2989,19 @@ public class ActionCollection {
 						String ko = gg.getKo();
 						if( ko != null ) ids.add( ko );
 					}
-					
+
 					if( ecbtn.isSelected() ) {
 						String ec = gg.getEc();
 						if( ec != null ) ids.add( "E"+ec.replace(":", "") );
 					}
-					
+
 					if( cogbtn.isSelected() ) {
 						String cog = gg.getCog( geneset.cogmap ).toString();
 						if( cog != null ) ids.add( cog.substring( cog.lastIndexOf(' ')+1 ) );
 					}
-					
+
 					if( gibtn.isSelected() ) {
-						for( Annotation a : gg.genes ) {
+						for( Annotation a : gg.getGenes() ) {
 							Gene g = a.getGene();
 							if( g != null && g.genid != null ) {
 								System.err.println( g.genid );
@@ -3012,14 +3012,14 @@ public class ActionCollection {
 							if( f.ec != null && f.ec.length() > 1 ) ids.add( f.gi );
 						}*/
 					}
-					
+
 					if( ecbtn.isSelected() ) {
 						for( Function f : gg.getFunctions() ) {
 							if( f.getEc() != null && f.getEc().length() > 1 ) ids.add( "E"+f.getEc() );
 						}
 					}
 				}
-				
+
 				Set<String>	conflicting = new HashSet<>();
 				String text = conflict.getText();
 				String[] lines = text.split("\n");
@@ -3031,8 +3031,8 @@ public class ActionCollection {
 					}
 				}
 				ids.removeAll( conflicting );
-				
-				String colorstr = tf.getText();				
+
+				String colorstr = tf.getText();
 				StringWriter tmp = new StringWriter();
 				for( String id : ids ) {
 					tmp.write( id + " " + colorstr + "\n" );
@@ -3053,16 +3053,16 @@ public class ActionCollection {
 							}
 						}
 						tmpf.close();
-						
+
 						Desktop.getDesktop().browse( ttf.toURI() );
 					} catch( Exception e1 ) {
 						e1.printStackTrace();
 					}
 		});
-		
+
 		/*AbstractAction bsexportaction = new AbstractAction("Export BioSystem ids") {
 			@Override
-			public void actionPerformed(ActionEvent e) {				
+			public void actionPerformed(ActionEvent e) {
 				Set<String> ids = new HashSet<String>();
 				int[] rr = table.getSelectedRows();
 				for( int r : rr ) {
@@ -3074,20 +3074,20 @@ public class ActionCollection {
 						}
 					}
 				}
-				
-				String colorstr = tf.getText();				
+
+				String colorstr = tf.getText();
 				StringWriter tmp = new StringWriter();
 				for( String id : ids ) {
 					tmp.write( id + " " + colorstr + "\n" );
 				}
-				
+
 				JSObject window = null;
 				try {
 					window = JSObject.getWindow( geneset );
 				} catch( NoSuchMethodError | Exception exc ) {
 					exc.printStackTrace();
 				}
-				
+
 				if( window != null ) {
 					try {
 						window.setMember("smuck", tmp.toString());
@@ -3103,7 +3103,7 @@ public class ActionCollection {
 							tmpf.write( id + " " + colorstr + "\n" );
 						}
 						tmpf.close();
-						
+
 						Desktop.getDesktop().browse( new URI("file://c:/kolist.txt") );
 					} catch( Exception e1 ) {
 						e1.printStackTrace();
@@ -3111,26 +3111,26 @@ public class ActionCollection {
 				}
 			}
 		};*/
-		
+
 		MenuItem blastaction = new MenuItem("Blast");
 		blastaction.setOnAction( actionEvent -> priv() );
-		
+
 		MenuItem pancoreaction = new MenuItem("Pan-core");
 		pancoreaction.setOnAction( actionEvent -> {
 				Set<String>	selspec = genesethead.getSelspec( genesethead, new ArrayList( geneset.specList ) );
-				
+
 				for( String spec : selspec ) {
 					System.err.println( spec );
 				}
-				
+
 				final String[] categories = { "Core: ", "Accessory: " };
 				final List<StackBarData> lsbd = new ArrayList<StackBarData>();
 				StringBuilder restext = panCore( genesethead, selspec, categories, lsbd );
-				
+
 				JFrame f = new JFrame("Pan-core chart");
 				f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				f.setSize( 800, 600 );
-				
+
 				final StringBuilder sb = new StringBuilder();
 				InputStream is = GeneSet.class.getResourceAsStream("org/simmi/javafasta/chart.html");
 				try {
@@ -3143,7 +3143,7 @@ public class ActionCollection {
 					e1.printStackTrace();
 				}
 				final String smuck = sb.toString().replace("smuck", restext.toString());
-				
+
 				//String b64str = Base64.encodeBase64String( smuck.getBytes() );
 				if( Desktop.isDesktopSupported() ) {
 					SwingUtilities.invokeLater(() -> {
@@ -3172,14 +3172,14 @@ public class ActionCollection {
 					}*/
 				}
 				//}
-				
+
 				restext.append( smuck );
 				JTextArea	ta = new JTextArea();
 				ta.setText( restext.toString() );
 				JScrollPane	sp = new JScrollPane(ta);
 				f.add( sp );
 				f.setVisible( true );
-				
+
 				/*SwingUtilities.invokeLater(new Runnable() {
 	                 @Override
 	                 public void run() {
@@ -3188,29 +3188,29 @@ public class ActionCollection {
 	            });*/
 				/*JFXPanel	jfxpanel = new JFXPanel();
 				jfxpanel.add
-				
+
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				frame.add( jfxpanel );
 				frame.setVisible( true );*/
 		});
-		
+
 		MenuItem genomesizeaction = new MenuItem("Genome size");
 		genomesizeaction.setOnAction( actionEvent -> {
 				final JCheckBox	contigs = new JCheckBox("Show contigs");
 				Set<String>	selspec = genesethead.getSelspec( genesethead, new ArrayList( geneset.specList ), false, contigs );
 				StringBuilder	restext = new StringBuilder();
-				
+
 				Map<String,Integer>	map = new TreeMap<String,Integer>();
-				
+
 				int tmax = 0;
 				restext.append( "['Species', 'Size']" );
 				for( String spec : selspec ) {
 					restext.append( ",\n['"+spec+"', " );
-					
+
 					//int len = 0;
 					int total = 0;
-					
+
 					if( contigs.isSelected() ) {
 						Sequence ct = geneset.contigmap.get( spec );
 						total = ct.length();
@@ -3222,14 +3222,14 @@ public class ActionCollection {
 							//len += ct.getGCCount();
 						}
 					}
-					
+
 					tmax = Math.max( tmax, total );
-					//double d = (double)len/(double)total;					
+					//double d = (double)len/(double)total;
 					String name = null;//names[i];
 					if( contigs.isSelected() ) {
 						if( spec.contains("hermus") ) name = spec;
 						else {
-							Matcher m = Pattern.compile("\\d").matcher(spec); 
+							Matcher m = Pattern.compile("\\d").matcher(spec);
 							int firstDigitLocation = m.find() ? m.start() : 0;
 							if( firstDigitLocation == 0 ) name = "Thermus_" + spec;
 							else name = "Thermus_" + spec.substring(0,firstDigitLocation) + "_" + spec.substring(firstDigitLocation);
@@ -3237,21 +3237,21 @@ public class ActionCollection {
 					} else {
 						if( spec.contains("hermus") ) name = spec.substring( 0, spec.lastIndexOf('_') );
 						else {
-							Matcher m = Pattern.compile("\\d").matcher(spec); 
+							Matcher m = Pattern.compile("\\d").matcher(spec);
 							int firstDigitLocation = m.find() ? m.start() : 0;
 							if( firstDigitLocation == 0 ) name = "Thermus_" + spec;
 							else name = "Thermus_" + spec.substring(0,firstDigitLocation) + "_" + spec.substring(firstDigitLocation);
 						}
 					}
-					
+
 					map.put( name, total );
 					restext.append( total+"]" );
 				}
-				
+
 				final int max = tmax;
 				final String[] names = new String[ map.size() ];
 				final double[] vals = new double[ map.size() ];
-				
+
 				String scaffspec = null;
 				int i = 0;
 				for( String spec : map.keySet() ) {
@@ -3263,17 +3263,17 @@ public class ActionCollection {
 							names[i] = spec;
 							scaffspec = spec;
 						} else {
-							names[i] = spec.substring(k);						
+							names[i] = spec.substring(k);
 							scaffspec = spec.substring(0, k-1);
 						}
 					} else names[i] = spec;
 					vals[i] = map.get( spec );
 					i++;
 				}
-				
+
 				final String xTitle = scaffspec != null ? "Scaffolds/Contigs" : "Species";
 				final String yTitle = scaffspec != null ? scaffspec + " contig size" : "Genome size";
-				
+
 			 	if( Desktop.isDesktopSupported() ) {
 					SwingUtilities.invokeLater(() -> {
 						CogChart cogChart = new CogChart(genesethead);
@@ -3292,26 +3292,26 @@ public class ActionCollection {
 						geneset.fxframe.setVisible( true );
 					});
 				}
-				
+
 				JFrame f = new JFrame("GC% chart");
 				f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				f.setSize( 800, 600 );
-				
+
 				JTextArea	ta = new JTextArea();
 				ta.setText( restext.toString() );
 				JScrollPane	sp = new JScrollPane(ta);
 				f.add( sp );
 				f.setVisible( true );
-				
-				
-				
+
+
+
 				/*Set<String>	selspec = geneset.getSelspec( applet, new ArrayList( specList ) );
-				
+
 				StringBuilder	restext = new StringBuilder();
 				restext.append( "['Species', 'Size']" );
 				for( String spec : selspec ) {
 					restext.append( ",\n['"+spec+"', " );
-					
+
 					List<Sequence> lcont = speccontigMap.get(spec);
 					int total = 0;
 					for( Sequence ct : lcont ) {
@@ -3324,11 +3324,11 @@ public class ActionCollection {
 					//pan.addAll( ggset );
 					//if( core.isEmpty() ) core.addAll( ggset );
 					//else core.retainAll( ggset );
-					
+
 					//restext.append( core.size()+", " );
 					restext.append( total+"]" );
 				}
-				
+
 				final StringBuilder sb = new StringBuilder();
 				InputStream is = GeneSet.class.getResourceAsStream("/genomesizechart.html");
 				try {
@@ -3341,7 +3341,7 @@ public class ActionCollection {
 					e1.printStackTrace();
 				}
 				final String smuck = sb.toString().replace("smuck", restext.toString());
-				
+
 				//String b64str = Base64.encodeBase64String( smuck.getBytes() );
 				JSObject window = null;
 				try {
@@ -3349,8 +3349,8 @@ public class ActionCollection {
 				} catch( NoSuchMethodError | Exception exc ) {
 					exc.printStackTrace();
 				}
-				
-				if( window != null ) {				
+
+				if( window != null ) {
 					try {
 						window.setMember("str", smuck);
 						window.eval("var b = new Blob( [str], { \"type\" : \"text\\/html\" } );");
@@ -3359,11 +3359,11 @@ public class ActionCollection {
 						exc.printStackTrace();
 					}
 				}
-				
+
 				/*JFrame f = new JFrame("Genome size chart");
 				f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				f.setSize( 800, 600 );
-				
+
 				/*final StringBuilder sb = new StringBuilder();
 				InputStream is = GeneSet.class.getResourceAsStream("/chart.html");
 				try {
@@ -3376,14 +3376,14 @@ public class ActionCollection {
 					e1.printStackTrace();
 				}
 				final String smuck = sb.toString().replace("smuck", restext.toString());
-				
+
 				//restext.append( restext.toString() );
 				JTextArea	ta = new JTextArea();
 				ta.setText( restext.toString() );
 				JScrollPane	sp = new JScrollPane(ta);
 				f.add( sp );
 				f.setVisible( true );
-				
+
 				/*SwingUtilities.invokeLater(new Runnable() {
 	                 @Override
 	                 public void run() {
@@ -3392,13 +3392,13 @@ public class ActionCollection {
 	            });*/
 				/*JFXPanel	jfxpanel = new JFXPanel();
 				jfxpanel.add
-				
+
 				JFrame frame = new JFrame();
 				frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				frame.add( jfxpanel );
 				frame.setVisible( true );*/
 		});
-		
+
 		MenuItem mltreemapaction = new MenuItem("mlTreeMap genes");
 		mltreemapaction.setOnAction( actionEvent -> {
 				Set<String>	mltreemap = new HashSet<String>();
@@ -3412,7 +3412,7 @@ public class ActionCollection {
 				mltreemap.add( "COG0081" );
 				mltreemap.add( "COG0085" );
 				mltreemap.add( "COG0087" );
-				
+
 				mltreemap.add( "COG0088" );
 				mltreemap.add( "COG0090" );
 				mltreemap.add( "COG0091" );
@@ -3423,7 +3423,7 @@ public class ActionCollection {
 				mltreemap.add( "COG0097" );
 				mltreemap.add( "COG0098" );
 				mltreemap.add( "COG0099" );
-				
+
 				mltreemap.add( "COG0100" );
 				mltreemap.add( "COG0102" );
 				mltreemap.add( "COG0103" );
@@ -3434,7 +3434,7 @@ public class ActionCollection {
 				mltreemap.add( "COG0186" );
 				mltreemap.add( "COG0197" );
 				mltreemap.add( "COG0200" );
-				
+
 				mltreemap.add( "COG0201" );
 				mltreemap.add( "COG0202" );
 				mltreemap.add( "COG0215" );
@@ -3445,8 +3445,8 @@ public class ActionCollection {
 				mltreemap.add( "COG0533" );
 				mltreemap.add( "COG0541" );
 				mltreemap.add( "COG0552" );
-				
-				for( String refid : geneset.cogmap.keySet() ) {				
+
+				for( String refid : geneset.cogmap.keySet() ) {
 					Cog cog = geneset.cogmap.get( refid );
 					if( mltreemap.contains( cog.id ) ) {
 						Gene g = geneset.genemap.get(refid);
@@ -3458,7 +3458,7 @@ public class ActionCollection {
 					}
 				}
 		});
-		
+
 		MenuItem sevenaction = new MenuItem("7 housekeeping genes");
 		sevenaction.setOnAction( actionEvent -> {
 				Set<String>	mltreemap = new HashSet<String>();
@@ -3469,7 +3469,7 @@ public class ActionCollection {
 				mltreemap.add( "pyrG" );
 				mltreemap.add( "recA" );
 				mltreemap.add( "recG" );
-				
+
 				for( Gene g : geneset.genelist ) {
 					String koname = g.koname;
 					if( koname != null && koname.length() > 0 ) {
@@ -3477,14 +3477,14 @@ public class ActionCollection {
 							if( koname.contains(gn) ) {
 								GeneGroup gg = g.getGeneGroup();
 								table.getSelectionModel().select( gg );
-								
+
 								break;
 							}
 						}
 					}
 				}
 		});
-		
+
 		MenuItem gcaction = new MenuItem("GC% chart data");
 		gcaction.setOnAction( actionEvent -> {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -3650,7 +3650,7 @@ public class ActionCollection {
 				}
 			});
 		});
-		
+
 		MenuItem gcskewaction = new MenuItem("GC skew chart");
 		gcskewaction.setOnAction( actionEvent -> SwingUtilities.invokeLater( new Runnable() {
 			@Override
@@ -3698,17 +3698,17 @@ public class ActionCollection {
 					public void removeTableModelListener(TableModelListener l) {}
 				};
 				JTable table2 = new JTable( model );
-				
+
 				//table.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
 				JScrollPane	scroll = new JScrollPane( table2 );
-				
+
 				FlowLayout flowlayout = new FlowLayout();
 				JComponent c1 = new JComponent() {};
 				c1.setLayout( flowlayout );
 				c1.add( scroll );
-				
+
 				JOptionPane.showMessageDialog(comp, c1);
-				
+
 				final BufferedImage bimg = new BufferedImage( 2048, 2048, BufferedImage.TYPE_INT_ARGB );
 				final JComponent c = new JComponent() {
 					public void paintComponent( Graphics g ) {
@@ -3716,7 +3716,7 @@ public class ActionCollection {
 						g.drawImage( bimg, 0, 0, 1024, 1024, 0, 0, 2048, 2048, this );
 					}
 				};
-				
+
 				Dimension dim = new Dimension(1024, 1024);
 				c.setPreferredSize( dim );
 				c.setSize( dim );
@@ -3725,11 +3725,11 @@ public class ActionCollection {
 				frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 				frame.setSize(800, 600);
 				frame.add( scroll );
-				
+
 				int r = table2.getSelectedRow();
 				final String selspec = (String)table2.getValueAt( r, 0 );
 				final List<Sequence>	clist = speccontigMap.get( selspec );
-				
+
 				model = new TableModel() {
 					@Override
 					public int getRowCount() {
@@ -3775,23 +3775,23 @@ public class ActionCollection {
 				};
 				table2 = new JTable( model );
 				table2.setAutoCreateRowSorter( true );
-				
+
 				table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
 				scroll = new JScrollPane( table2 );
-				
+
 				flowlayout = new FlowLayout();
 				JComponent c2 = new JComponent() {};
 				c2.setLayout( flowlayout );
 				c2.add( scroll );
 				JOptionPane.showMessageDialog(comp, c2);
-				
+
 				final List<Sequence> selclist = new ArrayList<Sequence>();
 				int[] rr = table2.getSelectedRows();
 				for( int row : rr ) {
 					int i = table2.convertRowIndexToModel( row );
 					selclist.add( clist.get(i) );
 				}
-				
+
 				int size = 0;
 				final Graphics2D g2 = bimg.createGraphics();
 				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -3800,9 +3800,9 @@ public class ActionCollection {
 				}
 				g2.setColor( Color.white );
 				g2.fillRect( 0, 0, 1024, 1024 );
-				
+
 				final int fsize = size;
-				
+
 				JPopupMenu popup = new JPopupMenu();
 				popup.add( new AbstractAction("Repaint") {
 					@Override
@@ -3830,7 +3830,7 @@ public class ActionCollection {
 									else if( chr == 'a' || chr == 'A' ) acount++;
 									else if( chr == 't' || chr == 'T' ) tcount++;
 								}
-								
+
 								if( gcount > 0 || ccount > 0 ) {
 									double gcskew = (gcount-ccount)/(double)(gcount+ccount);
 									if( val.containsKey( ctg ) ) {
@@ -3839,14 +3839,14 @@ public class ActionCollection {
 										val.put( ctg, gcskew );
 									}
 								}
-								
+
 								if( acount > 0 || tcount > 0 ) {
 									double atskew = (acount-tcount)/(double)(acount+tcount);
 								}
 							}
 							total += ctg.length();
 						}
-						
+
 						double min = Double.MAX_VALUE;
 						int mini = 0;
 						for( int i = 0; i < Math.pow(2.0, selclist.size()); i++ ) {
@@ -3867,13 +3867,13 @@ public class ActionCollection {
 								mini = i;
 							}
 						}
-						
+
 						int i = 0;
 						for( Sequence ctg : selclist ) {
 							if( (mini & (1 << i)) > 0 ) ctg.setReverse( !ctg.isReverse() );
 							i++;
 						}
-						
+
 						genesethead.repaintGCSkew(selclist, g2, fsize, gg, selspec);
 					}
 				});
@@ -3881,7 +3881,7 @@ public class ActionCollection {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						for( Sequence ctg : selclist ) {
-							
+
 						}
 					}
 				});
@@ -3945,21 +3945,21 @@ public class ActionCollection {
 					}
 				});
 				c.setComponentPopupMenu( popup );
-				
+
 				c.addMouseListener( new MouseListener() {
 					int x;
 					int y;
 					Sequence sctg;
-					
+
 					@Override
 					public void mouseReleased(MouseEvent e) {
 						if( sctg != null ) {
 							int rx = e.getX();
 							int ry = e.getY();
-							
+
 							double horn = Math.atan2( (double)(512-ry), (double)(512-rx) )+Math.PI;
 							int val = (int)( (double)(horn*fsize)/(double)(2*Math.PI) );
-							
+
 							int tot = 0;
 							Sequence sctg2 = null;
 							for( Sequence ctg : selclist ) {
@@ -3967,59 +3967,59 @@ public class ActionCollection {
 								tot += ctg.length();
 								sctg2 = ctg;
 							}
-							
+
 							int i = selclist.indexOf( sctg2 );
 							selclist.remove( sctg );
 							selclist.add( i, sctg );
-							
+
 							i = clist.indexOf( sctg2 );
 							clist.remove( sctg );
 							clist.add( i, sctg );
-							
+
 							genesethead.repaintGCSkew(selclist, g2, fsize, gg, selspec);
 							c.repaint();
 						}
 					}
-					
+
 					@Override
 					public void mousePressed(MouseEvent e) {
 						x = e.getX();
 						y = e.getY();
-						
+
 						double horn = Math.atan2( (double)(512-y), (double)(512-x) )+Math.PI;
 						int val = (int)( (double)(horn*fsize)/(double)(2*Math.PI) );
-						
+
 						int tot = 0;
 						for( Sequence ctg : selclist ) {
 							if( tot > val ) break;
 							tot += ctg.length();
 							sctg = ctg;
 						}
-						
-						if( e.getClickCount() == 2 ) {							
+
+						if( e.getClickCount() == 2 ) {
 							sctg.setReverse( !sctg.isReverse() );
 							genesethead.repaintGCSkew(selclist, g2, fsize, gg, selspec);
 							c.repaint();
 						}
 					}
-					
+
 					@Override
 					public void mouseExited(MouseEvent e) {}
-					
+
 					@Override
 					public void mouseEntered(MouseEvent e) {}
-					
+
 					@Override
 					public void mouseClicked(MouseEvent e) {}
 				});
-				
-				genesethead.repaintGCSkew( selclist, g2, size, gg, selspec );				
+
+				genesethead.repaintGCSkew( selclist, g2, size, gg, selspec );
 				frame.setVisible( true );
 			}
 		}));
-		
+
 		//Set<String>	selspec = geneset.getSelspec( geneset, new ArrayList( geneset.specList ), null );
-		
+
 		MenuItem totalcogaction = new MenuItem("COG total");
 		totalcogaction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> {
 			CogChart cogChart = new CogChart(genesethead);
@@ -4030,7 +4030,7 @@ public class ActionCollection {
             CogChart cogChart = new CogChart(genesethead);
             cogChart.run();
         }));
-		
+
 		MenuItem fetchcoreaction = new MenuItem("Fetch core");
 		fetchcoreaction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> {
 			Set<String>	selspec = genesethead.getSelspec( genesethead, new ArrayList( geneset.specList ) );
@@ -4187,7 +4187,7 @@ public class ActionCollection {
 			f.add( sp );
 			f.setVisible( true );*/
 		}));
-		
+
 		MenuItem loadcontiggraphaction = new MenuItem("Load contig graph");
 		loadcontiggraphaction.setOnAction( actionEvent -> SwingUtilities.invokeLater( new Runnable() {
 			@Override
@@ -4199,28 +4199,28 @@ public class ActionCollection {
 					try {
 						List<String> lines = Files.readAllLines( Paths.get( file.toURI() ), Charset.defaultCharset());
 						double scaleval = 400.0;
-						
+
 						Connectron connectron = new Connectron();
 						connectron.importFrom454ContigGraph(lines, scaleval);
-						
+
 						Collections.sort( Corp.corpList, new Comparator<Corp>() {
 							@Override
 							public int compare(Corp o1, Corp o2) {
 								return o1.connections.size()+o1.backconnections.size()-o2.connections.size()-o2.backconnections.size();
 							}
 						});
-						
+
 						for( Corp c : Corp.corpList ) {
 							System.err.println( c.getName() + " " + c.connections.size() + "   " + c.backconnections.size() );
-						}						
-						
+						}
+
 						for( Corp c : Corp.corpList ) {
 							if( c.connections.size() > 1 && c.backconnections.size() > 1 ) {
 								System.err.println( c.getName() );
 								System.err.println( "cm " + geneset.contigmap.size() );
 							}
 						}
-						
+
 						JFrame f = new JFrame();
 						f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 						f.setSize(800, 600);
@@ -4237,51 +4237,51 @@ public class ActionCollection {
 				}
 			}
 		}));
-		
+
 		MenuItem selectflankingaction = new MenuItem("Select flanking");
 		selectflankingaction.setOnAction( actionEvent -> {
 				Set<GeneGroup>	ggset = new HashSet();
 				for( String str : geneset.contigmap.keySet() ) {
 					Sequence c = geneset.contigmap.get( str );
-					
+
 					if( c != null && c.getAnnotations() != null && c.getAnnotations().size() > 0 ) {
 						ggset.add( ((Tegeval)c.getAnnotation( 0 )).getGene().getGeneGroup() );
 						ggset.add( ((Tegeval)c.getAnnotation( c.getAnnotations().size()-1 )).getGene().getGeneGroup() );
 					}
 				}
-				
+
 				for( GeneGroup gg : ggset ) {
 					table.getSelectionModel().select( gg );
 				}
 		});
-		
+
 		MenuItem showflankingaction = new MenuItem("Show flanking");
 		showflankingaction.setOnAction( actionEvent -> SwingUtilities.invokeLater( new Runnable() {
 			@Override
 			public void run() {
 				List<JComponent> complist = new ArrayList<JComponent>();
-				
+
 				JCheckBox	check = new JCheckBox("Genes");
 				complist.add( check );
-				
+
 				JRadioButton gaps = new JRadioButton("Gaps");
 				JRadioButton ctgs = new JRadioButton("Contigs");
 				ButtonGroup bg = new ButtonGroup();
 				bg.add( gaps );
 				bg.add( ctgs );
-				
+
 				complist.add( gaps );
 				complist.add( ctgs );
-				
+
 				ctgs.setSelected( true );
-				
+
 				List<Sequence> contigs = genesethead.getSelspecContigs( complist, geneset.speccontigMap );
 				//int[] rr = ctable.getSelectedRows();
-				
+
 				JFrame frame = new JFrame();
 				frame.setSize(800, 600);
 				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				
+
 				if( check.isSelected() ) {
 					JTextArea	text = new JTextArea();
 					for( Sequence ctg : contigs ) {
@@ -4291,18 +4291,18 @@ public class ActionCollection {
 							if( ctg.isReverse() ) {
 								Tegeval tv0 = (Tegeval)ctg.getAnnotation(0);
 								Tegeval tv1 = (Tegeval)ctg.getAnnotation(1);
-								
+
 								Tegeval tv = (Tegeval)ctg.getAnnotation(ctg.getAnnotations().size()-1);
 								Tegeval tv2 = (Tegeval)ctg.getAnnotation(ctg.getAnnotations().size()-2);
 								text.append( tv.getGene().getGeneGroup().getName() + " -- " + tv2.getGene().getGeneGroup().getName() + " -- " + ctg.getName() + " -- " + tv1.getGene().getGeneGroup().getName() + " -- " + tv0.getGene().getGeneGroup().getName() + "\n" );
 							} else {
-								
+
 								if( ctg.getAnnotations().size() > 3 ) {
 									String n0 = ((Tegeval)ctg.getAnnotation(0)).getGene().getGeneGroup().getName();
 									String n1 = ((Tegeval)ctg.getAnnotation(1)).getGene().getGeneGroup().getName();
 									String n_2 = ((Tegeval)ctg.getAnnotation(ctg.getAnnotations().size()-1)).getGene().getGeneGroup().getName();
 									String n_1 = ((Tegeval)ctg.getAnnotation(ctg.getAnnotations().size()-2)).getGene().getGeneGroup().getName();
-									
+
 									text.append( n0 + " -- " + n1 + " -- " + ctg.getName() + " -- " + n_2 + " -- " + n_1 + "\n" );
 								} else if( ctg.getAnnotations().size() > 1 ) {
 									text.append( ((Tegeval)ctg.getAnnotation(0)).getGene().getGeneGroup().getName() + " -- " + ctg.getName() + " -- " + ((Tegeval)ctg.getAnnotation(ctg.getAnnotations().size()-1)).getGene().getGeneGroup().getName() + "\n" );
@@ -4323,10 +4323,10 @@ public class ActionCollection {
 						for( Sequence ctg : contigs ) {
 							//int i = ctable.convertRowIndexToModel( row );
 							//Sequence ctg = contigs.get( i );
-							
+
 							List<Integer> starts = new ArrayList<>();
 							List<Integer> stops = new ArrayList<>();
-							
+
 							int started = -1;
 							for( int k = 0; k < ctg.length(); k++ ) {
 								char b = ctg.getCharAt(k);
@@ -4338,16 +4338,16 @@ public class ActionCollection {
 									started = -1;
 								}
 							}
-							
+
 							for( int k = 0; k < starts.size(); k++ ) {
 								int start = starts.get(k);
 								int stop = stops.get(k);
-								
+
 								Sequence seq = new Sequence(ctg.getName()+"_"+start+"_"+stop, null);
 								seq.append( ctg.getSequence().substring( Math.max(0, start-100), start ) );
 								seq.append( "-----" );
 								seq.append( ctg.getSequence().substring( stop, Math.min(stop+100, ctg.length()) ) );
-								
+
 								serifier.addSequence( seq );
 							}
 						}
@@ -4370,13 +4370,13 @@ public class ActionCollection {
 							serifier.addSequence( seq );
 						}
 					}
-					
+
 					jf.updateView();
 				}
 				frame.setVisible(true);
 			}
 		}));
-		
+
 		MenuItem showcontigsaction = new MenuItem("Show contigs");
 		showcontigsaction.setOnAction( actionEvent -> SwingUtilities.invokeLater( new Runnable() {
 			@Override
@@ -4386,7 +4386,7 @@ public class ActionCollection {
 					List<Sequence>	ctgs = speccontigMap.get( spec );
 					allcontigs.addAll( ctgs );
 				}
-				
+
 				TableModel model = new TableModel() {
 					@Override
 					public int getRowCount() {
@@ -4431,18 +4431,18 @@ public class ActionCollection {
 				table2.setAutoCreateRowSorter( true );
 				table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
 				JScrollPane	scroll = new JScrollPane( table2 );
-				
+
 				FlowLayout flowlayout = new FlowLayout();
 				JComponent c1 = new JComponent() {};
 				c1.setLayout( flowlayout );
 				c1.add( scroll );
-				
+
 				JOptionPane.showMessageDialog(comp, c1);
-				
+
 				JFrame frame = new JFrame();
 				frame.setSize(800, 600);
 				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				
+
 				Serifier serifier = new Serifier();
 				JavaFasta jf = new JavaFasta( null, serifier, cs );
 				jf.initGui(frame);
@@ -4453,12 +4453,12 @@ public class ActionCollection {
 					Sequence ctg = allcontigs.get( i );
 					serifier.addSequence( ctg );
 				}
-				
+
 				jf.updateView();
 				frame.setVisible(true);
 			}
 		}));
-		
+
 		MenuItem showunresolved = new MenuItem("Show unresolved genes");
 		showunresolved.setOnAction( acionEvent -> SwingUtilities.invokeLater(() -> {
 			JFrame frame = new JFrame();
@@ -4484,7 +4484,7 @@ public class ActionCollection {
 			jf.updateView();
 			frame.setVisible( true );
 		}));
-		
+
 		//PrincipleComponentAnalysis pca = new PrincipleComponentAnalysis();
 		//pca.
 
@@ -4497,11 +4497,11 @@ public class ActionCollection {
 		presabsphylo.setOnAction( actionEvent -> {
 			new PresAbs(geneset).phylo();
 		});
-		
+
 		MenuItem	genephyl = new MenuItem("Gene phylogeny");
 		genephyl.setOnAction( actionEvent -> {
 				Map<String, Integer> blosumap = JavaFasta.getBlosumMap();
-				
+
 				final double[] b0;
 				final double[] b1;
 				final double[] b2;
@@ -4576,7 +4576,7 @@ public class ActionCollection {
 			b0 = null;
 			b1 = null;
 			b2 = null;
-				
+
 				/*JFXPanel fxpanel = new JFXPanel();
 				Platform.runLater( new Runnable() {
 					@Override
@@ -4584,7 +4584,7 @@ public class ActionCollection {
 						new ChartApp( names, b0, b1 );
 					}
 				});*/
-				
+
 				SwingUtilities.invokeLater(() -> {
 					CogChart chart = new CogChart(genesethead);
 					if( geneset.fxframe == null ) {
@@ -4601,15 +4601,15 @@ public class ActionCollection {
 					}
 					geneset.fxframe.setVisible( true );
 				});
-				
+
 				//double[] sdb1 = new double[ (speclist.size()-1)*(speclist.size())/2 ];
 				//double[] sdb2 = new double[ sdb1.length ];
-				
+
 				/*for( int k = 0; k < rr.length-1; k++ ) {
 					int i = table.convertRowIndexToModel( rr[k] );
 					GeneGroup gg1 = allgenegroups.get(i);
 					double[] sdb1 = valmap.get(gg1);
-					
+
 					/*int v = 0;
 					for( int m = 0; m < speclist.size()-1; m++ ) {
 						String  spec1 = speclist.get( m );
@@ -4620,24 +4620,24 @@ public class ActionCollection {
 							sdb1[v++] = GeneCompare.blosumVal(ti.best, spec2, gg1, blosumap);
 						}
 					}*
-					
+
 					for( int l = k+1; l < rr.length; l++ ) {
 						int i1 = table.convertRowIndexToModel( rr[l] );
 						GeneGroup gg2 = allgenegroups.get(i1);
 						double[] sdb2 = valmap.get(gg2);
-						
+
 						double val = 0.0;
 						for( int x = 0; x < sdb1.length; x++ ) {
 							double diff = sdb1[x]-sdb2[x];
 							val += diff*diff;
 						}
 						val = Math.sqrt( val );
-						
+
 						mat[k*rr.length+l] = val;
 						mat[l*rr.length+k] = val;
 					}
 				}
-				
+
 				/*List<String>	genenames = new ArrayList<String>();
 				StringBuilder 	sb = new StringBuilder();
 				sb.append( "\t"+rr.length );
@@ -4651,16 +4651,16 @@ public class ActionCollection {
 					} else sb.append( "\t" + mat[i] );
 				}
 				sb.append("\n");
-				
+
 				JTextArea	ta = new JTextArea();
 				frame.add( ta );
 				ta.setText( sb.toString() );
-				
+
 				TreeUtil tu = new TreeUtil();
 				Node n = tu.neighborJoin(mat, genenames, null, false, false);
-				
+
 				String tree = n.toString();
-				
+
 				boolean succ = true;
 				try {
 					JSObject win = JSObject.getWindow( geneset );
@@ -4669,7 +4669,7 @@ public class ActionCollection {
 					e1.printStackTrace();
 					succ = false;
 				}
-				
+
 				if( !succ ) {
 					if( cs.connections().size() > 0 ) {
 			    		cs.sendToAll( tree );
@@ -4687,7 +4687,7 @@ public class ActionCollection {
 		});
 		final CheckMenuItem checkbox = new CheckMenuItem( "Sort by location" );
 		checkbox.setOnAction( actionEvent -> Tegeval.locsort = checkbox.isSelected() );
-		
+
 		menu.getItems().add( checkbox );
 		menu.getItems().add( new SeparatorMenuItem() );
 		menu.getItems().add( pangraphaction );

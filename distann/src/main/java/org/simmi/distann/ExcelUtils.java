@@ -73,7 +73,7 @@ public class ExcelUtils {
                             var a = lann[k];
                             var ngg = a.getGeneGroup();
                             if (ngg!=null) {
-                                var ohit = ngg.genes.stream().filter(an -> gs.geneset.hhblitsmap.containsKey(an.getId())).map(an -> gs.geneset.hhblitsmap.get(an.getId())).findFirst();
+                                var ohit = ngg.getGenes().stream().filter(an -> gs.geneset.hhblitsmap.containsKey(an.getId())).map(an -> gs.geneset.hhblitsmap.get(an.getId())).findFirst();
                                 if (ohit.isPresent()) {
                                     cell = row.createCell(cn);
                                     cell.setCellValue(ohit.get());
@@ -85,7 +85,7 @@ public class ExcelUtils {
                             var a = lann[k];
                             var ngg = a.getGeneGroup();
                             if (ngg!=null) {
-                                var ohit = ngg.genes.stream().filter(an -> gs.geneset.hhblitsunimap.containsKey(an.getId())).map(an -> gs.geneset.hhblitsunimap.get(an.getId())).findFirst();
+                                var ohit = ngg.getGenes().stream().filter(an -> gs.geneset.hhblitsunimap.containsKey(an.getId())).map(an -> gs.geneset.hhblitsunimap.get(an.getId())).findFirst();
                                 if (ohit.isPresent()) {
                                     cell = row.createCell(cn);
                                     cell.setCellValue(ohit.get());

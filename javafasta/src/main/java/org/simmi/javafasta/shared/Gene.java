@@ -1,12 +1,13 @@
 package org.simmi.javafasta.shared;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Objects;
 import java.util.Set;
 
-public class Gene {
+public class Gene implements Serializable {
 	public Gene(GeneGroup gg, String id, String name) {
 		this.name = name;
 		//this.tegeval.setGeneGroup(gg);
@@ -15,12 +16,12 @@ public class Gene {
 	}
 
 	public Gene() {}
-	
+
 	/*public Gene( GeneGroup gg, String id, String name, String origin, String tag ) {
 		this( gg, id, name, origin );
 		this.tegeval.type = tag;
 	}*/
-	
+
 	public void getFasta( Appendable w, boolean id ) throws IOException {
 		Sequence ps = tegeval.getProteinSequence();
 		if(ps!=null) {
@@ -38,7 +39,7 @@ public class Gene {
 	public String getHhpred() {
 		if (hhblits != null && hhblits.length() > 0) return hhblits;
 		else {
-			var oh = this.getGeneGroup().genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblits).filter(h -> h != null && !h.isEmpty()).findAny();
+			var oh = this.getGeneGroup().getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblits).filter(h -> h != null && !h.isEmpty()).findAny();
 			return oh.orElse(null);
 		}
 	}
@@ -46,7 +47,7 @@ public class Gene {
 	public String getHhpreduni() {
 		if (hhblitsuni != null && hhblitsuni.length() > 0) return hhblitsuni;
 		else {
-			var oh = this.getGeneGroup().genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblitsuni).filter(h -> h != null && !h.isEmpty()).findAny();
+			var oh = this.getGeneGroup().getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblitsuni).filter(h -> h != null && !h.isEmpty()).findAny();
 			return oh.orElse(null);
 		}
 	}
@@ -54,11 +55,11 @@ public class Gene {
 	public String getHhpredphrog() {
 		if (hhblitsphrog != null && hhblitsphrog.length() > 0) return hhblitsphrog;
 		else {
-			var oh = this.getGeneGroup().genes.stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblitsphrog).filter(h -> h != null && !h.isEmpty()).findAny();
+			var oh = this.getGeneGroup().getGenes().stream().map(Annotation::getGene).filter(Objects::nonNull).map(g -> g.hhblitsphrog).filter(h -> h != null && !h.isEmpty()).findAny();
 			return oh.orElse(null);
 		}
 	}
-	
+
 	public String getFasta( boolean id ) {
 		StringWriter sb = new StringWriter();
 		try {
@@ -68,7 +69,7 @@ public class Gene {
 		}
 		return sb.toString();
 	}
-	
+
 	public void writeGeneIdFasta( Writer w ) throws IOException {
 		w.write( ">"+id+"\n" );
 		w.write( tegeval.getSequence()+"\n" );
@@ -78,27 +79,27 @@ public class Gene {
 		w.write( ">"+id+"\n" );
 		w.write( tegeval.getProteinSequence().getStringBuilder()+"\n" );
 	}
-	
+
 	public Contig getContig() {
 		return ((Tegeval)tegeval).getContshort();
 	}
-	
+
 	public void setIdStr( String idstr ) {
 		this.idstr = idstr;
 	}
-	
+
 	public String toString() {
 		return getName();
 	}
-	
+
 	public int getMaxCyc() {
 		return ((Tegeval)tegeval).numCys;
 	}
-	
+
 	public int getMaxLength() {
 		return tegeval.getProteinLength();
 	}
-	
+
 	public String getTag() {
 		return tegeval.type;
 	}
@@ -112,7 +113,7 @@ public class Gene {
 	public String getAa() {
 		return aac;
 	}
-	
+
 	public GeneGroup getGeneGroup() {
 		return tegeval.getGeneGroup();
 	}
@@ -120,35 +121,35 @@ public class Gene {
 	public void setGeneGroup(GeneGroup gg) {
 		tegeval.setGeneGroup(gg);
 	}
-	
+
 	public int getGroupIndex() {
 		if( tegeval.gg != null ) return tegeval.gg.groupIndex;
 		return -10;
 	}
-	
+
 	public int getGroupCoverage() {
 		if( tegeval.gg != null ) return tegeval.gg.getGroupCoverage();
 		return -1;
 	}
-	
+
 	public int getGroupCount() {
 		if( tegeval.gg != null ) return tegeval.gg.getGroupCount();
 		return -1;
 	}
-	
+
 	public int getGroupGenCount() {
 		if( tegeval.gg != null ) return tegeval.gg.getGroupGeneCount();
 		return -1;
 	}
-	
+
 	public boolean getSignalP() {
 		return signalp;
 	}
-	
+
 	public boolean getTransM() {
 		return transm;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -156,21 +157,21 @@ public class Gene {
 	public String getDerivedName() {
 		return getGeneGroup().getName();
 	}
-	
+
 	public String getLongName() {
 		//String longname = this.getId() + " " + this.getName() + (this.idstr != null ? " (" + this.idstr + ") [" : " [") + this.tegeval.name + "]" +" # " + this.tegeval.start + " # " + this.tegeval.stop + " # " + this.tegeval.ori;
 		String longname = this.getId() + " " + this.getName() + (this.idstr != null ? "(" + this.idstr + ") [" : " [") + this.getContig().getName() + "]" +" # " + this.tegeval.start + " # " + this.tegeval.stop + " # " + this.tegeval.ori;
-		
+
 		/*if( longname.split("#").length > 6 ) {
 			System.err.println();
 		}*/
 		return longname;
 	}
-	
+
 	public String getId() {
 		return id;
 	}
-	
+
 	public double getGCPerc() {
 		return tegeval.getGCPerc();
 	}
@@ -212,7 +213,7 @@ public class Gene {
 		int i = lname.lastIndexOf('[');
 		if( i == -1 ) {
 			i = Sequence.parseSpec( lname );
-			
+
 			if( i <= 0 ) {
 				return tegeval.getSpecies();
 			}
@@ -233,7 +234,7 @@ public class Gene {
 			String contigstr = lname.substring(i+1, n);
 			int u = lname.indexOf(' ');
 			id = lname.substring(0, u);
-			
+
 			String spec = lname.substring(i+1, n);
 			if( id.contains("..") ) {
 				id = spec + "_" + id;
@@ -242,9 +243,9 @@ public class Gene {
 			if( u < i ) {
 				name = lname.substring(u + 1, i).trim();
 			}
-			
+
 			u = Contig.specCheck( contigstr );
-			
+
 			String origin;
 			if( u == -1 ) {
 				u = Sequence.parseSpec( contigstr );
@@ -262,7 +263,7 @@ public class Gene {
 				origin = contigstr.substring(0, n);
 				//contloc = n < contigstr.length() ? contigstr.substring(n+1) : "";
 			}
-			
+
 			/*if( line != null ) {
 				i = line.lastIndexOf('#');
 				if( i != -1 ) {
@@ -276,7 +277,7 @@ public class Gene {
 			return origin;
 		}
 	}
-	
+
 	public String getSpecies() {
 		if( tegeval.getSpecies() == null ) {
 			String species = parseSpecies( tegeval.getName() );
@@ -286,7 +287,7 @@ public class Gene {
 				} else {
 					species = tegeval.getSeq().getSpec();
 				}
-				
+
 				/*if( species == null || species.length() < 4 ) {
 					System.err.println("hey!!");
 				}*/
@@ -346,7 +347,7 @@ public class Gene {
 	public String blastspec;
 	public Set<Function> funcentries;
 	//Map<String, Teginfo> species;
-	private Annotation tegeval;
+	transient private Annotation tegeval;
 	private String aac;
 	public int index;
 	public boolean signalp = false;

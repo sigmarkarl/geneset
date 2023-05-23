@@ -1,11 +1,12 @@
 package org.simmi.javafasta.shared;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Teginfo implements Teg {
+public class Teginfo implements Teg, Serializable {
 	public Set<Annotation> tset;
-	public Annotation best;
+	public SimpleAnnotation best;
 
 	public void add(Annotation tv) {
 		if (tset == null)
@@ -33,7 +34,7 @@ public class Teginfo implements Teg {
 	@Override
 	public int compareTo(Object o) {
 		if( o instanceof Teginfo ) {
-			return best.compareTo(((Teginfo)o).best);
+			return ((Annotation)best).compareTo(((Teginfo)o).best);
 		} else if( o instanceof Tegeval ) {
 			return -1;
 		} else if( o instanceof Teg ) {
@@ -43,7 +44,7 @@ public class Teginfo implements Teg {
 	}
 
 	@Override
-	public Annotation getBest() {
+	public SimpleAnnotation getBest() {
 		return best;
 	}
 }

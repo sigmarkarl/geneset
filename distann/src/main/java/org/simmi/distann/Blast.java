@@ -31,7 +31,7 @@ public class Blast {
 
 	private Gene genestuff( List<Set<String>> uclusterlist, String query, String desc, String teg, String val, Map<String,Gene> ret ) {
 		Gene gene = null;
-		
+
 		if( ret.containsKey(val) ) {
 			gene = ret.get(val);
 			//int i = 0;
@@ -53,7 +53,7 @@ public class Blast {
 					Annotation tvl = gene.getTegeval();
 					if( !clusterset.contains( tvl.getName() ) ) {
 						Gene newgene = genestuff( uclusterlist, query, desc, teg, val+" new", ret );
-						
+
 						if( newgene == null ) {
 							newgene = new Gene(null, gene.getRefid() + " new", desc);
 							newgene.allids = new HashSet();
@@ -61,9 +61,9 @@ public class Blast {
 							//newgene.refid = gene.refid + " new";
 							ret.put( newgene.getRefid(), newgene );
 						}
-						
+
 						return newgene;
-						
+
 						//break;
 					}
 					//if( newgene != gene ) break;
@@ -71,12 +71,12 @@ public class Blast {
 				}
 			}
 		}
-		
+
 		return gene;
 	}
-	
-	public void panCoreFromNRBlast(Reader rd, Reader rd2, String outfile, String outfile2, Map<String, Gene> ret, Map<String, String> allgenes, Map<String, Set<String>> geneset, 
-			Map<String, Set<String>> geneloc, Map<String, Gene> locgene, Set<String> poddur, List<Set<String>> uclusterlist, Map<String,Tegeval> aas, Map<String,Contig> contigmap ) 
+
+	public void panCoreFromNRBlast(Reader rd, Reader rd2, String outfile, String outfile2, Map<String, Gene> ret, Map<String, String> allgenes, Map<String, Set<String>> geneset,
+			Map<String, Set<String>> geneloc, Map<String, Gene> locgene, Set<String> poddur, List<Set<String>> uclusterlist, Map<String,Tegeval> aas, Map<String,Contig> contigmap )
 			throws IOException {
 		FileWriter fw = null;
 		if (outfile != null)
@@ -84,7 +84,7 @@ public class Blast {
 
 		/*
 		 * Set<String> extra = new HashSet<String>();
-		 * 
+		 *
 		 * extra.add("protein of unknown function DUF820");
 		 * extra.add("ABC transporter ATP-binding protein");
 		 * extra.add("short-chain dehydrogenase/reductase SDR");
@@ -184,7 +184,7 @@ public class Blast {
 		if (fw != null) {
 			fw.close();
 		}
-		
+
 		fw = null;
 		if (outfile2 != null)
 			fw = new FileWriter(outfile2);
@@ -200,8 +200,8 @@ public class Blast {
 			}
 		}
 	}
-	
-	public void parseBlast( BufferedReader br, FileWriter fw, Map<String, Gene> ret, Map<String, String> allgenes, Map<String, Set<String>> geneset, 
+
+	public void parseBlast( BufferedReader br, FileWriter fw, Map<String, Gene> ret, Map<String, String> allgenes, Map<String, Set<String>> geneset,
 			Map<String, Set<String>> geneloc, Map<String, Gene> locgene, Set<String> poddur, List<Set<String>> uclusterlist, boolean old, boolean addon, Map<String,Tegeval> aas, Map<String,Contig> contigmap ) throws IOException {
 		String query = null;
 		int start = 0;
@@ -223,7 +223,7 @@ public class Blast {
 					trim += " "+line.trim();
 					line = br.readLine();
 				}*/
-				
+
 				int i = trim.indexOf(".aa", 2);
 				int aaa = 4;
 				if( i == -1 ) {
@@ -304,7 +304,7 @@ public class Blast {
 					System.err.println();
 				}
 				String padda = query.substring(0, i);
-				
+
 				/*if( padda.startsWith("Ocean") ) padda = "o.profundus";
 				else if( padda.startsWith("Marin") ) padda = "m.hydrothermalis";
 				else if( padda.contains("Silvanus") ) padda = "mt.silvanus";
@@ -313,7 +313,7 @@ public class Blast {
 					padda = "t.thermSG0_5JP17_16";
 				}*/
 				//if( padda.endsWith(".fna") ) padda = padda.substring(0, padda.length()-4);
-				
+
 				if (geneset.containsKey(padda)) {
 					set = geneset.get(padda);
 				} else {
@@ -347,7 +347,7 @@ public class Blast {
 					deval = Double.parseDouble(evalue);
 				} catch( Exception e ) {
 					e.printStackTrace();
-				}				
+				}
 				Gene gene;
 				String check = addon ? "_" + aaSearch(query, aas) : val;
 				if( ret.containsKey( check ) ) {
@@ -364,17 +364,17 @@ public class Blast {
 				}
 				gene.allids.add(id);
 				set.add(val);
-				
+
 				//aa, dn
 				Tegeval tv = aas.get( query );//new Tegeval(gene, teg, deval, query, contig, contloc, start, stop, ori);
-                if( tv == null || tv.ori != ori || tv.start != start || tv.stop != stop ) {
+                if( tv == null || tv.getOri() != ori || tv.start != start || tv.stop != stop ) {
 					System.err.println();
 				}
-                                
+
                 tv.setGene( gene );
 				//tv.setTegund( padda );
 				tv.setEval( deval );
-				
+
 				/*if( preval != null ) {
 					Contig precontig = preval.getContshort();
 					Contig curcontig = tv.getContshort();
@@ -391,7 +391,7 @@ public class Blast {
 					}
 				} else tv.setNum( 0 );
 				preval = tv;*/
-				
+
 				/*Teginfo stv;
 				if (!gene.species.equals(padda)) {
 					stv = new Teginfo();
@@ -400,7 +400,7 @@ public class Blast {
 				} else {
 					stv = gene.teginfo;
 				}*/
-				
+
 				/*if( addon ) {
 					Tegeval rem = null;
 					for( Tegeval te : stv.tset ) {
@@ -457,14 +457,14 @@ public class Blast {
 			} else if ( trim.contains("No hits")) {
 				if( !addon ) {
 					Gene gene;
-	
+
 					Sequence aa = aaSearch(query, aas);
 					String aaid = "_"+aa.getSequence().toString();
-					
-					
+
+
 					/*String padda = query.substring(0, query.indexOf('_')); //split("_")[0];
 					if( padda.endsWith(".fna") ) padda = padda.substring(0,padda.length()-4);*/
-					
+
 					String padda;
 					if( query != null ) {
 						int ival = query.indexOf("|");
@@ -476,13 +476,13 @@ public class Blast {
 					} else {
 						padda = "";
 					}
-					
+
 					/*if( padda.startsWith("Ocean") ) padda = "o.profundus";
 					else if( padda.startsWith("Marin") ) padda = "m.hydrothermalis";
 					else if( padda.contains("Silvanus") ) padda = "mt.silvanus";
 					else if( padda.contains("Ruber") ) padda = "mt.ruber";
 					else if( padda.contains("t.thermophilus_SG0_5JP17_16") ) padda = "t.thermSG0_5JP17_16";*/
-					
+
 					if (ret.containsKey(aaid)) {
 						gene = ret.get(aaid);
 					} else {
@@ -494,7 +494,7 @@ public class Blast {
 						gene.setRefid(aaid);
 					}
 					gene.allids.add(aaid);
-	
+
 					double deval = -1.0;
 					/*
 					 * try { deval = Double.parseDouble(evalue); } catch( Exception
@@ -507,15 +507,15 @@ public class Blast {
 						stv = new Teginfo();
 						gene.species = padda;
 						gene.tegeval = stv;
-						
+
 						System.err.println( "new annars " + padda );
 					} else {
 						stv = gene.tegeval;
 					}*/
-	
+
 					String contigstr = null;
 					String contloc = null;
-	
+
 					/*int first = query.indexOf('_');
 					int sec = query.indexOf('_', first + 1);
 					if (sec != -1) {
@@ -525,12 +525,12 @@ public class Blast {
 						contig = query;
 						contloc = query.substring(first + 1);
 					}*/
-					
+
 					int fi = query.indexOf('_');
 					int li = query.lastIndexOf('_');
 					contigstr = query.substring(0, li);
 					contloc = query.substring(fi+1,query.length());
-	
+
 					//StringBuilder aastr = aaSearch(query);
 					/*int nq = query.lastIndexOf('_');
 					int mq = query.lastIndexOf('_', nq - 1);
@@ -541,22 +541,22 @@ public class Blast {
 					} else {
 						nquery = query;
 					}*/
-	
+
 					Contig contig = contigmap.containsKey( contigstr ) ? contigmap.get( contigstr ) : new Contig( contigstr );
 					//StringBuilder dn = dnaSearch( query ); //dnaa.get(nquery);
-					
+
 					Tegeval tv = aas.get( query ); //new Tegeval(gene, padda, deval, query, contig, contloc, start, stop, ori);
 							//new Tegeval(gene, padda, deval, aastr, dn, query, contig, contloc, start, stop, ori);
 					tv.setGene( gene );
 					//tv.setTegund( padda );
 					tv.setEval( deval );
-					if(tv.ori != ori || tv.start != start || tv.stop != stop) {
+					if(tv.getOri() != ori || tv.start != start || tv.stop != stop) {
 						System.err.println();
 					}
 
 					gene.setTegeval(tv);
 					//stv.add( tv );
-					
+
 					/*if( preval != null ) {
 						Contig precontig = preval.getContshort();
 						Contig curcontig = tv.getContshort();
@@ -573,11 +573,11 @@ public class Blast {
 						}
 					} else tv.setNum( 0 );
 					preval = tv;*/
-					
+
 					if (!allgenes.containsKey(aaid) || allgenes.get(aaid) == null) {
 						allgenes.put(aaid, "Thermus " + aaid);
 					}
-	
+
 					Set<String> locset = null;
 					if (geneloc.containsKey(aaid)) {
 						locset = geneloc.get(aaid);
@@ -585,7 +585,7 @@ public class Blast {
 						locset = new HashSet<String>();
 						geneloc.put(aaid, locset);
 					}
-					
+
 					locset.add(query + " -1.0");
 					//int li = query.lastIndexOf('_');
 					//int ln = query.lastIndexOf('_', li-1);
@@ -598,7 +598,7 @@ public class Blast {
 			} else if (trim.startsWith("Query=")) {
 				// if( trim.)
 				//query = trim.substring(6).trim().split("[ ]+")[0].replace(".fna", "");
-				
+
 				/*int count = 0;
 				if( query.contains("contig") ) {
 					int k = query.indexOf('_');
@@ -609,13 +609,13 @@ public class Blast {
 				} else if( query.contains("|") && !query.startsWith("mt.") ) {
 					count = 3;
 				}
-				
+
 				if( count == 3 ) {
 					int li = query.lastIndexOf('_');
 					int ln = query.lastIndexOf('_', li-1);
 					query = query.substring(0, ln)+query.substring(li);
 				}*/
-				
+
 				String[] split = trim.split("#");
 				if ( split.length > 1 && split.length < 4) {
 					String newline = br.readLine();
@@ -632,16 +632,16 @@ public class Blast {
 				if (split.length >= 4) {
 					ori = Integer.parseInt(split[3].trim());
 				}
-				
+
 				int ival = query.indexOf("|");
 				if( ival == -1 ) ival = query.length();
 				int ival2 = query.indexOf("ontig");
 				if( ival2 == -1 ) ival2 = query.length();
 				int i = query.lastIndexOf("_", Math.min(ival,ival2) );
 				String padda = query.substring(0, i);
-				
+
 				poddur.add( padda );
-				
+
 				if (fw != null) {
 					// String[] split = trim.split("#");
 					// if( split.length < 4 ) {
@@ -656,7 +656,7 @@ public class Blast {
 						//line = br.readLine();
 						//line = br.readLine();
 						trim = line.trim();
-						
+
 						String[] split = trim.split("[\t ]+");
 						evalue = split[split.length - 1];
 						if( evalue.length() == 0 ) {
@@ -671,7 +671,7 @@ public class Blast {
 						//line = br.readLine();
 						//line = br.readLine();
 						trim = line.trim();
-						
+
 						String[] split = trim.split("[\t ]+");
 						evalue = split[split.length - 1];
 						if( evalue.length() == 0 ) {

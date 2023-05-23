@@ -35,7 +35,7 @@ public class GeneResultsTable extends TableView<Gene> {
         if( tev instanceof Tegeval ) {
             tv = (Tegeval)tev;
         } else if( tev instanceof Teginfo ) {
-            tv = ((Teginfo)tev).best;
+            tv = (Annotation)((Teginfo)tev).best;
         } else {
             cell.setStyle("-fx-background-color: white");
             return false;

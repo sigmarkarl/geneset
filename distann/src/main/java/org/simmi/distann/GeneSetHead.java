@@ -226,7 +226,7 @@ public class GeneSetHead {
 					g2.translate(-x, -y);
 				}
 
-				if( a.designation != null && a.designation.length() > 0 ) {
+				if( a.getDesignation() != null && a.getDesignation().length() > 0 ) {
 					int x = (int)(middle+(skewrad+80.0)*Math.cos( hornid ));
 					int y = (int)(middle+(skewrad+80.0)*Math.sin( hornid ));
 					g2.translate( x, y );
@@ -754,7 +754,7 @@ public class GeneSetHead {
 				GeneGroup thegg = (GeneGroup)p;
 				for( GeneGroup gg : table.getSelectionModel().getSelectedItems() ) {
 					if( thegg.index == gg.index ) return true;
-					for( Annotation a : gg.genes ) {
+					for( Annotation a : gg.getGenes() ) {
 						Annotation next = a.getNext();
 						if( next != null ) {
 							GeneGroup ngg = next.getGene().getGeneGroup();
@@ -789,7 +789,7 @@ public class GeneSetHead {
 						}
 					} else {
 						genefilterset.add(gg.index);
-						for (Annotation a : gg.genes) {
+						for (Annotation a : gg.getGenes()) {
 							Annotation next = a.getNext();
 							if (next != null) {
 								GeneGroup ngg = next.getGene().getGeneGroup();
@@ -1368,7 +1368,7 @@ public class GeneSetHead {
 										}
 
 										Gene g = ann.getGene();
-										String desig = ann.designation;
+										String desig = ann.getDesignation();
 
 										if( yes && g != null ) { //ann.stop > at.start && ann.start < at.stop ) {
 											GeneGroup gg = g.getGeneGroup();
@@ -1490,7 +1490,7 @@ public class GeneSetHead {
 								List<Annotation> lann = seq.getAnnotations();
 								if( lann != null ) {
 									for( Annotation a : lann ) {
-										String desig = a.designation;
+										String desig = a.getDesignation();
 										if( desig != null && desig.contains("phage") && phindex.containsKey(desig) ) {
 											if( !specindex.containsKey( specname ) ) specindex.put(specname, specindex.size());
 
@@ -1900,7 +1900,7 @@ public class GeneSetHead {
 			int i = 0;
 			if( table.getModel() == groupModel ) {
 				for( GeneGroup gg : geneset.allgenegroups ) {
-					for( Annotation a : gg.genes ) {
+					for( Annotation a : gg.getGenes() ) {
 						Gene g = a.getGene();
 						if( g != null && g.getRefid().toLowerCase().contains(ustr) ) {
 							filterset.add(i);
@@ -2996,7 +2996,7 @@ public class GeneSetHead {
 								//int i = table.convertRowIndexToModel(r);
 								//GeneGroup gg = geneset.allgenegroups.get(i);
 								Annotation a = null;
-								for (Annotation anno : gg.genes) {
+								for (Annotation anno : gg.getGenes()) {
 									a = anno;
 									break;
 								}
@@ -4159,7 +4159,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 
 					serifier.addSequence(newseq);
 					for (Annotation tv : tvset) {
-						Annotation newann = new Annotation(newseq, tv.start - start, tv.stop - start, tv.ori, tv.getName());
+						Annotation newann = new Annotation(newseq, tv.start - start, tv.stop - start, tv.getOri(), tv.getName());
 						if (contig == tv.getSeq()) {
 							newseq.addAnnotation(newann);
 						}
@@ -5025,7 +5025,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
                             if( gg != null && name.contains(spec) ) {
                                 name = gg.getName();
                             }
-                            Annotation anno = new Annotation( c, tv.start, tv.stop, tv.ori, name );
+                            Annotation anno = new Annotation( c, tv.start, tv.stop, tv.getOri(), name );
                             anno.setId(tv.getGene().getId());
                             anno.type = "CDS";
 
@@ -6007,8 +6007,8 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 				if( !isGeneview() ) {
 					int i = 0;
 					for( GeneGroup gg : geneset.allgenegroups ) {
-						if( gg.genes != null ) for( Annotation a : gg.genes ) {
-							if( seldes.equals(a.designation) ) {
+						if( gg.getGenes() != null ) for( Annotation a : gg.getGenes() ) {
+							if( seldes.equals(a.getDesignation()) ) {
 								table.getSelectionModel().select(gg);
 							}
 						}
@@ -7570,7 +7570,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 							return true; // Filter matches first name.
 						}
 					} else {
-						if (genegroup.getName().toLowerCase().contains(lowerCaseFilter) || genegroup.genes.stream().anyMatch(gg -> gg.getName().toLowerCase().contains(lowerCaseFilter))) {
+						if (genegroup.getName().toLowerCase().contains(lowerCaseFilter) || genegroup.getGenes().stream().anyMatch(gg -> gg.getName().toLowerCase().contains(lowerCaseFilter))) {
 							return true; // Filter matches first name.
 						}/* else if (genegroup.getLastName().toLowerCase().contains(lowerCaseFilter)) {
 						return true; // Filter matches last name.
@@ -7603,7 +7603,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 							return true; // Filter matches first name.
 						}
 					} else {
-						if (genegroup.getName().toLowerCase().contains(lowerCaseFilter) || genegroup.genes.stream().anyMatch(gg -> gg.getName().toLowerCase().contains(lowerCaseFilter))) {
+						if (genegroup.getName().toLowerCase().contains(lowerCaseFilter) || genegroup.getGenes().stream().anyMatch(gg -> gg.getName().toLowerCase().contains(lowerCaseFilter))) {
 							return true; // Filter matches first name.
 						}/* else if (genegroup.getLastName().toLowerCase().contains(lowerCaseFilter)) {
 						return true; // Filter matches last name.
@@ -8087,7 +8087,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		Set<String> ct = new HashSet<>();
  		for (Gene gg : table.getSelectionModel().getSelectedItems()) {
 			GeneGroup ggroup = gg.getGeneGroup();
-			for( Annotation a : ggroup.genes ) {
+			for( Annotation a : ggroup.getGenes() ) {
 				Gene g = a.getGene();
 				ct.add( g.getRefid() );
 			}
@@ -8168,7 +8168,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
                                     GeneGroup gg = tv.getGene().getGeneGroup();
 
 									if(ggset.size()==0 || ggset.contains(gg)) {
-										Annotation anno = new Annotation(c, tv.start, tv.stop, tv.ori, gg != null ? gg.getName() : tv.getGene().getName());
+										Annotation anno = new Annotation(c, tv.start, tv.stop, tv.getOri(), gg != null ? gg.getName() : tv.getGene().getName());
 										anno.type = "CDS";
 										anno.setId(tv.getGene().id);
 
@@ -8230,7 +8230,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 								GeneGroup gg = tv.getGene().getGeneGroup();
 
 								if (ggset.size() == 0 || ggset.contains(gg)) {
-									Annotation anno = new Annotation(c, tv.start, tv.stop, tv.ori, gg != null ? gg.getName() : tv.getGene().getName());
+									Annotation anno = new Annotation(c, tv.start, tv.stop, tv.getOri(), gg != null ? gg.getName() : tv.getGene().getName());
 									anno.type = "CDS";
 									anno.setId(tv.getGene().id);
 
@@ -8276,7 +8276,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 			BufferedWriter bw = Files.newBufferedWriter(dbPath);
 			var selist = table.getSelectionModel().getSelectedItems();
 			if (selist.size() > 0) {
-				genelist = selist.stream().flatMap(gg -> gg.genes.stream()).map(Annotation::getGene).toList();
+				genelist = selist.stream().flatMap(gg -> gg.getGenes().stream()).map(Annotation::getGene).toList();
 			}
 			for (Gene g : genelist) {
 				if (g.getTag() == null || g.getTag().equalsIgnoreCase("gene")) {

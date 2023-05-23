@@ -24,29 +24,29 @@ import java.util.*;
 
 public class IGeneCompare {
 	List<Sequence> contigs;
-	
+
 	public void rearrangeContigs( String spec1, GeneSet geneset ) {
 		if( spec1 != null && geneset.speccontigMap.containsKey( spec1 ) ) {
 			final List<Sequence> lcont = geneset.speccontigMap.get( spec1 );
-			
+
 			List<Sequence> newcontigs = new ArrayList<>( lcont );
 			/*List<Sequence> newcontigs = new ArrayList<Sequence>();
 			for( Sequence c : lcont ) {
 				if( contigs.contains( c ) ) newcontigs.add( c );
 			}
 			contigs = newcontigs;*/
-			
+
 			contigs = newcontigs;
 		}
 	}
-	
+
 	int total = 0;
 	int ptotal = 0;
 	public void selectContigs( Container comp, String spec1, GeneSet geneset ) {
 		final List<Sequence> lcont = geneset.speccontigMap.get( spec1 );
-		
+
 		System.err.println( lcont.size() );
-		
+
 		ptotal = 0;
 		total = 0;
 		JTable cseltable = new JTable();
@@ -89,7 +89,7 @@ public class IGeneCompare {
 
 			@Override
 			public void removeTableModelListener(TableModelListener l) {}
-			
+
 		});
 		JScrollPane	sp = new JScrollPane( cseltable );
 		JOptionPane.showMessageDialog(comp, sp);
@@ -101,7 +101,7 @@ public class IGeneCompare {
 			if( ctg.isPlasmid() ) ptotal += ctg.length();
 			else total += ctg.length();
 		}
-		
+
 		/*if( contigs.size() <= 3 ) {
 			int max = 0;
 			Contig chromosome = null;
@@ -111,12 +111,12 @@ public class IGeneCompare {
 					chromosome = ctg;
 				}
 			}
-			
+
 			ptotal = total - chromosome.getAnnotationCount();
 			total = chromosome.getAnnotationCount();
 		}*/
 	}
-	
+
 	JRadioButtonMenuItem	relcol;
 	JRadioButtonMenuItem	oricol;
 	JRadioButtonMenuItem	gccol;
@@ -126,7 +126,7 @@ public class IGeneCompare {
 	JRadioButtonMenuItem	gapcol;
 	JRadioButtonMenuItem	syntgrad;
 	JRadioButtonMenuItem	isyntgrad;
-	
+
 	JCheckBox				contiglanes;
 	List<String>			species;
 
@@ -135,11 +135,11 @@ public class IGeneCompare {
 
 	public void comparePlot(final GeneSetHead genesethead, final Container comp, final List<Gene> genelist, Map<Set<String>,Set<Map<String,Set<String>>>> clusterMap, int w, int h ) throws IOException {
 		final GeneSet geneset = genesethead.geneset;
-		
+
 		final TableView<Gene> 				table = genesethead.getGeneTable();
 		final Collection<String> 			specset = geneset.getSpecies(); //speciesFromCluster( clusterMap );
 		species = new ArrayList<>( specset );
-		
+
 		TableModel model = new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -182,28 +182,28 @@ public class IGeneCompare {
 		};
 		JTable table1 = new JTable( model );
 		JTable table2 = new JTable( model );
-		
+
 		table1.getSelectionModel().setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 		table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-		
+
 		JScrollPane	scroll1 = new JScrollPane( table1 );
 		JScrollPane	scroll2 = new JScrollPane( table2 );
-		
+
 		FlowLayout flowlayout = new FlowLayout();
 		JComponent c = new JComponent() {};
 		c.setLayout( flowlayout );
-		
+
 		c.add( scroll1 );
 		c.add( scroll2 );
-		
+
 		table2.setDragEnabled( true );
-		
+
 		TransferHandler th = new SpeciesSelection(geneset).dragRows( table2, species );
 		scroll2.setTransferHandler( th );
 		table2.setTransferHandler( th );
-		
+
 		JOptionPane.showMessageDialog(comp, c);
-		
+
 		int rsel = table1.getSelectedRow();
 		//String spec1 = rsel != -1 ? (String)table1.getValueAt( rsel, 0 ) : null;
 		int i = table1.convertRowIndexToModel(rsel);
@@ -215,20 +215,20 @@ public class IGeneCompare {
 			String spec2 = species.get(i); //(String)table2.getValueAt(r, 0);
 			spec2s.add( spec2 );
 		}
-		
+
 		final Map<String,Integer>	blosumap = JavaFasta.getBlosumMap();
-		
+
 		if( spec1 != null ) {
 			selectContigs(comp, spec1, geneset);
 		} else {
 			total = genesethead.getGeneGroupTable().getItems().size();
 			ptotal = 0;
 		}
-		
+
 		final BufferedImage bimg = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
 		final Graphics2D g2 = bimg.createGraphics();
 		draw( g2, spec1, genesethead, bimg.getWidth(), bimg.getHeight(), contigs, spec2s, blosumap, total, ptotal );
-		
+
 		relcol = new JRadioButtonMenuItem("Rel color");
 		oricol = new JRadioButtonMenuItem("Ori color");
 		gccol = new JRadioButtonMenuItem("GC color");
@@ -248,15 +248,15 @@ public class IGeneCompare {
 		bg.add( gapcol );
 		bg.add( syntgrad );
 		bg.add( isyntgrad );
-		
+
 		final JComboBox<String>	specombo = new JComboBox<>();
 		specombo.addItem("");
 		for( String spec : specset ) specombo.addItem( spec );
 		//specombo.addItem("All");
-		
+
 		if( spec1 != null ) specombo.setSelectedItem( spec1 );
 		//specombo.setSelectedItem( "" );
-		
+
 		final JComponent cmp = new JComponent() {
 			public void paintComponent( Graphics g ) {
 				Graphics2D g2 = (Graphics2D)g;
@@ -264,7 +264,7 @@ public class IGeneCompare {
 				g2.drawImage(bimg, 0, 0, bimg.getWidth()/2, bimg.getHeight()/2, 0, 0, bimg.getWidth(), bimg.getHeight(), this);
 			}
 		};
-		
+
 		relcol.addActionListener(e -> {
             String spec11 = (String)specombo.getSelectedItem();
             //int total = selectContigs( comp, spec1, geneset );
@@ -319,7 +319,7 @@ public class IGeneCompare {
             draw( g2, spec119, genesethead, bimg.getWidth(), bimg.getHeight(), contigs, spec2s, null, total, ptotal, -2 );
             cmp.repaint();
         });
-		
+
 		specombo.addItemListener(e -> {
             //spec1 = (String)e.getItem()
             String spec1110 = (String)specombo.getSelectedItem();
@@ -327,7 +327,7 @@ public class IGeneCompare {
             draw( g2, spec1110, genesethead, bimg.getWidth(), bimg.getHeight(), contigs, spec2s, relcol.isSelected() ? blosumap : null, total, ptotal );
             cmp.repaint();
         });
-		
+
 		JPopupMenu popup = new JPopupMenu();
 		popup.add( new AbstractAction("Repaint") {
 			@Override
@@ -347,26 +347,26 @@ public class IGeneCompare {
 					succ = false;
 					e1.printStackTrace();
 				}
-				
+
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					ImageIO.write(bimg, "png", baos);
 					baos.close();
 					String b64str = Base64.getEncoder().encodeToString( baos.toByteArray() );
-					
+
 					JSObject window;
-					
+
 					//JSObject window = JSObject.getWindow(geneset);
 					//window.call( "string2Blob", new Object[] {b64str, "image/png"} );
 				} catch(Exception e1) {
 					succ = false;
 					e1.printStackTrace();
 				}
-				
+
 				if( !succ ) {
 					/*FileSaveService fss = null;
 			        FileContents fileContents = null;
-			    	 
+
 			        try {
 			        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				        //OutputStreamWriter	osw = new OutputStreamWriter( baos );
@@ -378,7 +378,7 @@ public class IGeneCompare {
 				    	} catch( UnavailableServiceException e1 ) {
 				    		fss = null;
 				    	}
-				    	 
+
 				        if (fss != null) {
 				        	ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
 				            fileContents = fss.saveFileDialog(null, null, bais, "export.png");
@@ -394,22 +394,22 @@ public class IGeneCompare {
 			}
 		});
 		cmp.setComponentPopupMenu( popup );
-		
+
 		final int size = total+ptotal;
 		cmp.addMouseListener( new MouseListener() {
 			Point p;
 			boolean doubleclicked = false;
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if( e.getButton() == MouseEvent.BUTTON1 ) {
 					Point np = e.getPoint();
 					if( p != null ) {
 						doubleclicked = doubleclicked || e.getClickCount() == 2;
-						
+
 						double ndx = np.x-bimg.getWidth()/4;
 						double ndy = np.y-bimg.getHeight()/4;
-						
+
 						double dx = p.x-bimg.getWidth()/4;
 						double dy = p.y-bimg.getHeight()/4;
 
@@ -490,11 +490,11 @@ public class IGeneCompare {
 										Teginfo ti = tv.getGene().getGeneGroup().getGenes(spec);
 
 										if (ti != null && ti.best != null) {
-											Contig ct1 = ti.best.getContshort();
+											Contig ct1 = ((Annotation)ti.best).getContshort();
 
 											tv = (Tegeval) c.annset.get(nloc - loc);
 											ti = tv.getGene().getGeneGroup().getGenes(spec);
-											Contig ct2 = ti.best.getContshort();
+											Contig ct2 = ((Annotation)ti.best).getContshort();
 
 											if (ct1 == ct2) ct1.setReverse(!ct1.isReverse());
 											else {
@@ -588,7 +588,7 @@ public class IGeneCompare {
 													genesethead.getGeneTable().getSelectionModel().select(te.getGene());
 												}
 												//Rectangle rect = genesethead.table.getCellRect(selr, 0, true);
-												genesethead.getGeneTable().getSelectionModel().select(ti.best.getGene());
+												genesethead.getGeneTable().getSelectionModel().select(((Annotation)ti.best).getGene());
 											}
 										}
 									}
@@ -599,19 +599,19 @@ public class IGeneCompare {
 				}
 				doubleclicked = false;
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				p = e.getPoint();
-				doubleclicked = e.getClickCount() == 2; 
+				doubleclicked = e.getClickCount() == 2;
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				p = e.getPoint();
@@ -620,24 +620,24 @@ public class IGeneCompare {
 		/*cmp.addMouseMotionListener( new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				
+
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				Point p = e.getPoint();
-				
+
 			}
 		});*/
-		
+
 		Dimension dim = new Dimension( w/2, h/2 );
 		cmp.setPreferredSize( dim );
 		cmp.setSize( dim );
 		JScrollPane	scrollpane = new JScrollPane( cmp );
-		
+
 		JToolBar	tb = new JToolBar();
 		tb.add( specombo );
-		
+
 		JMenu		toolbar = new JMenu("Color");
 		toolbar.add( relcol );
 		toolbar.add( oricol );
@@ -648,11 +648,11 @@ public class IGeneCompare {
 		toolbar.add( gapcol );
 		toolbar.add( syntgrad );
 		toolbar.add( isyntgrad );
-		
+
 		JMenuBar	mbr = new JMenuBar();
 		mbr.add( toolbar );
 		tb.add( mbr );
-		
+
 		contiglanes = new JCheckBox("Show contig lanes");
 		contiglanes.addChangeListener(e -> {
             //repaintCompare(g2, bimg, spec2s, specombo, geneset, blosumap, cmp);
@@ -670,19 +670,19 @@ public class IGeneCompare {
 
 		tb.add( select );
 		tb.add( rearrange );
-		
+
 		JComponent panel = new JComponent() {};
 		panel.setLayout( new BorderLayout() );
 		panel.add( tb, BorderLayout.NORTH );
 		panel.add( scrollpane );
-		
+
 		JFrame frame = new JFrame();
 		frame.add( panel );
 		frame.setSize( dim );
 		frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 		frame.setVisible( true );
 	}
-	
+
 	public void repaintCompare( Graphics2D g2, BufferedImage bimg, List<String> spec2s, JComboBox<String> specombo, GeneSetHead geneset, Map<String,Integer> blosumap, JComponent cmp ) {
 		String spec1 = (String)specombo.getSelectedItem();
 		rearrangeContigs(spec1, geneset.geneset);
@@ -705,17 +705,17 @@ public class IGeneCompare {
 		} else if( oricol.isSelected() ) {
 			draw( g2, spec1, geneset, bimg.getWidth(), bimg.getHeight(), contigs, spec2s, null, total, ptotal, -10 );
 		}
-		
+
 		cmp.repaint();
 	}
-	
+
 	public void draw( Graphics2D g2, String spec1, GeneSetHead geneset, int w, int h, Collection<Sequence> contigs, List<String> spec2s, Map<String,Integer> blosumap, int total, int ptotal ) {
 		draw( g2, spec1, geneset, w, h, contigs, spec2s, blosumap, total, ptotal, 0 );
 	}
-	
+
 	public static double blosumVal( Sequence seq1, Sequence seq2, Map<String,Integer> blosumap ) {
 		double ret = 0.0;
-		
+
 		int startcheck = 0;
 		int start = -1;
 		int stopcheck = 0;
@@ -727,13 +727,13 @@ public class IGeneCompare {
 			if( seq2.getCharAt(i) != '-' ) {
 				startcheck |= 2;
 			}
-			
+
 			if( start == -1 && startcheck == 3 ) {
 				start = i;
 				break;
 			}
 		}
-		
+
 		for( int i = seq1.length()-1; i >= 0; i-- ) {
 			if( seq1.getCharAt(i) != '-' ) {
 				stopcheck |= 1;
@@ -741,19 +741,19 @@ public class IGeneCompare {
 			if( seq2.getCharAt(i) != '-' ) {
 				stopcheck |= 2;
 			}
-			
+
 			if( stop == -1 && stopcheck == 3 ) {
 				stop = i+1;
 				break;
 			}
 		}
-		
+
 		int tscore = blosumValue( seq1, seq1, blosumap, start, stop );
         int score = blosumValue( seq1, seq2, blosumap, start, stop );
-        
+
         if( score > tscore ) {
         	System.err.println("ff");
-        	
+
         	System.err.println( seq1.getSequence().substring(start, stop) );
         	System.err.println( seq2.getSequence().substring(start, stop) );
         	/*tscore = 0;
@@ -768,14 +768,14 @@ public class IGeneCompare {
             		tscore += val;
             	}
             }
-            
+
             score = 0;
             for( int i = start; i < stop; i++ ) {
             	char lc = seq1.charAt( i );
             	char c = Character.toUpperCase( lc );
             	char lc2 = seq2.charAt( i );
             	char c2 = Character.toUpperCase( lc2 );
-            	
+
             	String comb = c+""+c2;
             	if( blosumap.containsKey(comb) ) {
             		double val = blosumap.get(comb);
@@ -785,7 +785,7 @@ public class IGeneCompare {
             }*/
             System.err.println();
         }
-        
+
         ret = (double)score/(double)tscore; //int cval = tscore == 0 ? 0 : Math.min( 192, 512-score*512/tscore );
 		return ret;
 	}
@@ -897,20 +897,20 @@ public class IGeneCompare {
 		}
 		return new int[] {maxscore, maxcount};
 	}
-	
+
 	public static double blosumVal( Sequence seq, String spec2, GeneGroup gg, Map<String,Integer> blosumap ) {
 		double ret = 0.0;
 		if( seq != null ) {
 			int tscore = blosumValue( seq, seq, blosumap );
-            
+
             int score = 0;
             Teginfo gene2s = gg.getGenes( spec2 );
             for( Annotation tv2 : gene2s.tset ) {
                 Sequence seq2 = tv2.getAlignedSequence();
-                
+
                 int sscore = blosumValue( seq, seq2, blosumap );
                 if( sscore > score ) score = sscore;
-                
+
                 if( seq == seq2 && sscore != tscore ) {
                 	System.err.println();
                 }
@@ -919,21 +919,21 @@ public class IGeneCompare {
 		}
 		return ret;
 	}
-	
+
 	public static Color blosumColor( Sequence seq, String spec2, GeneGroup gg, Map<String,Integer> blosumap, boolean rs ) {
 		Color color = Color.red;
 		if( seq != null && seq.length() > 0 ) {
 			int tscore = blosumValue( seq, seq, blosumap );
-            
+
             /*if( gg.getCommonName().contains("tRNA-Ile") ) {
             	System.err.println(gg.getCommonName());
             }*/
-            
+
             int score = 0;
             Teginfo gene2s = gg.getGenes( spec2 );
             for( Annotation tv2 : gene2s.tset ) {
                 Sequence seq2 = tv2.getAlignedSequence();
-                
+
                 if(seq2 != null) {
 	                int sscore = blosumValue( seq, seq2, blosumap );
 	                if( sscore > score ) score = sscore;
@@ -950,10 +950,10 @@ public class IGeneCompare {
             	break;
             }
 		}
-		
+
 		return color;
 	}
-	
+
 	static int ctgoff = 0;
 	public static Color gradientColor( String spec1, String spec2, List<Sequence> contigs2, double ratio, double pratio, int offset2, GeneGroup gg, boolean contiglanes, Annotation tv ) {
 		//Contig chromosome = null;
@@ -961,7 +961,7 @@ public class IGeneCompare {
 
 		int total2 = 0;
 		int ptotal2 = 0;
-		
+
 		int chromstart = -1;
 		for( Sequence ctg2 : contigs2 ) {
 			if( ctg2.isPlasmid() ) ptotal2 += ctg2.length();
@@ -970,13 +970,13 @@ public class IGeneCompare {
 				total2 += ctg2.length();
 			}
 		}
-		
+
 		/*int tot2 = 0;
 		int ptot2 = 0;
 		for( Contig ctg2 : contigs2 ) {
 			tot2 += ctg2.getAnnotationCount();
 		}
-		
+
 		int chromstart = 0;//total2;
 		if( contigs2.size() <= 3 ) {
 			int max = 0;
@@ -989,20 +989,20 @@ public class IGeneCompare {
 				}
 				ccount += ctg2.getAnnotationCount();
 			}
-			
+
 			ptot2 = tot2 - max;
 			tot2 = max;
 		}*/
-		
+
 		double ratio2 = -1.0;
 		double pratio2 = -1.0;
 		Teginfo gene2s = gg.getGenes( spec2 );
-		
+
 		Sequence hit = null;
 		if( spec1.equals(spec2) ) {
 			for( Annotation tv2 : gene2s.tset ) {
 				int count2 = 0;
-				
+
 				if( ptotal2 > 0 ) {
 					hit = tv2.getSeq();
 					/*for( Sequence ctg2 : contigs2 ) {
@@ -1014,7 +1014,7 @@ public class IGeneCompare {
 							}
 						}
 					}*/
-					
+
 					if( hit != null && hit.isPlasmid() ) {
 						for( Sequence c2 : contigs2 ) {
 							if( c2.isPlasmid() && c2.annset != null ) {
@@ -1045,7 +1045,7 @@ public class IGeneCompare {
 							}
 						}
 					}
-					
+
 					/*if( chromosome.annset != null ) {
 						int idx = chromosome.annset.indexOf( tv2 );
 						if( idx == -1 ) {
@@ -1055,7 +1055,7 @@ public class IGeneCompare {
 									if( idx == -1 ) {
 										count2 += ctg2.getAnnotationCount();
 									} else {
-										count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx; 
+										count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx;
 										//count2 += idx;
 										break;
 									}
@@ -1079,24 +1079,24 @@ public class IGeneCompare {
 						}
 					}
 				}
-				
+
 				int val2 = count2 - offset2;
 				if( val2 < 0 ) val2 = total2 + val2;
 				if( val2 < 0 ) val2 = total2 + val2;
 
 				if( val2 >= total2 ) val2 = val2 - total2;
 				if( val2 >= total2 ) val2 = val2 - total2;
-				
+
 				double rat2 = (double)val2/(double)total2;
-				
+
 				if( rat2 > 1.0f || rat2 < 0.0f ) {
 					System.err.println("");
 				}
-				
+
 				/*if( spec1.equals(spec2) && ratio2 != -1 ) {
 					System.err.println( "erm " + ratio );
 				}*/
-				
+
 				if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) {
 					ratio2 = rat2;
 				}
@@ -1107,7 +1107,7 @@ public class IGeneCompare {
 			if( gene2s.tset.size() == 1 ) {
 				for( Annotation tv2 : gene2s.tset ) {
 					int count2 = 0;
-					
+
 					if( ptotal2 > 0 ) {
 						hit = tv2.getSeq();
 						/*for( Sequence ctg2 : contigs2 ) {
@@ -1119,7 +1119,7 @@ public class IGeneCompare {
 								}
 							}
 						}*/
-						
+
 						if( hit != null && hit.isPlasmid() ) {
 							for( Sequence c2 : contigs2 ) {
 								if( c2.isPlasmid() && c2.annset != null ) {
@@ -1150,7 +1150,7 @@ public class IGeneCompare {
 								}
 							}
 						}
-						
+
 						/*if( chromosome.annset != null ) {
 							int idx = chromosome.annset.indexOf( tv2 );
 							if( idx == -1 ) {
@@ -1160,7 +1160,7 @@ public class IGeneCompare {
 										if( idx == -1 ) {
 											count2 += ctg2.getAnnotationCount();
 										} else {
-											count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx; 
+											count2 += ctg2.isReverse() ? ctg2.getAnnotationCount() - idx - 1 : idx;
 											//count2 += idx;
 											break;
 										}
@@ -1185,7 +1185,7 @@ public class IGeneCompare {
 							}
 						}
 					}
-					
+
 					int val2 = count2 - offset2;
 					if( val2 < 0 ) val2 = total2 + val2;
 					if( val2 < 0 ) val2 = total2 + val2;
@@ -1197,11 +1197,11 @@ public class IGeneCompare {
 					ratio2 = rat2;
 
 					//System.err.println(ratio2 + "  " + offset2 + "  " + spec1 + "  " + spec2 + "  " + contigs2.size() + "  " + contigs2.get(0).isReverse());
-					
+
 					/*if( rat2 > 1.0f || rat2 < 0.0f ) {
 						System.err.println("");
 					}
-					
+
 					if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) {
 						ratio2 = rat2;
 					}*/
@@ -1222,7 +1222,7 @@ public class IGeneCompare {
 								}
 							}
 						}*/
-						
+
 						if( hit != null && hit.isPlasmid() ) {
 							for( Sequence c2 : contigs2 ) {
 								if( c2.isPlasmid() && c2.annset != null ) {
@@ -1238,34 +1238,34 @@ public class IGeneCompare {
 							}
 							double prat2 = (double)count2/(double)ptotal2;
 							//if( prat2 == -1.0 || Math.abs(pratio - prat2) < Math.abs(pratio - pratio2) ) pratio2 = prat2;
-							
+
 							Annotation n = tv != null ? tv.getNext() : null;
 							Annotation p = tv != null ? tv.getPrevious() : null;
 							Annotation n2 = tv2.getNext();
 							Annotation p2 = tv2.getPrevious();
-							
+
 							if( n != null ) {
 								GeneGroup ngg = n.getGene() != null ? n.getGene().getGeneGroup() : null;
 								if( n2 != null && n2.getGene() != null ) {
 									if( ngg == n2.getGene().getGeneGroup() ) simcount++;
 								}
-								
+
 								if( p2 != null && p2.getGene() != null ) {
 									if( ngg == p2.getGene().getGeneGroup() ) simcount++;
 								}
 							}
-							
+
 							if( p != null ) {
 								GeneGroup pgg = p.getGene() != null ? p.getGene().getGeneGroup() : null;
 								if( n2 != null && n2.getGene() != null ) {
 									if( pgg == n2.getGene().getGeneGroup() ) simcount++;
 								}
-								
+
 								if( p2 != null && p2.getGene() != null ) {
 									if( pgg == p2.getGene().getGeneGroup() ) simcount++;
 								}
 							}
-							
+
 							if( ratio2 == -1 || simcount > msimcount ) {
 								pratio2 = prat2;
 								msimcount = simcount;
@@ -1300,39 +1300,39 @@ public class IGeneCompare {
 							}
 						}
 					}
-					
+
 					int val2 = count2 - offset2;
 					if( val2 < 0 ) val2 = total2 + val2;
-					
+
 					double rat2 = (double)val2/(double)total2;
-					
+
 					Annotation n = tv != null ? tv.getNext() : null;
 					Annotation p = tv != null ? tv.getPrevious() : null;
 					Annotation n2 = tv2.getNext();
 					Annotation p2 = tv2.getPrevious();
-					
+
 					if( n != null ) {
 						GeneGroup ngg = n.getGene() != null ? n.getGene().getGeneGroup() : null;
 						if( n2 != null ) {
 							if( n2.getGene() != null && ngg == n2.getGene().getGeneGroup() ) simcount++;
 						}
-						
+
 						if( p2 != null ) {
 							if( p2.getGene() != null && ngg == p2.getGene().getGeneGroup() ) simcount++;
 						}
 					}
-					
+
 					if( p != null ) {
 						GeneGroup pgg = p.getGene() != null ? p.getGene().getGeneGroup() : null;
 						if( n2 != null ) {
 							if( n2.getGene() != null && pgg == n2.getGene().getGeneGroup() ) simcount++;
 						}
-						
+
 						if( p2 != null ) {
 							if( p2.getGene() != null && pgg == p2.getGene().getGeneGroup() ) simcount++;
 						}
 					}
-					
+
 					if( ratio2 == -1 || simcount > msimcount ) {
 						ratio2 = rat2;
 						msimcount = simcount;
@@ -1340,13 +1340,13 @@ public class IGeneCompare {
 				}
 			}
 		}
-		
+
 		if( contiglanes && !spec1.equals(spec2) ) ctgoff = contigs2.indexOf( hit );
-		
+
 		/*if( spec1.equals(spec2) && gene2s.tset.size() > 2 && pratio == 0 && ratio != ratio2 ) {
 			System.err.println( "raterm " + ratio + "  " + ratio2 );
 		}*/
-		
+
 		//float green = (float)(1.0-ratio2);
 		/*if( ratio2 < 0.5 ) {
 			Color c = new Color(0,(float)(ratio2*2.0),1.0f);
@@ -1355,7 +1355,7 @@ public class IGeneCompare {
 			Color c = new Color(0,1.0f,(float)((1.0-ratio2)*2.0));
 			g2.setColor( c );
 		}*/
-		
+
 		Color c = Color.white;
 		if( pratio2 != -1.0 && (pratio != 0.0 || !spec1.equals(spec2)) ) {
 			c = gradientGrayscaleColor( pratio2 );
@@ -1387,13 +1387,13 @@ public class IGeneCompare {
 
 			c = gradientColor( ratio2 );
 		}
-		
+
 		return c;
 	}
-	
+
 	public static double invertedGradientPlasmidRatio( String spec2, Collection<Sequence> contigs2, double ratio, GeneGroup gg ) {
 		Teginfo gene2s = gg.getGenes(spec2);
-		
+
 		int total2 = 0;
 		for( Sequence ctg2 : contigs2 ) {
 			if( ctg2.isPlasmid() ) total2 += ctg2.length();
@@ -1413,14 +1413,14 @@ public class IGeneCompare {
 				}
 			}
 			double rat2 = (double)count2/(double)total2;
-			 
+
 			if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) ratio2 = rat2;
 			//ratio2 = rat2;
 			//break;
 		}
 		return ratio2;
 	}
-	
+
 	public static double invertedGradientRatio( String spec2, Collection<Sequence> contigs2, Annotation tv2 ) {
 		int total2 = 0;
 		for( Sequence ctg2 : contigs2 ) {
@@ -1441,10 +1441,10 @@ public class IGeneCompare {
 		}
 		return count2 == total2 ? -1.0 : (double)count2/(double)total2;
 	}
-	
+
 	public static double invertedGradientRatio( String spec2, Collection<Sequence> contigs2, double ratio, GeneGroup gg, Annotation tv ) {
 		Teginfo gene2s = gg.getGenes(spec2);
-		
+
 		int msimcount = 0;
 		int total2 = 0;
 		for( Sequence ctg2 : contigs2 ) {
@@ -1470,7 +1470,7 @@ public class IGeneCompare {
 					}
 					double rat2 = (double)count2/(double)total2;
 					if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) ratio2 = rat2;
-					
+
 					if( ratio != -1.0 ) {
 						if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) ratio2 = rat2;
 					} else {
@@ -1478,29 +1478,29 @@ public class IGeneCompare {
 						Annotation p = tv.getPrevious();
 						Annotation n2 = tv2.getNext();
 						Annotation p2 = tv2.getPrevious();
-						
+
 						if( n != null ) {
 							GeneGroup ngg = n.getGene() == null ? null : n.getGene().getGeneGroup();
 							if( n2 != null && n2.getGene() != null ) {
 								if( ngg == n2.getGene().getGeneGroup() ) simcount++;
 							}
-							
+
 							if( p2 != null && p2.getGene() != null ) {
 								if( ngg == p2.getGene().getGeneGroup() ) simcount++;
 							}
 						}
-						
+
 						if( p != null ) {
 							GeneGroup pgg = p.getGene() == null ? null : p.getGene().getGeneGroup();
 							if( n2 != null && n2.getGene() != null ) {
 								if( pgg == n2.getGene().getGeneGroup() ) simcount++;
 							}
-							
+
 							if( p2 != null && p2.getGene() != null ) {
 								if( pgg == p2.getGene().getGeneGroup() ) simcount++;
 							}
 						}
-						
+
 						if( ratio2 == -1 || simcount > msimcount ) {
 							ratio2 = rat2;
 							msimcount = simcount;
@@ -1548,34 +1548,34 @@ public class IGeneCompare {
 						/*if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) {
 							ratio2 = rat2;
 						}
-						
+
 						/*Tegeval n = tv.getNext();
 						Tegeval p = tv.getPrevious();
 						Tegeval n2 = tv2.getNext();
 						Tegeval p2 = tv2.getPrevious();
-						
+
 						if( n != null ) {
 							GeneGroup ngg = n.getGene().getGeneGroup();
 							if( n2 != null ) {
 								if( ngg == n2.getGene().getGeneGroup() ) simcount++;
 							}
-							
+
 							if( p2 != null ) {
 								if( ngg == p2.getGene().getGeneGroup() ) simcount++;
 							}
 						}
-						
+
 						if( p != null ) {
 							GeneGroup pgg = p.getGene().getGeneGroup();
 							if( n2 != null ) {
 								if( pgg == n2.getGene().getGeneGroup() ) simcount++;
 							}
-							
+
 							if( p2 != null ) {
 								if( pgg == p2.getGene().getGeneGroup() ) simcount++;
 							}
 						}
-						
+
 						if( ratio2 == -1 || simcount > msimcount ) {
 							ratio2 = rat2;
 							msimcount = simcount;
@@ -1586,12 +1586,12 @@ public class IGeneCompare {
 			//ratio2 = rat2;
 			//break;
 		}
-		
+
 		//System.err.println( "bbbbbb " + ratio2 );
 		/*if( ratio2 == -1.0 ) {
 			System.err.println();
 		}*/
-		
+
 		return ratio2;
 	}
 
@@ -1613,7 +1613,7 @@ public class IGeneCompare {
 		}
 		return false;
 	}
-	
+
 	public static double invertedGradientTotalRatio( Collection<Sequence> contigs2, Teginfo gene2s, double ratio ) {
 		int total2 = 0;
 		for( Sequence ctg2 : contigs2 ) {
@@ -1634,15 +1634,15 @@ public class IGeneCompare {
 				}
 			}
 			double rat2 = (double)count2/(double)total2;
-			 
+
 			if( ratio2 == -1.0 || Math.abs(ratio - rat2) < Math.abs(ratio - ratio2) ) ratio2 = rat2;
 			//ratio2 = rat2;
 			//break;
 		}
 		return ratio2;
 	}
-	
-	public static Color gradientGrayscaleColor( double ratio ) {		
+
+	public static Color gradientGrayscaleColor( double ratio ) {
 		//float green = (float)(1.0-ratio2);
 		/*if( ratio2 < 0.5 ) {
 			Color c = new Color(0,(float)(ratio2*2.0),1.0f);
@@ -1651,7 +1651,7 @@ public class IGeneCompare {
 			Color c = new Color(0,1.0f,(float)((1.0-ratio2)*2.0));
 			g2.setColor( c );
 		}*/
-		
+
 		Color c = Color.white;
 		if( ratio >= 0.0 ) {
 			float val = (float)(9.0f*ratio/10.0f);
@@ -1663,11 +1663,11 @@ public class IGeneCompare {
 				//}
 			}
 		}
-		
+
 		return c;
 	}
-	
-	public static Color gradientColor( double ratio ) {		
+
+	public static Color gradientColor( double ratio ) {
 		//float green = (float)(1.0-ratio2);
 		/*if( ratio2 < 0.5 ) {
 			Color c = new Color(0,(float)(ratio2*2.0),1.0f);
@@ -1676,7 +1676,7 @@ public class IGeneCompare {
 			Color c = new Color(0,1.0f,(float)((1.0-ratio2)*2.0));
 			g2.setColor( c );
 		}*/
-		
+
 		Color c = Color.white;
 		if( ratio >= 0.0 ) {
 			if( ratio < 1.0/6.0 ) {
@@ -1695,15 +1695,15 @@ public class IGeneCompare {
 		} /*else if( ratio > 1.0 ) {
 			c = Color.red;
 		}*/
-		
+
 		return c;
 	}
-	
+
 	public void draw( Graphics2D g2, String spec1, GeneSetHead genesethead, int w, int h, Collection<Sequence> contigs, List<String> spec2s, Map<String,Integer> blosumap, int total, int ptotal, int synbr ) {
 		GeneSet geneset = genesethead.geneset;
-		
+
 		boolean contiglanesb = contiglanes != null && contiglanes.isSelected();
-		
+
 		g2.setBackground( Color.white );
 		g2.clearRect(0, 0, w, h);
 		/*g.setColor( Color.black );
@@ -1732,10 +1732,10 @@ public class IGeneCompare {
 				}
 				count++;
 		}*/
-		
+
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 		g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-		
+
 		if( spec1 == null || spec1.length() == 0 ) {
 			ObservableList<GeneGroup> lgg = genesethead.getGeneGroupTable().getItems();
 			int rowcount = lgg.size();
@@ -1744,19 +1744,19 @@ public class IGeneCompare {
 				GeneGroup gg = lgg.get(r);
 				subDraw(g2, null,null, null, genesethead, spec1, r, null, spec2s, synbr, w, h, blosumap, gg, null, total, ptotal);
 			}
-			
+
 			Font oldfont = g2.getFont().deriveFont( Font.ITALIC ).deriveFont(32.0f);
 			g2.setFont( oldfont );
 			int k = 0;
 			for( String spec : spec2s ) {
 				g2.translate( w/2, h/2 );
-				
+
 				g2.setColor( Color.lightGray );
 				int r = 500 + 30 + k*30;
 				g2.drawOval( -r, -r, 2*r, 2*r );
-				
+
 				g2.translate( -w/2, -h/2 );
-				
+
 				k++;
 			}
 			k = 0;
@@ -1766,17 +1766,17 @@ public class IGeneCompare {
 				} else {
 					g2.setFont( oldfont );
 				}
-				
+
 				String specstr = geneset.nameFix( spec );
 				if( specstr.length() > 30 ) specstr = specstr.substring(0, specstr.lastIndexOf('_'));
-				
+
 				int strw = g2.getFontMetrics().stringWidth( specstr );
 				g2.translate( w/2, h/2 );
-				
+
 				/*g2.setColor( Color.lightGray );
 				int r = 250 + 15 + k*15;
 				g2.drawOval( -r, -r, 2*r, 2*r );*/
-				
+
 				g2.rotate( Math.PI/2.0 );
 				//-spec2s.size()*14/2
 				g2.setColor( Color.white );
@@ -1785,12 +1785,12 @@ public class IGeneCompare {
 				g2.drawString( specstr/*.replace("T.", "")*/, -strw+5, -500 - k*30 - 2 );
 				g2.rotate( -Math.PI/2.0 );
 				g2.translate( -w/2, -h/2 );
-				
+
 				k++;
 			}
 		} else {
 			Map<String,Integer>	offsetMap = new HashMap<>();
-				
+
 			if( !genesethead.isGeneview() ) {
 				GeneGroup gg = genesethead.getGeneGroupTable().getSelectionModel().getSelectedItem();
 				if( gg != null ) {
@@ -1844,7 +1844,7 @@ public class IGeneCompare {
 					}
 				}
 			}
-			
+
 			int count = 0;
 			int pcount = 0;
 			int current = 0;
@@ -1885,13 +1885,13 @@ public class IGeneCompare {
 							Sequence seq = tv.getAlignedSequence();
 							Gene gene = tv.getGene();
 							GeneGroup gg = gene != null ? gene.getGeneGroup() : null;
-							
+
 							/*if( gg.species.size() > 1 ) {
 								System.err.println( "commonname large " + gg.getCommonName() );
 							} else {
 								//System.err.println( "commonname small " + gg.getCommonName() );
 							}*
-							
+
 							if( gg != null ) {
 								subDraw( g2, offsetMap, tv, prev, genesethead, spec1, count, ctg, spec2s, synbr, w, h, blosumap, gg, seq, total, ptotal );
 							}
@@ -1900,7 +1900,7 @@ public class IGeneCompare {
 						}*/
 					}
 					current += ctg.length();
-				
+
 					/*double theta = count*Math.PI*2.0/(total+ptotal);
 					g2.translate( w/2, h/2 );
 					g2.rotate( theta );
@@ -1926,18 +1926,18 @@ public class IGeneCompare {
 			g2.translate( -w/2, -h/2 );
 
 			g2.setColor( Color.black );
-			
+
 			Font oldfont = g2.getFont().deriveFont( Font.ITALIC ).deriveFont(32.0f);
 			g2.setFont( oldfont );
 			//String[] specsplit = ;
 			/*if( spec1.contains("hermus") ) specsplit = spec1.split("_");
 			else {
-				Matcher m = Pattern.compile("\\d").matcher(spec1); 
+				Matcher m = Pattern.compile("\\d").matcher(spec1);
 				int firstDigitLocation = m.find() ? m.start() : 0;
 				if( firstDigitLocation == 0 ) specsplit = new String[] {"Thermus", spec1};
 				else specsplit = new String[] {"Thermus", spec1.substring(0,firstDigitLocation), spec1.substring(firstDigitLocation)};
 			}*/
-			
+
 			//g2.setFont( g2.getFont().deriveFont(18) );
 			int k = 0;
 			for( String spec : spec2s ) {
@@ -1946,21 +1946,21 @@ public class IGeneCompare {
 				} else {
 					g2.setFont( oldfont );
 				}
-				
+
 				String specstr = geneset.nameFix( spec );
 				/*if( spec.contains("hermus") ) {
 					int u = spec.indexOf("_uid");
 					if( u == -1 ) u = spec.length();
 					specstr = spec.substring(0, u);
 				} else {
-					Matcher m = Pattern.compile("\\d").matcher(spec); 
+					Matcher m = Pattern.compile("\\d").matcher(spec);
 					int firstDigitLocation = m.find() ? m.start() : 0;
 					if( firstDigitLocation == 0 ) specstr = "Thermus_"+spec;
 					else specstr = "Thermus_" + spec.substring(0,firstDigitLocation) + "_" + spec.substring(firstDigitLocation);
 				}*/
-				
+
 				if( specstr.length() > 30 ) specstr = specstr.substring(0, specstr.lastIndexOf('_'));
-				
+
 				int strw = g2.getFontMetrics().stringWidth( specstr );
 				g2.drawString( specstr/*.replace("T.", "")*/, (w-strw)/2, h/2 - spec2s.size()*36/2 + 36 + k*36 );
 				k++;
@@ -1969,7 +1969,7 @@ public class IGeneCompare {
 
 		//g2.fillRect(0,0,1000,1000);
 	}
-	
+
 	public void subDraw( Graphics2D g2, Map<String,Integer> offsetMap, Annotation tv, Annotation prev, GeneSetHead genesethead, String spec1, int count, Sequence ctg, List<String> spec2s, int synbr, int w, int h, Map<String,Integer> blosumap, GeneGroup gg, Sequence seq, int total, int ptotal ) {
 		GeneSet geneset = genesethead.geneset;
 		boolean rs;
@@ -1977,21 +1977,21 @@ public class IGeneCompare {
 			/*geneseg.allgenegroups[]
 			r = genesethead.table.convertRowIndexToView( ii );
 			rs = genesethead.table.isRowSelected( r );*/
-			
+
 			rs = genesethead.getGeneGroupTable().getSelectionModel().getSelectedItems().contains(gg);
 		} else {
-			for( Annotation a : gg.genes ) {
+			for( Annotation a : gg.getGenes() ) {
 				//r = genesethead.table.convertRowIndexToView( g.index );
 				//rs = genesethead.table.isRowSelected( r );
 				rs = genesethead.getGeneTable().getSelectionModel().getSelectedItems().contains(a);
 				if( rs ) break;
 			}
 		}
-		
+
 		boolean contiglanesb = contiglanes != null && contiglanes.isSelected();
 		int offset = 0;
 		if( spec1 != null && offsetMap != null && offsetMap.containsKey(spec1) ) offset = offsetMap.get(spec1);
-		
+
 		double ratio = 0.0;
 		double pratio = 0.0;
 		double tratio;
@@ -2001,9 +2001,9 @@ public class IGeneCompare {
 				if( val < 0 ) {
 					val = total + val;
 				}
-				
+
 				ratio = (double)(val)/(double)total;
-				
+
 				if( ratio > 1.0 ) {
 					System.err.println();
 				}
@@ -2014,11 +2014,11 @@ public class IGeneCompare {
 					pratio = (double)(count)/(double)ptotal;
 				}
 			}
-			
+
 			/*if( ctg.getAnnotationCount() == total ) {
 				int val = count - offset;
 				if( val < 0 ) val = total + (count-offset);
-				
+
 				ratio = (double)(val-current)/(double)total;
 			} else {
 				if( count - total >= 0 ) {
@@ -2030,43 +2030,43 @@ public class IGeneCompare {
 		} else {
 			int val = count - offset;
 			if( val < 0 ) val = total + val;
-			
+
 			ratio = (double)val/(double)total;
 		}
 
 		int val = count - offset;
 		if( val < 0 ) val = (total + ptotal) + val;
 		tratio = (double)val/(double)(total + ptotal);
-		
+
 		/*if( ratio == 0.0 ) {
 			System.err.println();
 		}*/
-		
+
 		//System.err.println( ratio );
-		
+
 		//final ExecutorService es = Executors.newFixedThreadPool( Runtime.getRuntime().availableProcessors() );
-		
+
 		int scount = spec2s.size();
 		for( String spec2 : spec2s ) {
 			final List<Sequence> contigs2;
 			boolean speceq = false;
 			if( spec1 != null ) speceq = spec1.equals(spec2);
 			contigs2 = speceq ? contigs : geneset.speccontigMap.get( spec2 );
-			
+
 			if( gg.species.containsKey(spec2) ) {
 				int offset2 = 0;
 				if( offsetMap != null && offsetMap.containsKey( spec2 ) ) offset2 = offsetMap.get(spec2);
 				if( synbr == -10 ) {
 					//final Collection<Contig> contigs2 = spec1.equals(spec2) ? contigs : geneset.speccontigMap.get( spec2 );
-					
+
 					Teginfo gene2s = gg.getGenes( spec2 );
                     for( Annotation tv2 : gene2s.tset ) {
-                    	g2.setColor( tv2.ori == -1 ? Color.red : Color.blue );
+                    	g2.setColor( tv2.getOri() == -1 ? Color.red : Color.blue );
                     	break;
                     }
 					//double ratio2 = invertedGradientRatio( spec2, contigs2, ratio, gg );
 					//Color c = invertedGradientColor( ratio );
-					
+
                     double theta = count*Math.PI*2.0/(total+ptotal);
 					g2.translate( w/2, h/2 );
 					g2.rotate( theta );
@@ -2082,7 +2082,7 @@ public class IGeneCompare {
 						} else {
 							g2.setColor( IGeneCompare.gradientColor( ratio ) );
 						}
-						
+
 						double theta = count*Math.PI*2.0/(total+ptotal);
 						g2.translate( w/2, h/2 );
 						g2.rotate( theta );
@@ -2141,7 +2141,7 @@ public class IGeneCompare {
 					ctgoff = 0;
 					Color c = gradientColor( spec1, spec2, contigs2, ratio, pratio, offset2, gg, contiglanesb, tv );
 					g2.setColor( c );
-					
+
 					double theta = count*Math.PI*2.0/(total+ptotal);
 					g2.translate( w/2, h/2 );
 					g2.rotate( theta );
@@ -2186,10 +2186,10 @@ public class IGeneCompare {
 					}
 					g2.rotate( -theta );
                     g2.translate( -w/2, -h/2 );
-                    
+
                     if( gg.species.size() == 1 ) {
                     	g2.setColor( Color.black );
-                    	 
+
                     	theta = count*Math.PI*2.0/(total+ptotal);
 						g2.translate( w/2, h/2 );
 						g2.rotate( theta );
@@ -2197,10 +2197,10 @@ public class IGeneCompare {
 						g2.rotate( -theta );
 	                    g2.translate( -w/2, -h/2 );
                     }
-            
+
                 	if( genesethead.isGeneview() ? genesethead.getGeneTable().getSelectionModel().getSelectedItems().contains(tv.getGene()) : genesethead.getGeneGroupTable().getSelectionModel().getSelectedItems().contains(gg) ) {
                 		g2.setColor( Color.black );
-                   	 
+
                     	theta = count*Math.PI*2.0/(total+ptotal);
 						g2.translate( w/2, h/2 );
 						g2.rotate( theta );
@@ -2230,14 +2230,14 @@ public class IGeneCompare {
 								}
 							}
                         }
-                        
+
                         if( (synbr < 2 && c != null) || (synbr == 2) ) {
                         	if( synbr == 2 ) {
                         		if( c == null ) g2.setColor( Color.red );
                         		else g2.setColor( Color.lightGray );
                         	}
                         	else g2.setColor( c );
-	                        
+
 							double theta = count*Math.PI*2.0/(total+ptotal);
 							g2.translate( w/2, h/2 );
 							g2.rotate( theta );
@@ -2304,7 +2304,7 @@ public class IGeneCompare {
 									Tegeval tv = (Tegeval)value;
 									String tspec = tv.getGene().getSpecies();
 									List<Contig> scontigs = geneset.speccontigMap.get( tspec );
-									
+
 									ratio = GeneCompare.invertedGradientRatio(tspec, scontigs, -1.0, tv.getGene().getGeneGroup());
 									if( ratio == -1 ) {
 										ratio = GeneCompare.invertedGradientPlasmidRatio(tspec, scontigs, -1.0, tv.getGene().getGeneGroup());
@@ -2335,7 +2335,7 @@ public class IGeneCompare {
 									}
 								} else if( value instanceof Tegeval ) {
 									Tegeval tv = (Tegeval)value;
-									
+
 									ratio = GeneCompare.invertedGradientRatio(spec, contigs, -1.0, tv.getGene().getGeneGroup());
 									if( ratio == -1 ) {
 										ratio = GeneCompare.invertedGradientPlasmidRatio(spec, contigs, -1.0, tv.getGene().getGeneGroup());
@@ -2345,7 +2345,7 @@ public class IGeneCompare {
 										label.setBackground( GeneCompare.gradientColor( ratio ) );
 										label.setForeground( Color.black );
 									}
-									
+
 									/*double ratio = GeneCompare.invertedGradientRatio(spec, contigs, -1.0, tv.getGene().getGeneGroup());
 									label.setBackground( GeneCompare.gradientColor( ratio ) );*
 								}
@@ -2353,13 +2353,13 @@ public class IGeneCompare {
 						} else {
 							boolean phage = false;//gg.isInAnyPhage();
 							boolean plasmid = false;//gg.isOnAnyPlasmid();
-							
+
 							Teginfo ti = gg.getGenes( spec2 );
 							for( Annotation tv2 : ti.tset ) {
 	                        	phage |= tv2.isPhage();
 	                        	plasmid |= tv2.getContshort().isPlasmid();
 	                        }
-							
+
 							if( phage && plasmid ) {
 								if( ti.tset.size() > 1 ) color = darkmag;
 								else color = Color.magenta;
@@ -2376,17 +2376,17 @@ public class IGeneCompare {
 						}
 					}
 					if( color != null ) g2.setColor( color );
-                    
+
 					double theta = count*Math.PI*2.0/(total+ptotal);
 					g2.translate( w/2, h/2 );
 					g2.rotate( theta );
 					g2.fillRect( 500+30*(scount), -1, 30, 3);
 					g2.rotate( -theta );
                     g2.translate( -w/2, -h/2 );
-                    
+
                     if( gg.species.size() == 1 ) {
                     	g2.setColor( Color.black );
-                    	 
+
                     	theta = count*Math.PI*2.0/(total+ptotal);
 						g2.translate( w/2, h/2 );
 						g2.rotate( theta );
@@ -2394,12 +2394,12 @@ public class IGeneCompare {
 						g2.rotate( -theta );
 	                    g2.translate( -w/2, -h/2 );
                     }
-                    
+
                     int i;
                     if( !genesethead.isGeneview() ) {
                     	if( genesethead.getGeneGroupTable().getSelectionModel().getSelectedItems().contains( gg ) ) {
                     		g2.setColor( Color.black );
-                       	 
+
                         	theta = count*Math.PI*2.0/(total+ptotal);
     						g2.translate( w/2, h/2 );
     						g2.rotate( theta );
@@ -2412,7 +2412,7 @@ public class IGeneCompare {
                     } else {
                     	if( genesethead.getGeneTable().getSelectionModel().getSelectedItems().contains( gg ) ) {
                     		g2.setColor( Color.black );
-                       	 
+
                         	theta = count*Math.PI*2.0/(total+ptotal);
     						g2.translate( w/2, h/2 );
     						g2.rotate( theta );
@@ -2430,7 +2430,7 @@ public class IGeneCompare {
 			} else scount--;
 		}
 	}
-	
+
 	final Color darkgreen = new Color( 0, 128, 0 );
 	final Color darkred = new Color( 128, 0, 0 );
 	final Color darkblue = new Color( 0, 0, 128 );

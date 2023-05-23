@@ -642,7 +642,7 @@ public class JavaFasta extends JPanel {
 				Sequence seq = serifier.lseq.get( i );
 
 				if( seq.getAnnotations() != null && w+serifier.getMin() >= seq.getStart() && w+serifier.getMin() <= seq.getEnd() ) {
-					searchann.start = (w+serifier.getMin()) - seq.getStart();
+					searchann.setStart( (w+serifier.getMin()) - seq.getStart() );
 					int ai = Collections.binarySearch( seq.getAnnotations(), searchann );
 
 					int ip = Math.abs(ai)-1;
@@ -728,7 +728,7 @@ public class JavaFasta extends JPanel {
 								g.setColor( (Color)a.color );
 								for( int x = Math.max(a.getCoordStart()-serifier.getMin(), xmin); x < Math.min(a.getCoordEnd()-serifier.getMin(), xmax); x++ ) {
 									g.fillRect((int)(x*cw), y*rh, (int)cw, rh);
-									if( a.ori == -1 ) {
+									if( a.getOri() == -1 ) {
 										g.setColor( Color.black );
 										g.drawLine((int)(x*cw)+3, y*rh, (int)(x*cw), y*rh+3);
 										g.setColor( (Color)a.color );
@@ -855,22 +855,22 @@ public class JavaFasta extends JPanel {
 					int start = this.selectedRect.x;
 					int end = this.selectedRect.x+this.selectedRect.width;
 					for( Sequence s : seq ) {
-						Set<Annotation> remset = new HashSet<Annotation>();
+						Set<Annotation> remset = new HashSet<>();
 						if( s.getAnnotations() != null ) for( Annotation a : s.getAnnotations() ) {
-							if( a.start < start ) {
-								if( a.stop > start ) {
-									a.stop = Math.max(start, a.stop-(end-start));
+							if( a.getStart() < start ) {
+								if( a.getStop() > start ) {
+									a.setStop( Math.max(start, a.getStop()-(end-start)) );
 								}
-							} else if( a.start < end ) {
-								if( a.stop <= end ) {
+							} else if( a.getStart() < end ) {
+								if( a.getStop() <= end ) {
 									remset.add(a);
 								} else {
-									a.start = start;
-									a.stop -= (end-start);
+									a.setStart(start);
+									a.setStop(a.getStop() - (end-start));
 								}
 							} else {
-								a.start -= (end-start);
-								a.stop -= (end-start);
+								a.setStart(a.getStart() - (end-start));
+								a.setStop(a.getStop() - (end-start));
 							}
 						}
 						s.getAnnotations().removeAll( remset );
@@ -8503,7 +8503,7 @@ public class JavaFasta extends JPanel {
 							if( phagemummer > 0 && ann != null && ann.type != null && ann.type.contains("mummer") ) {
 								phagemummer = 2;
 								remann.add( ann );
-							} else if( ann != null && ann.designation != null && ann.designation.contains("phage") ) {
+							} else if( ann != null && ann.getDesignation() != null && ann.getDesignation().contains("phage") ) {
 								if( phagemummer == 2 ) {
 									allrem.addAll( remann );
 								}
@@ -9439,8 +9439,8 @@ public class JavaFasta extends JPanel {
 						return ann.getName();
 					}
 					else if( columnIndex == 1 ) return ann.getSeq() != null ? ann.getSeq().getName() : "";
-					else if( columnIndex == 2 ) return ann.type+"_"+ann.ori;
-					else if( columnIndex == 3 ) return ann.designation;
+					else if( columnIndex == 2 ) return ann.type+"_"+ann.getOri();
+					else if( columnIndex == 3 ) return ann.getDesignation();
 					else if( columnIndex == 4 ) return ann.getGroup();
 					else if( columnIndex == 5 ) return ann.start;
 					else if( columnIndex == 6 ) return ann.stop;

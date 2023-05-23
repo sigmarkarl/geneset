@@ -104,23 +104,38 @@ dependencies {
 
     //implementation("com.github.fommil.netlib:all:1.1.2")
 
-    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.3.2") {
+    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.3.2") {
+    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.3.2") {
+    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.3.2") {
+    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.4.0") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-
+    implementation (group = "org.apache.spark", name = "spark-sql_2.13", version = "3.4.0") {
+        exclude(group = "avro-mapred")
+        exclude(group = "com.fasterxml.jackson")
+    }
+    implementation (group = "org.apache.spark", name = "spark-connect_2.13", version = "3.4.0") {
+        exclude(group = "avro-mapred")
+        exclude(group = "com.fasterxml.jackson")
+    }
+    implementation (group = "org.apache.spark", name = "spark-hive_2.13", version = "3.4.0") {
+        exclude(group = "avro-mapred")
+        exclude(group = "com.fasterxml.jackson")
+    }
+    implementation (group = "org.apache.spark", name = "spark-hive-thriftserver_2.13", version = "3.4.0") {
+        exclude(group = "avro-mapred")
+        exclude(group = "com.fasterxml.jackson")
+    }
 }
 
 application {

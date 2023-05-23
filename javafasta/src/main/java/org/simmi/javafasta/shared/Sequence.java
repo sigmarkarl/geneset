@@ -1,11 +1,7 @@
 package org.simmi.javafasta.shared;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
@@ -16,10 +12,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Sequence extends FastaSequence implements Comparable<Sequence> {
+public class Sequence extends FastaSequence implements Comparable<Sequence>, Serializable {
 	/*public static int						max = 0;
 	public static int						min = 0;s
-	
+
 	public static ArrayList<Sequence>		lseq = new ArrayList<Sequence>() {
 		private static final long serialVersionUID = 1L;
 
@@ -31,7 +27,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public static Map<String,Sequence>		mseq = new HashMap<String,Sequence>();
 	public static ArrayList<Annotation>	lann = new ArrayList<Annotation>();
 	public static Map<String,Annotation>	mann = new HashMap<String,Annotation>();*/
-	
+
 	public static Map<Character, Color> aacolor = new HashMap<>();
 	static Map<Character, Character> 	sidechainpolarity = new HashMap<>();
 	static Map<Character, Integer> 		sidechaincharge = new HashMap<>();
@@ -51,7 +47,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public static List<Erm> uff3 = new ArrayList<>();
 	public static List<Erm> mass = new ArrayList<>();
 	public static List<Erm> isoel = new ArrayList<>();
-	
+
 	public static Map<String,Character>				amimap = new HashMap<>();
 	public static Map<String,String>				revcom = new HashMap<>();
 	public static Map<Character,Character>	rc = new HashMap<>();
@@ -126,7 +122,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		amimap.put("GGC",'G');
 		amimap.put("GGA",'G');
 		amimap.put("GGG",'G');
-		
+
 		revcom.put("TTT","AAA");
 		revcom.put("TTC","GAA");
 		revcom.put("TTA","TAA");
@@ -191,7 +187,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		revcom.put("GGC","GCC");
 		revcom.put("GGA","TCC");
 		revcom.put("GGG","CCC");
-		
+
 		rc.put('A', 'T');
 		rc.put('C', 'G');
 		rc.put('G', 'C');
@@ -206,7 +202,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		rc.put('x', 'x');
 		rc.put('-', '-');
 		rc.put(' ', ' ');
-		
+
 		aacolor.put('A', new Color(0.0f,0.0f,1.0f));
 		aacolor.put('R', new Color(0.0f,1.0f,1.0f));
 		aacolor.put('N', new Color(0.0f,1.0f,0.0f));
@@ -227,7 +223,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		aacolor.put('W', new Color(0.5f,0.0f,1.0f));
 		aacolor.put('Y', new Color(0.8f,0.0f,0.8f));
 		aacolor.put('V', new Color(0.8f,0.8f,0.0f));
-		
+
 		sidechainpolarity.put('A', 'n');
 		sidechainpolarity.put('R', 'p');
 		sidechainpolarity.put('N', 'p');
@@ -385,12 +381,12 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public void setSequence(StringBuilder sb) {
 		this.sb = sb;
 	}
-	
+
 	public int getNumberOfSubContigs() {
 		int count = 0;
 		int i = sb.indexOf("NNN");
 		if( i != -1 ) count++;
-		
+
 		while( i != -1 ) {
 			int k = sb.indexOf("NNN", i+5);
 			if( k > i+100 ) {
@@ -400,7 +396,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return count;
 	}
-	
+
 	public void deleteAfter( Annotation cur ) {
 		int i = annset.indexOf( cur );
 		if( i != -1 && i < annset.size() && annset.get(i+1).getGene() == null ) {
@@ -417,7 +413,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return k;
 	}
-	
+
 	public void deleteBefore( Annotation cur ) {
 		int i = annset.indexOf( cur );
 		if( i > 0 && annset.get(i-1).getGene() == null )
@@ -437,17 +433,17 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public boolean delete(Annotation ann) {
 		return annset.remove(ann);
 	}
-	
+
 	public static void writeFasta( OutputStream os, List<Sequence> lseq ) throws IOException {
 		writeFasta(os, lseq, false);
 	}
-	
+
 	public static void writeFasta( OutputStream os, List<? extends Sequence> lseq, boolean italic ) throws IOException {
 		OutputStreamWriter osw = new OutputStreamWriter(os);
 		writeFasta( osw, lseq, italic, false );
 		osw.close();
 	}
-	
+
 	public static void writeFasta( Writer osw, List<? extends Sequence> lseq, boolean italic, boolean group ) throws IOException {
 		for( Sequence seq : lseq ) {
 			seq.writeSequence(osw, italic, group);
@@ -459,7 +455,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			seq.writeIdSequence(osw);
 		}
 	}
-	
+
 	public static void writeFasta( Writer osw, List<? extends Sequence> lseq, int start, int stop, boolean italic ) throws IOException {
 		for( Sequence seq : lseq ) {
 			seq.writeSequence(osw,start,stop,italic);
@@ -484,21 +480,21 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public void writeSequence( Writer fw, int start, int stop, boolean italic ) throws IOException {
 		writeSequence( fw, 70, start, stop, italic );
 	}
-	
+
 	public void injectAfter( Annotation cur, Annotation tv ) {
 		int i = annset.indexOf( cur );
 		if( i != -1 ) {
 			addAnnotation(i+1, tv);
 		}
 	}
-	
+
 	public void injectBefore( Annotation cur, Annotation tv ) {
 		int i = annset.indexOf( cur );
 		if( i != -1 ) {
 			addAnnotation( i, tv );
 		}
 	}
-	
+
 	public void initIndexBuffers() {
 		ib = IntBuffer.allocate( sb.length() );
 		int count = 0;
@@ -560,7 +556,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		String title;
 		String journal;
 	}
-	
+
 	public Sequence				consensus;
 	public String				definition;
 	public String				version;
@@ -582,11 +578,11 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public int					index = -1;
 	public boolean				edited = false;
 	public boolean				selected = false;
-	
+
 	public Sequence			next;
 	public Sequence			prev;
 	public List<Sequence>	partof;
-	
+
 	public double 			loc;
 	public int			 	hash;
 	static MessageDigest md;
@@ -598,7 +594,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return hash;
 	}
-	
+
 	public int getAnnotationCount() {
 		if( annset != null ) {
 			return annset.size();
@@ -609,22 +605,22 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public void clear() {
 		sb.setLength(0);
 	}
-	
+
 	public static List<Sequence> readFasta( Path p, Map<String,Sequence> mseq ) throws IOException {
 		BufferedReader br = Files.newBufferedReader(p);
 		List<Sequence> ret = readFasta(br, mseq);
 		br.close();
-		
+
 		return ret;
 	}
-	
+
 	public static List<Sequence> readFasta( BufferedReader br, Map<String,Sequence> mseq ) throws IOException {
 		return readFasta(br, mseq, false);
 	}
-	
+
 	public static List<Sequence> readFasta( BufferedReader br, Map<String,Sequence> mseq, boolean shrt ) throws IOException {
 		List<Sequence> lseq = new ArrayList<>();
-		
+
 		Sequence seq = null;
 		String line = br.readLine();
 		while( line != null ) {
@@ -636,10 +632,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			} else seq.append(line);
 			line = br.readLine();
 		}
-		
+
 		return lseq;
 	}
-	
+
 	public static int specCheck( String str ) {
 		int i = str.indexOf("uid");
 		if( i == -1 ) {
@@ -659,7 +655,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return i;
 	}
-	
+
 	public void sortLocs() {
 		if( annset != null ) {
 			Collections.sort(annset);
@@ -672,7 +668,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}
 		}
 	}
-	
+
 	public static int parseSpec( String lname ) {
 		int i = lname.indexOf("contig");
 		if( i == -1 ) {
@@ -709,7 +705,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			i = lname.lastIndexOf('_');
 			i = lname.lastIndexOf('_', i-1)+1;
 		}
-		
+
 		/*int i = lname.indexOf("contig");
 		if( i == -1 ) {
 			i = lname.indexOf("scaffold");
@@ -718,7 +714,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			i = lname.indexOf("RAST")+5;
 		}
 		if( i == -1 && lname.length() > 5 && lname.startsWith("J") && lname.charAt(4) == '0' ) i = 5;*/
-		
+
 		return i;
 	}
 
@@ -749,7 +745,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				}
 			} else if( selspec.contains("Marinithermus_") ) {
 				ret = "Marinithermus_hydrothermalis_T1";
-			} else if( selspec.contains("hermus") ) {	
+			} else if( selspec.contains("hermus") ) {
 				int i = selspec.indexOf("_uid");
 				if( i != -1 ) {
 					if( selspec.contains("ATCC_700962") ) {
@@ -763,7 +759,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 					if(selspec.contains("oshimai")) {
 						ret = "Thermus_oshimai_SPS-17";
 					}/* else if(selspec.contains("")) {
-					
+
 					}*/ else {
 						int k = selspec.indexOf("DSM");
 						k = selspec.indexOf('_', k+4);
@@ -777,7 +773,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				} else {
 					if( selspec.equals("Thermus_4884") ) ret = "Thermus_sp._HR13";
 					else if( selspec.equals("Thermus_2121") ) ret = "Thermus_scotoductus_MAT_2121";
-					
+
 					i = selspec.indexOf('_');
 					if( i != -1 ) {
 						i = selspec.indexOf('_', i+1);
@@ -795,10 +791,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				if( selspec.startsWith("JQMV") ) ret = "Thermus_amyloliquefaciens_YIM_77409";
 				if( selspec.startsWith("JQLK") ) ret = "Thermus_tengchongensis_YIM_77401";
 				if( selspec.startsWith("JQLJ") ) ret = "Thermus_scotoductus_KI2";
-				
+
 				if( selspec.startsWith("JPSL") ) ret = "Thermus_filiformis_Wai33_A1";
 				if( selspec.startsWith("JTJB") ) ret = "Thermus_sp_2.9";
-				
+
 				if( selspec.startsWith("AUIW") ) ret = "Thermus_antranikianii_HN3-7";
 				if( selspec.startsWith("ATXJ") ) ret = "Thermus_islandicus_PRI_3838";
 				if( selspec.startsWith("ATNI") ) ret = "Thermus_scotoductus_NMX2_A1";
@@ -808,14 +804,14 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				if( selspec.startsWith("ABVK") ) ret = "Thermus_aquaticus_Y51MC23";
 				if( selspec.startsWith("AQWU") ) ret = "Thermus_igniterrae_ATCC_700962";
 				if( selspec.startsWith("AIJQ") ) ret = "Thermus_parvatiensis";
-				
+
 				if( selspec.startsWith("LHCI") ) ret = "Thermus_aquaticus_YT1";
 				if( selspec.startsWith("LJJR") ) ret = "Thermus_scotoductus_K1";
-				
+
 				if( selspec.startsWith("BBBL") ) ret = "Thermus_kawarayensis_JCM_12314";
 				if( selspec.startsWith("BBBN") ) ret = "Thermus_sp_JCM_17653";
 			}*/ else if( selspec.contains("GenBank") || selspec.contains("MAT") ) {
-				
+
 			} else {
 				if( selspec.contains("islandicus") ) ret = "Thermus_islandicus_MAT_3838";
 				if( selspec.contains("eggertsoni") ) ret = "Thermus_eggertsoniae_MAT_2789";
@@ -826,7 +822,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				else if( selspec.contains("scotoductus252") ) ret = "Thermus_scotoductus_MAT_252";
 				else if( selspec.contains("scotoductus4063") ) ret = "Thermus_scotoductus_SA-01";
 				else if( selspec.contains("aquaticus4884") ) ret = "Thermus_sp._HR13";
-				
+
 				else {
 					int i = 0;
 					while( i < selspec.length() && (selspec.charAt(i) < '0' || selspec.charAt(i) > '9') ) {
@@ -836,8 +832,8 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 					else {
 						System.err.println("doni "+selspec);
 					}
-					
-					Matcher m = Pattern.compile("\\d").matcher(selspec); 
+
+					Matcher m = Pattern.compile("\\d").matcher(selspec);
 					int firstDigitLocation = m.find() ? m.start() : 0;
 					if( firstDigitLocation == 0 ) ret = "Thermus_" + selspec;
 					else ret = "Thermus_" + selspec.substring(0,firstDigitLocation) + "_" + selspec.substring(firstDigitLocation);
@@ -847,11 +843,11 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return ret;
 	}
-	
+
 	public static String getSpec( String name ) {
 		String spec = "";
 		int i = specCheck( name );
-		
+
 		if( i == -1 ) {
 			i = parseSpec( name );
 			if( i == -1 ) {
@@ -866,10 +862,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return spec;
 	}
-	
+
 	public Annotation getNext( Annotation from ) {
 		Annotation ret = null;
-		
+
 		int i = annset != null ? annset.indexOf( from ) : -1;
 		if( i != -1 ) {
 			if( isReverse() ) {
@@ -886,10 +882,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				}
 			}
 		}
-		
+
 		return ret;
 	}
-	
+
 	public Annotation getPrev( Annotation from ) {
 		Annotation ret = null;
 
@@ -912,41 +908,41 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		//System.err.println( from.getGene().getSpecies() + "  " + from.getGene() );
 		return ret;
 	}
-	
+
 	public Annotation getEndAnnotation() {
 		if( annset != null ) return annset.get( annset.size()-1 );
 		return null;
 	}
-	
+
 	public Annotation getStartAnnotation() {
 		if( annset != null ) return annset.get( 0 );
 		return null;
 	}
-	
+
 	public Annotation getFirst() {
 		return isReverse() ? getEndAnnotation() : getStartAnnotation();
 	}
-	
+
 	public Annotation getLast() {
 		return isReverse() ? getStartAnnotation() : getEndAnnotation();
 	}
-	
+
 	public Annotation getIndex( int i ) {
 		Annotation first = getFirst();
-	
+
 		int k = 0;
 		while( first != null && k < i ) {
 			first = first.getNext();
 			k++;
 		}
-		
+
 		return first;
 	}
-	
+
 	public String getSpec() {
 		return group;
 	}
-	
+
 	public boolean isReverse() {
 		return revcomp == -1;
 	}
@@ -958,32 +954,32 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public void setGC(int gc) {
 		gcat = gc;
 	}
-	
+
 	public void setReverse( boolean rev ) {
 		revcomp = rev ? -1 : 1;
 	}
-	
+
 	static final Random r = new Random();
-	
+
 	public boolean isSelected() {
 		return selected;
 	}
-	
+
 	public void setSelected( boolean sel ) {
 		this.selected = sel;
 	}
-	
+
 	public void removeGaps() {
-		
+
 	}
-	
+
 	public static String getPhylip( List<Sequence> lseq, boolean numeric ) {
 		StringBuilder out = new StringBuilder();
-		
+
 		for( Sequence seq : lseq ) {
 			System.err.println( seq.getName() );
 		}
-		
+
 		String erm = ""+lseq.size();
 		String seqlen = "";
 		for( int i = 0; i < 6-erm.length(); i++ ) {
@@ -992,11 +988,11 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		seqlen += erm;
 		int alen = lseq.get(0).length();
 		seqlen += "   "+alen;
-		
+
 		out.append( seqlen+"\n" );
-		
+
 		Map<String,Integer> seqset = new HashMap<String,Integer>();
-		
+
 		int u = 0;
 		int count = 0;
 		for( int k = 0; k < alen; k+=50 ) {
@@ -1006,9 +1002,9 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 					if( !numeric ) {
 						String seqname = seq.getName();
 						int m = Math.min( seqname.length(), 10 );
-						
+
 						String subname = seqname.substring(0, m);
-						
+
 						int scount = 1;
 						String newname;
 						if( seqset.containsKey( subname ) ) {
@@ -1022,7 +1018,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 							//}
 						} else newname = subname;
 						seqset.put( subname, scount );
-						
+
 						out.append( newname );
 						while( m < 10 ) {
 							out.append(' ');
@@ -1030,7 +1026,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 						}
 					} else {
 						String sind = Integer.toString( seqi++ );
-						
+
 						int m = 0;
 						while( m < 10-sind.length() ) {
 							out.append('0');
@@ -1039,7 +1035,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 						out.append( sind );
 					}
 				} else out.append("          ");
-				
+
 				for( int l = k; l < Math.min(k+50, alen); l++ ) {
 					if( l % 10 == 0 ) {
 						out.append(" ");
@@ -1049,20 +1045,20 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				out.append("\n");
 			}
 			out.append("\n");
-			
+
 			u++;
 		}
-		
+
 		return out.toString();
 	}
-	
+
 	public static double[] entropy( List<Sequence> lseq ) {
 		int total = lseq.get(0).length();
 		double[] ret = new double[total];
 		Map<Character,Integer>	shanmap = new HashMap<Character,Integer>();
 		for( int x = 0; x < total; x++ ) {
 			shanmap.clear();
-			
+
 			int count = 0;
 			for( Sequence seq : lseq ) {
 				char c = seq.getCharAt( x );
@@ -1073,7 +1069,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 					count++;
 				}
 			}
-			
+
 			double res = 0.0;
 			for( char c : shanmap.keySet() ) {
 				int val = shanmap.get(c);
@@ -1084,7 +1080,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return ret;
 	}
-	
+
 	public static void distanceMatrixNumeric(List<Sequence> lseq, double[] dmat, List<Integer> idxs, boolean bootstrap, boolean cantor, double[] ent, Map<String,Integer> blosum ) {
 		int len = lseq.size();
 		//double[] dmat = new double[ len*len ];
@@ -1097,11 +1093,11 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				for( int y = x+1; y < len; y++ ) {
 					Sequence seq1 = lseq.get(x);
 					Sequence seq2 = lseq.get(y);
-					
+
 					//if( seq1 == seq2 ) dmat[i] = 0.0;
 					//else {
 						double mism = 0;
-						
+
 						if( ent != null ) {
 							if( bootstrap ) {
 								for( int k : idxs ) {
@@ -1109,7 +1105,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 									int u = idxs.get(ir);
 									char c1 = seq1.getCharAt( u-seq1.getStart() );
 									char c2 = seq2.getCharAt( u-seq2.getStart() );
-									
+
 									if( c1 != c2 ) mism += 1.0/ent[u];
 									//count++;
 								}
@@ -1117,7 +1113,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								for( int k : idxs ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != c2 ) mism += 1.0/ent[k];
 								}
 							}
@@ -1127,14 +1123,14 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 									int ir = r.nextInt( idxs.size() );
 									char c1 = seq1.getCharAt( idxs.get(ir)-seq1.getStart() );
 									char c2 = seq2.getCharAt( idxs.get(ir)-seq2.getStart() );
-									
+
 									if( c1 != c2 ) mism++;
 								}
 							} else {
 								for( int k : idxs ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != c2 ) mism++;
 								}
 							}
@@ -1152,25 +1148,25 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				for( int y = x+1; y < len; y++ ) {
 					Sequence seq1 = lseq.get(x);
 					Sequence seq2 = lseq.get(y);
-						
+
 					int count = 0;
 					double mism = 0;
-					
+
 					int start = 0;//Math.max( seq1.getRealStart(), seq2.getRealStart() );
 					int end = seq1.length();//Math.min( seq1.getRealStop(), seq2.getRealStop() );
-					
+
 					if( ent != null ) {
 						/*if( start < 0 || end >= ent.length ) {
 							System.err.println( "mu " + ent.length );
 							System.err.println( start + "  " + end );
 						}*/
-						
+
 						if( bootstrap ) {
 							for( int k = start; k < end; k++ ) {
 								int ir = start + r.nextInt( end-start );
 								char c1 = seq1.getCharAt( ir-seq1.getStart() );
 								char c2 = seq2.getCharAt( ir-seq2.getStart() );
-								
+
 								if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 									if( c1 != c2 ) mism += 1.0/ent[ir];
 									count++;
@@ -1182,7 +1178,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								for( int k = start; k < end; k++ ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 										if( c1 != c2 ) {
 											mism += 1.0/ent[k];
@@ -1197,7 +1193,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								for( int k = start; k < end; k++ ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 										if( c1 != c2 ) {
 											mism += 1.0/ent[k];
@@ -1216,7 +1212,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								int ir = start + r.nextInt( end-start );
 								char c1 = seq1.getCharAt( ir-seq1.getStart() );
 								char c2 = seq2.getCharAt( ir-seq2.getStart() );
-								
+
 								if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 									if( c1 != c2 ) mism++;
 									count++;
@@ -1227,7 +1223,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								for( int k = start; k < end; k++ ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 										String str = c1+""+c2;
 										String fstr = c1+""+c1;
@@ -1242,7 +1238,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 								for( int k = start; k < end; k++ ) {
 									char c1 = seq1.getCharAt( k-seq1.getStart() );
 									char c2 = seq2.getCharAt( k-seq2.getStart() );
-									
+
 									if( c1 != '.' && c1 != '-' && c1 != ' ' && c1 != '\n' &&  c2 != '.' && c2 != '-' && c2 != ' ' && c2 != '\n') {
 										if( c1 != c2 ) mism++;
 										count++;
@@ -1254,38 +1250,38 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 					double d = count == 0 ? 0.0 : mism /(double)count;
 					if( blosum != null ) d = 1.0-d;
 					if( cantor ) d = -3.0*Math.log( 1.0 - 4.0*d/3.0 )/4.0;
-					
+
 					dmat[x*len+y] = d;
 					dmat[y*len+x] = d;
 				}
 			}
 		}
-		
+
 		//return dmat;
 	}
-	
+
 	public void reverseComplement() {
 		for( int i = 0; i < length()/2; i++ ) {
 			char c = sb.charAt(i);
 			char cc = rc.getOrDefault(c, c);
-			
+
 			char nc = sb.charAt(length()-1-i);
 			char ncc = rc.getOrDefault(nc, nc);
-			
+
 			sb.setCharAt( i, ncc );
 			sb.setCharAt( length()-1-i, cc );
 		}
-		
+
 		if( annset != null ) {
 			int i;
 			for( i = 0; i < annset.size()/2; i++ ) {
 				Annotation a = annset.get(i);
-				
+
 				a.start = length()-a.stop-1;
 				a.stop = length()-a.start-1;
 				a.ori *= -1;
 				a = annset.set(annset.size()-i-1, a);
-				
+
 				a.start = length()-a.stop-1;
 				a.stop = length()-a.start-1;
 				a.ori *= -1;
@@ -1299,20 +1295,20 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}
 		}
 	}
-	
+
 	public void reverseComplement( int start, int end ) {
 		for( int i = start; i < start+(end-start)/2; i++ ) {
 			char c = sb.charAt(i);
 			char cc = rc.getOrDefault(c, c);
-			
+
 			char nc = sb.charAt(length()-1-i);
 			char ncc = rc.getOrDefault(nc, nc);
-			
+
 			sb.setCharAt( i, ncc );
 			sb.setCharAt( length()-1-i, cc );
 		}
 	}
-	
+
 	public void reverse( int start, int end ) {
 		//System.err.println( sb.substring(start,end) + " " + getName() );
 		for( int i = start; i < start+(end-start)/2; i++ ) {
@@ -1322,7 +1318,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			sb.setCharAt( ri, c );
 		}
 	}
-	
+
 	public void reverse() {
 		for( int i = 0; i < length()/2; i++ ) {
 			char c = sb.charAt(i);
@@ -1330,7 +1326,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			sb.setCharAt( length()-1-i, c );
 		}
 	}
-	
+
 	public void complement( int start, int end ) {
 		for( int i = start; i < end; i++ ) {
 			char c = sb.charAt(i);
@@ -1341,7 +1337,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			sb.setCharAt( i, cc );
 		}
 	}
-		
+
 	public void complement() {
 		for( int i = 0; i < length(); i++ ) {
 			char c = sb.charAt(i);
@@ -1352,55 +1348,55 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			sb.setCharAt( i, cc );
 		}
 	}
-	
+
 	public void upperCase() {
 		for( int i = 0; i < sb.length(); i++ ) {
 			sb.setCharAt( i, Character.toUpperCase(sb.charAt(i)) );
 		}
 	}
-	
+
 	public void caseSwap() {
-		
+
 	}
-	
+
 	public void replaceSelected( Sequence seq, int start, int end ) {
 		this.sb.replace(start, end, seq.sb.toString());
 	}
-	
+
 	public void utReplace() {
 		int i1 = sb.indexOf("T");
 		int i2 = sb.indexOf("U");
-		
+
 		if( i1 == -1 ) i1 = sb.length();
 		if( i2 == -1 ) i2 = sb.length();
-		
+
 		while( i1 < sb.length() || i2 < sb.length() ) {
 			while( i1 < i2 ) {
 				sb.setCharAt(i1, 'U');
 				i1 = sb.indexOf("T", i1+1);
 				if( i1 == -1 ) i1 = sb.length();
 			}
-			
+
 			while( i2 < i1 ) {
 				sb.setCharAt(i2, 'T');
 				i2 = sb.indexOf("U", i2+1);
 				if( i2 == -1 ) i2 = sb.length();
 			}
 		}
-		
+
 		i1 = sb.indexOf("t");
 		i2 = sb.indexOf("u");
-		
+
 		if( i1 == -1 ) i1 = sb.length();
 		if( i2 == -1 ) i2 = sb.length();
-		
+
 		while( i1 < sb.length() || i2 < sb.length() ) {
 			while( i1 < i2 ) {
 				sb.setCharAt(i1, 'u');
 				i1 = sb.indexOf("t", i1+1);
 				if( i1 == -1 ) i1 = sb.length();
 			}
-			
+
 			while( i2 < i1 ) {
 				sb.setCharAt(i2, 't');
 				i2 = sb.indexOf("u", i2+1);
@@ -1408,36 +1404,36 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}
 		}
 	}
-	
+
 	public boolean isEdited() {
 		return edited;
 	}
-	
+
 	public void setSequenceString( StringBuilder sb ) {
 		this.sb = sb;
 	}
-	
+
 	public Sequence() {
 		super();
 		sb = new StringBuilder();
 	}
-	
+
 	public Sequence( String id, String name, Map<String,Sequence> mseq ) {
 		this( name, mseq );
 		this.id = id;
 	}
-	
+
 	public Sequence( String name, Map<String,Sequence> mseq ) {
 		this();
 		setName( name );
 		if( mseq != null ) mseq.put( name, this );
 	}
-	
+
 	public Sequence( String id, String name, StringBuilder sb, Map<String,Sequence> mseq ) {
 		this( name, sb, mseq );
 		this.id = id;
 	}
-	
+
 	public Sequence( String name, StringBuilder sb, Map<String,Sequence> mseq ) {
 		setName( name );
 		this.sb = sb;
@@ -1449,7 +1445,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			mseq.put( name, this );
 		}
 	}
-	
+
 	public Sequence( Sequence seq, boolean rev ) {
 		this();
 		sb.append( seq.sb );
@@ -1457,21 +1453,21 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			this.reverseComplement();
 		}
 	}
-	
+
 	public Annotation getAnnotation( int i ) {
 		return annset.get(i);
 	}
-	
+
 	public List<Annotation> getAnnotations() {
 		return annset;
 	}
-	
+
 	public void removeAnnotation( Annotation a ) {
 		if( annset != null ) {
 			annset.remove( a );
 		}
 	}
-	
+
 	public boolean addAnnotation( int i, Annotation a ) {
 		if( annset == null ) {
 			annset = new ArrayList<>();
@@ -1480,12 +1476,12 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		/*if( annset.contains(a) ) {
 			if( a.start == 0 ) annset.add( a );
-		} else*/ 
+		} else*/
  		annset.add( i, a );
-		
+
 		return false;
 	}
-	
+
 	public boolean addAnnotation( Annotation a ) {
 		if( annset == null ) {
 			annset = new ArrayList<>();
@@ -1494,27 +1490,27 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		/*if( annset.contains(a) ) {
 			if( a.start == 0 ) annset.add( a );
-		} else*/ 
+		} else*/
 		annset.add( a );
-		
+
 		return false;
 	}
 
 	public void setCountry(String country) {
 		this.country = country;
 	}
-	
-	public boolean equals( Object obj ) {			
+
+	public boolean equals( Object obj ) {
 		/*boolean ret = name.equals( obj.toString() ); //super.equals( obj );
 		System.err.println( "erm " + this.toString() + " " + obj.toString() + "  " + ret );
-		return ret;*/			
+		return ret;*/
 		return super.equals( obj );
 	}
-	
+
 	public StringBuilder getStringBuilder() {
 		return sb;
 	}
-	
+
 	public String toString() {
 		return name;
 	}
@@ -1544,34 +1540,34 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}
 		}
 	}
-	
+
 	public void append( Sequence seq ) {
 		if( seq.getAnnotations() != null ) for( Annotation a : seq.getAnnotations() ) {
 			this.addAnnotation( new Annotation( a, this.length() ) );
 		}
 		sb.append( seq.sb );
 	}
-	
+
 	public void append( CharSequence cs ) {
 		sb.append( cs );
 	}
-	
+
 	public void append( String str ) {
 		sb.append( str );
 	}
-	
+
 	public void append( char c ) {
 		sb.append( c );
 	}
-	
+
 	public void append( Character c ) {
 		sb.append( c );
 	}
-	
+
 	public void appendSubseq( Sequence subs, int start, int end ) {
 		//getSubstring(-3000, subs.getLength()+3000);
 	}
-	
+
 	public void deleteCharAt( int i ) {
 		int ind = i-offset;
 		if( ind >= 0 && ind < sb.length() ) {
@@ -1579,7 +1575,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			edited = true;
 		}
 	}
-	
+
 	public void delete( int dstart, int dstop ) {
 		int ind = dstart-offset;
 		int end = dstop-offset;
@@ -1588,11 +1584,11 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			edited = true;
 		}
 	}
-	
+
 	public char charAt( int i ) {
 		return revcomp == -1 ? revCompCharAt( i ) : getCharAt( i );
 	}
-	
+
 	public void clearCharAt( int i ) {
 		int ind = i-offset;
 		if( ind >= 0 && ind < sb.length() ) {
@@ -1600,23 +1596,23 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			edited = true;
 		}
 	}
-	
+
 	public void setCharAt( int i, char c ) {
 		int ind = i-offset;
 		if( ind >= 0 && ind < sb.length() ) {
 			sb.setCharAt( ind, c );
 		}
 	}
-	
+
 	public char getCharAt( int i ) {
 		int ind = i-offset;
 		if( ind >= 0 && ind < length() ) {
 			return sb.charAt( ind );
 		}
-		
+
 		return ' ';
 	}
-	
+
 	public char revCompCharAt( int i ) {
 		int ind = i-offset;
 		if( ind >= 0 && ind < length() ) {
@@ -1627,10 +1623,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				System.err.println( c );
 			}
 		}
-		
+
 		return ' ';
 	}
-	
+
 	public void checkLengths() {
 		//int start = -1;
 		//int stop = 0;
@@ -1646,19 +1642,19 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		alignedlength = count;
 		unalignedlength = substop-substart;
 	}
-	
+
 	public int length() {
 		return sb.length();
 	}
-	
+
 	public void setLength( int len ) {
 		sb.setLength( len );
 	}
-	
+
 	public boolean isChromosome() {
 		return this.length() > 1500000;
 	}
-	
+
 	public boolean isPlasmid() {
 		return plasmid;
 	}
@@ -1666,7 +1662,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public void setPlasmid(boolean plasmid) {
 		this.plasmid = plasmid;
 	}
-	
+
 	public boolean isNucleotide() {
 		for( int i = 0; i < sb.length(); i++ ) {
 			char c = sb.charAt(i);
@@ -1676,72 +1672,72 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return true;
 	}
-	
+
 	public int getAlignedLength() {
 		if( alignedlength == -1 ) {
 			checkLengths();
 		}
 		return alignedlength;
 	}
-	
+
 	public int getUnalignedLength() {
 		if( unalignedlength == -1 ) {
 			checkLengths();
 		}
 		return unalignedlength;
 	}
-	
+
 	public int getRealStart() {
 		return getStart() + substart;
 	}
-	
+
 	public int getRealStop() {
 		return getStart() + substop;
 	}
-	
+
 	public int getRealLength() {
 		return substop - substart;
 	}
-	
+
 	/*public void boundsCheck() {
 		if( start < min ) min = start;
 		if( start+sb.length() > max ) max = start+sb.length();
 	}*/
-	
+
 	public interface RunInt {
 		void run(Sequence s);
 	};
-	
+
 	public static RunInt runbl = null;
 	public void setStart( int start ) {
 		this.offset = start;
-		
+
 		if( runbl != null ) runbl.run( this ); //boundsCheck();
 	}
-	
+
 	public void setEnd( int end ) {
 		this.offset = end-sb.length();
-		
+
 		if( runbl != null ) runbl.run( this );
 		//boundsCheck();
 	}
-	
+
 	public int getStart() {
 		return offset;
 	}
-	
+
 	public int getEnd() {
 		return offset+sb.length();
 	}
-	
+
 	public int getRevComp() {
 		return revcomp;
 	}
-	
+
 	public void setRevComp( int rc ) {
 		this.revcomp = rc;
 	}
-	
+
 	public int getGCCount() {
 		int ret = 0;
 		if( sb.length() > 0 ) {
@@ -1754,7 +1750,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return ret;
 	}
-	
+
 	public float getGCP() {
 		if( gcp == -1 && sb.length() > 0 ) {
 			gcp = 0;
@@ -1772,20 +1768,20 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		}
 		return gcp;
 	}
-	
+
 	public void setConnection( Sequence contig, boolean rev, boolean forw ) {
 		if( forw ) setForwardConnection( contig, rev );
 		else setBackwardConnection( contig, rev );
 	}
-	
+
 	public void setForwardConnection( Sequence contig, boolean rev ) {
 		this.next = contig;
 		if( rev ) {
 			contig.next = this;
-			
+
 			/*if( this.getEnd() != null ) this.getEnd().next = contig.getEnd();
 			if( contig.getEnd() != null ) contig.getEnd().next = this.getEnd();
-			
+
 			if( this.isReverse() == contig.isReverse() ) {
 				Contig nextc = contig;
 				while( nextc != null ) {
@@ -1795,10 +1791,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}*/
 		} else {
 			contig.prev = this;
-			
+
 			/*if( this.getEnd() != null ) this.getEnd().next = contig.getStart();
 			if( contig.getStart() != null ) contig.getStart().prev = this.getEnd();
-			
+
 			if( this.isReverse() != contig.isReverse() ) {
 				Contig nextc = contig;
 				while( nextc != null ) {
@@ -1808,15 +1804,15 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}*/
 		}
 	}
-	
+
 	public void setBackwardConnection( Sequence contig, boolean rev ) {
 		this.prev = contig;
 		if( rev ) {
 			contig.next = this;
-			
+
 			/*this.getStart().prev = contig.getEnd();
 			if( contig.getEnd() != null ) contig.getEnd().next = this.getStart();
-			
+
 			if( this.isReverse() != contig.isReverse() ) {
 				Contig nextc = contig;
 				while( nextc != null ) {
@@ -1826,10 +1822,10 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}*/
 		} else {
 			contig.prev = this;
-			
+
 			/*this.getStart().prev = contig.getStart();
 			if( contig.getStart() != null ) contig.getStart().prev = this.getStart();
-			
+
 			if( this.isReverse() == contig.isReverse() ) {
 				Contig nextc = contig;
 				while( nextc != null ) {
@@ -1839,7 +1835,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			}*/
 		}
 	}
-	
+
 	public Sequence getNextContig() {
 		//if (next==null) {
 			var i = partof.indexOf(this);
@@ -1847,7 +1843,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 		//}
 		return next;
 	}
-	
+
 	public Sequence getPrevContig() {
 		//if (prev==null) {
 			var i = partof.indexOf(this);
@@ -1860,33 +1856,33 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 	public int compareTo(Sequence o) {
 		return offset - o.offset;
 	}
-	
+
 	public boolean contains( Annotation at ) {
 		return annset.contains(at);
 	}
-	
+
 	public int indexOf( Annotation at ) {
 		return annset.indexOf( at );
 	}
-	
+
 	public Sequence getProteinSequence( int start, int stop, int ori ) {
 		Sequence ret = new Sequence();
 		ret.consensus = this;
-		
+
 		//if( stop > sb.length() ) {
 		//if( stop != end ) {
 		//	System.err.println();
 		//}
-		
+
 		if( ori == -1 ) {
 			int begin = stop - 3*((stop-start)/3) - 1;
-			
+
 			//String aaa = sb.substring(start-1, start+2);
 			//String aa = amimap.get( aaa );
-			
+
 			//String aaa = sb.substring(stop-2, stop+1);
 			//String aa = amimap.get( revcom.get(aaa) );
-			
+
 			//System.err.println( aa );
 			for( int i = stop-3; i > begin; i-=3 ) {
 				String aaa = sb.substring(i, i+3).toUpperCase();
@@ -1914,20 +1910,20 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 				}
 			}
 		}
-		
+
 		/*if( ret.length() == 0 ) {
 			System.err.println(" ");
 		}*/
-		
+
 		return ret;
 	}
-	
+
 	public int getSubstringOffset( int start, int end, int ori ) {
 		if( ori == -1 ) {
 			return Math.min(0,end-sb.length());
 		} else return Math.min(0,start);
 	}
-	
+
 	public String getPaddedSubstring( int ostart, int oend, int ori ) {
 		//if( start < sb.length() && end <= sb.length() ) {
 		if( ori == -1 ) {
@@ -1955,7 +1951,7 @@ public class Sequence extends FastaSequence implements Comparable<Sequence> {
 			//if( start < sb.length() ) return sb.substring( Math.max(0,start), Math.min(sb.length(),end) );
 		}
 	}
-	
+
 	public String getSubstring( int start, int end, int ori ) {
 		//if( start < sb.length() && end <= sb.length() ) {
 		if( ori == -1 ) {

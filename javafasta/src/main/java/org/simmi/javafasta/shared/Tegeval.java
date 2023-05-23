@@ -1,6 +1,8 @@
 package org.simmi.javafasta.shared;
 
 
+import org.jetbrains.annotations.NotNull;
+
 public class Tegeval extends Annotation implements Teg {
 	public Tegeval(Gene gene, double evalue, String contig, Sequence shortcontig, int sta, int sto, int orient) {
 		this( contig, shortcontig, sta, sto, orient, true );
@@ -14,12 +16,12 @@ public class Tegeval extends Annotation implements Teg {
 		//dna = dnaseq;
 		//setSequence(sequence);
 	}
-	
+
 	public Tegeval( String contig, Sequence shortcontig, int sta, int sto, int orient, boolean add ) {
 		super(shortcontig,contig,null,sta,sto,orient,null,add);
 		init( contig, shortcontig, sta, sto, orient );
 	}
-	
+
 	public Tegeval() {
 		super();
 	}
@@ -30,16 +32,16 @@ public class Tegeval extends Annotation implements Teg {
 		setGene(gene);
 		gene.setTegeval(this);
 	}
-	
+
 	public void init( String contig, Sequence shortcontig, int sta, int sto, int orient ) {
 		setName( contig );
-		
+
 		Sequence alignedsequence = getAlignedSequence();
 		if( alignedsequence != null ) {
 			String seqname = getName() + " # " + sta + " # " + sto + " # " + orient;
 			alignedsequence.setName( seqname );
 		}
-		
+
 		seq = shortcontig;
 		start = sta;
 		stop = sto;
@@ -49,43 +51,43 @@ public class Tegeval extends Annotation implements Teg {
 		gc = gcPerc(); //(double)gcCount()/(double)(stop-start);
 		//gcskew = gcSkew();
 		//else gc = -1.0;
-		
+
 		numCys = 0;
 	}
-	
+
 	public String getCommonName() {
 		return getGene().getGeneGroup().getName();
 	}
-	
+
 	public String getCommonFunction() {
 		return getGene().getGeneGroup().getCommonFunction(true, null);
 	}
-	
+
 	public void setEval( double eval ) {
 		this.eval = eval;
 	}
-	
+
 	public String getContloc() {
 		return this.getContshort() != null ? this.getContshort().getName() : "";
 	}
-	
+
 	public String getContigName() {
 		return getName();
 	}
-	
+
 	/*public Tegeval setNext( Tegeval next ) {
 		Tegeval old = this.next;
 		this.next = next;
 		return old;
 	}
-	
+
 	public Tegeval setPrevious( Tegeval prev ) {
 		Tegeval old = this.prev;
 		this.prev = prev;
 		prev.setNext( this );
 		return old;
 	}*/
-	
+
 	private double gcSkew() {
 		int g = 0;
 		int c = 0;
@@ -98,7 +100,7 @@ public class Tegeval extends Annotation implements Teg {
 		double gc = g+c;
 		return gc == 0 ? gc : (g-c)/gc;
 	}
-	
+
 	public void unresolvedGap( int i ) {
 		Contig contig = getContshort();
 		if(contig != null) {
@@ -162,14 +164,14 @@ public class Tegeval extends Annotation implements Teg {
 		}
 		//return ret;
 	}
-	
+
 	//Contig 			contshort;
 	//Sequence	 		seq;
 	//StringBuilder 	dna;
 	int 				numCys;
 	//Tegeval			next;
 	//Tegeval			prev;
-	//boolean			
+	//boolean
 
 	/*public void setSequence(StringBuilder seq) {
 		if (seq != null) {
@@ -185,11 +187,11 @@ public class Tegeval extends Annotation implements Teg {
 	public String toString() {
 		return (ori == -1 ? "-" + this.getContloc() : this.getContloc()) + " " + this.getStart() + "-" + this.getEnd();
 	}
-	
+
 	public static boolean locsort = true;
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(@NotNull Object o) {
 		/*if( o != null ) return this.getGene().toString().compareTo(o.toString());
 		else return 1;*/
 
@@ -199,7 +201,7 @@ public class Tegeval extends Annotation implements Teg {
 			return super.compareTo(o);
 		}
 	}
-	
+
 	public int compareTo(Tegeval tv) {
 		if( locsort ) {
 			if( getContshort() == null ) {
@@ -216,7 +218,7 @@ public class Tegeval extends Annotation implements Teg {
 			return comp == 0 ? getSpecies().compareTo(tv.getSpecies()) : comp;
 		}
 	}
-	
+
 	public int compareTo(Teginfo ti) {
 		return 1;
 	}

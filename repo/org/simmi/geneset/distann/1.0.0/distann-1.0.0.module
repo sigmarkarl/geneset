@@ -10,7 +10,7 @@
   },
   "createdBy": {
     "gradle": {
-      "version": "8.0.1"
+      "version": "8.1.1"
     }
   },
   "variants": [
@@ -27,11 +27,11 @@
         {
           "name": "distann-1.0.0.jar",
           "url": "distann-1.0.0.jar",
-          "size": 10523509,
-          "sha512": "d8e54d61ad3b24f04209dfaaaeab6762f9a5bbe3d31d61bd61b15e15ebab5a103999d180d8cf2bc162065270bf874f7fae33e910ce647db30dbad37f996940cf",
-          "sha256": "ff7258ca4dd2625613081b28f8b73b2673de501b44c81fbfc92c3852a23e11d3",
-          "sha1": "d186ef24fca35f09b7a0bcf46474a4ffb38fedde",
-          "md5": "e0fd937999f33187fe68d58ffaf051ba"
+          "size": 10535786,
+          "sha512": "18bd257fe302b8946677c8795088e2416e6755a9ae0ccba2d1fd4c9a3737cc67de8b6a1c9a20f1e563e8e6d02cd9e39beac913f7cba19d0ac5caeaf0c81451e8",
+          "sha256": "317b5b4f137ab43c230c24fa0bfb96e3d4f0105076ca190e67f2ce68ffcd43d9",
+          "sha1": "0bcf7b82f1faefbde23a70eb2a22164699129f96",
+          "md5": "ce5faea56928dfb644f23691c4df2d6a"
         }
       ]
     },
@@ -207,6 +207,13 @@
           }
         },
         {
+          "group": "org.json",
+          "module": "json",
+          "version": {
+            "requires": "20230227"
+          }
+        },
+        {
           "group": "org.apache.poi",
           "module": "poi",
           "version": {
@@ -266,7 +273,7 @@
           "group": "org.apache.spark",
           "module": "spark-core_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -283,7 +290,7 @@
           "group": "org.apache.spark",
           "module": "spark-mllib_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -300,7 +307,7 @@
           "group": "org.apache.spark",
           "module": "spark-kubernetes_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -317,7 +324,41 @@
           "group": "org.apache.spark",
           "module": "spark-graphx_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-sql_2.13",
+          "version": {
+            "requires": "3.4.0"
+          },
+          "excludes": [
+            {
+              "group": "com.fasterxml.jackson",
+              "module": "*"
+            },
+            {
+              "group": "avro-mapred",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.apache.spark",
+          "module": "spark-connect_2.13",
+          "version": {
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -342,11 +383,11 @@
         {
           "name": "distann-1.0.0.jar",
           "url": "distann-1.0.0.jar",
-          "size": 10523509,
-          "sha512": "d8e54d61ad3b24f04209dfaaaeab6762f9a5bbe3d31d61bd61b15e15ebab5a103999d180d8cf2bc162065270bf874f7fae33e910ce647db30dbad37f996940cf",
-          "sha256": "ff7258ca4dd2625613081b28f8b73b2673de501b44c81fbfc92c3852a23e11d3",
-          "sha1": "d186ef24fca35f09b7a0bcf46474a4ffb38fedde",
-          "md5": "e0fd937999f33187fe68d58ffaf051ba"
+          "size": 10535786,
+          "sha512": "18bd257fe302b8946677c8795088e2416e6755a9ae0ccba2d1fd4c9a3737cc67de8b6a1c9a20f1e563e8e6d02cd9e39beac913f7cba19d0ac5caeaf0c81451e8",
+          "sha256": "317b5b4f137ab43c230c24fa0bfb96e3d4f0105076ca190e67f2ce68ffcd43d9",
+          "sha1": "0bcf7b82f1faefbde23a70eb2a22164699129f96",
+          "md5": "ce5faea56928dfb644f23691c4df2d6a"
         }
       ]
     }

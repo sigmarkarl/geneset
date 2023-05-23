@@ -10,7 +10,7 @@
   },
   "createdBy": {
     "gradle": {
-      "version": "8.0.1"
+      "version": "8.1.1"
     }
   },
   "variants": [
@@ -27,11 +27,11 @@
         {
           "name": "serifier-1.0.0.jar",
           "url": "serifier-1.0.0.jar",
-          "size": 109294,
-          "sha512": "2f4d57d05b785671a6461710d7fc476c2d4be3d3ee9c7a5c5abe7c5f425e1f01fe74af98312999ac1f5e6a4eaf66801fa527fb9fa04f835f19260f57906238e1",
-          "sha256": "39bc8e20f67c441b2b1fc54b57a1131ef1f0456fbc3af2509cdf74572a0b6810",
-          "sha1": "f0bd5208d765a6bf832efa3011cfe7092fd2a54a",
-          "md5": "db9ff716e71453004c2e9e007c766ebd"
+          "size": 108798,
+          "sha512": "c21c3be960cd451ab91963f88ffd33ba5e324601ab99b683a333601e4c8366de26043a75b7d2b0523dc7faf5717dd54eee8ad6c18bea8b38f9ee1af163aba3d5",
+          "sha256": "5b99dbb4cf22cdad4d3a083dcdc18f4c8027b9484edf1255d3c0f15448c1b28d",
+          "sha1": "d16ebe02086bfe7ae826d5c0ec48ffe8c14d5a02",
+          "md5": "478388a1426aab96927d390bd9dc2a89"
         }
       ]
     },
@@ -185,7 +185,7 @@
           "group": "org.apache.spark",
           "module": "spark-mllib_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -202,7 +202,7 @@
           "group": "org.apache.spark",
           "module": "spark-sql_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -219,7 +219,7 @@
           "group": "org.apache.spark",
           "module": "spark-kubernetes_2.13",
           "version": {
-            "requires": "3.3.2"
+            "requires": "3.4.0"
           },
           "excludes": [
             {
@@ -251,11 +251,11 @@
         {
           "name": "serifier-1.0.0.jar",
           "url": "serifier-1.0.0.jar",
-          "size": 109294,
-          "sha512": "2f4d57d05b785671a6461710d7fc476c2d4be3d3ee9c7a5c5abe7c5f425e1f01fe74af98312999ac1f5e6a4eaf66801fa527fb9fa04f835f19260f57906238e1",
-          "sha256": "39bc8e20f67c441b2b1fc54b57a1131ef1f0456fbc3af2509cdf74572a0b6810",
-          "sha1": "f0bd5208d765a6bf832efa3011cfe7092fd2a54a",
-          "md5": "db9ff716e71453004c2e9e007c766ebd"
+          "size": 108798,
+          "sha512": "c21c3be960cd451ab91963f88ffd33ba5e324601ab99b683a333601e4c8366de26043a75b7d2b0523dc7faf5717dd54eee8ad6c18bea8b38f9ee1af163aba3d5",
+          "sha256": "5b99dbb4cf22cdad4d3a083dcdc18f4c8027b9484edf1255d3c0f15448c1b28d",
+          "sha1": "d16ebe02086bfe7ae826d5c0ec48ffe8c14d5a02",
+          "md5": "478388a1426aab96927d390bd9dc2a89"
         }
       ]
     }

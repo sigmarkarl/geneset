@@ -1,15 +1,18 @@
 package org.simmi.javafasta.shared;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Cassette {
+public class Cassette extends BaseGeneGroup implements Serializable {
     public String tag;
     public final static Map<String,Cassette> allIslands = new HashMap<>();
-    private Set<Cassette>    front = Collections.emptySet();
-    private Set<Cassette>	back = Collections.emptySet();
-    private Cassette         parent;
-    public Set<Cassette>    prevIslands = new HashSet<>();
+    Set<Cassette>    front = Collections.emptySet();
+    Set<Cassette>	back = Collections.emptySet();
+    Cassette         parent;
+    Set<Cassette>    prevIslands = new HashSet<>();
 
     public Cassette() {}
 
@@ -98,6 +101,10 @@ public class Cassette {
 
     public String getIslandId() {
         return parent != null ? parent.getIslandId() : getName();
+    }
+
+    public long getParentId() {
+        return parent != null ? parent.getParentId() : getId();
     }
 
     public Cassette getTopParent() {
