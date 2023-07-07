@@ -52,7 +52,7 @@ public class Synteni {
 		GeneSet geneset = genesethead.geneset;
 		Set<String>	tspecies = new HashSet<>();
 		if( !genesethead.isGeneview() ) {
-			final TableView<GeneGroup> sorting = genesethead.getGeneGroupTable();
+			final var sorting = genesethead.getGeneGroupTable();
 			for( GeneGroup gg : sorting.getSelectionModel().getSelectedItems() ) {
 				tspecies.addAll( gg.getSpecies() );
 			}
@@ -215,7 +215,7 @@ public class Synteni {
 
 				//g.setColor( Color.blue );
 				if( !genesethead.isGeneview() ) {
-					TableView<GeneGroup> sorting = genesethead.getGeneGroupTable();
+					var sorting = genesethead.getGeneGroupTable();
 					for( GeneGroup gg : sorting.getSelectionModel().getSelectedItems() ) {
 						for( int k = 0; k < rowheader.getRowCount(); k++ ) {
 							int l = rowheader.convertRowIndexToModel( k );

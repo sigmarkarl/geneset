@@ -11,6 +11,7 @@ import org.apache.spark.graphx.lib.PageRank;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.storage.StorageLevel;
 import org.simmi.javafasta.shared.BaseGeneGroup;
+import org.simmi.javafasta.shared.FXGeneGroup;
 import org.simmi.javafasta.shared.GeneGroup;
 import scala.Tuple2;
 import scala.reflect.ClassTag;
@@ -33,7 +34,7 @@ public class LabelPropagationAction implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        TableView<GeneGroup> table = genesethead.table;
+        TableView<FXGeneGroup> table = genesethead.table;
         Path zippath = genesethead.geneset.zippath;
         List<GeneGroup> allgenegroups = genesethead.geneset.allgenegroups;
         var idMap = new HashMap<Long, GeneGroup>();

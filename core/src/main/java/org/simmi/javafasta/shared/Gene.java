@@ -345,7 +345,7 @@ public class Gene implements Serializable {
 	public String koname;
 	public String ecid;
 	public String blastspec;
-	public Set<Function> funcentries;
+	public Set<SimpleFunction> funcentries;
 	//Map<String, Teginfo> species;
 	transient private Annotation tegeval;
 	private String aac;

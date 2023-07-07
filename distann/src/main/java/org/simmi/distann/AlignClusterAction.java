@@ -31,12 +31,12 @@ public class AlignClusterAction implements EventHandler<ActionEvent> {
 
     @Override
     public void handle(ActionEvent event) {
-        TableView<GeneGroup> table = genesethead.table;
+        var table = genesethead.table;
         Path zippath = genesethead.geneset.zippath;
         Collection<GeneGroup> allgenegroups = genesethead.geneset.allgenegroups;
 
         Collection<GeneGroup> ggset;
-        ObservableList<GeneGroup> ogg = table.getSelectionModel().getSelectedItems();
+        var ogg = table.getSelectionModel().getSelectedItems();
         ggset = new HashSet<>();
         if( ogg.size() == 0 ) {
             for( GeneGroup gg : allgenegroups ) {

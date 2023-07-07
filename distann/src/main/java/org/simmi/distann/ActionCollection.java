@@ -64,19 +64,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.spark.ml.feature.PCA;
+import org.simmi.javafasta.shared.*;
 import org.simmi.serifier.SerifyApplet;
 import org.simmi.spilling.Connectron;
 import org.simmi.spilling.Corp;
 import org.simmi.distann.GeneSet.StackBarData;
-import org.simmi.javafasta.shared.Annotation;
-import org.simmi.javafasta.shared.Cog;
-import org.simmi.javafasta.shared.Function;
-import org.simmi.javafasta.shared.Gene;
-import org.simmi.javafasta.shared.GeneGroup;
-import org.simmi.javafasta.shared.PrincipleComponentAnalysis;
-import org.simmi.javafasta.shared.Sequence;
-import org.simmi.javafasta.shared.Serifier;
-import org.simmi.javafasta.shared.Tegeval;
 import org.simmi.javafasta.unsigned.JavaFasta;
 import org.simmi.javafasta.unsigned.NativeRun;
 
@@ -1170,7 +1162,7 @@ public class ActionCollection {
 							Tegeval tv = (Tegeval) ann;
 							if (tv.getGene().ecid != null && tv.getGene().ecid.length() > 0) count++;
 							else if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getFunctions() != null) {
-								for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 									if (f.getEc() != null && f.getEc().length() > 0) {
 										count++;
 										break;
@@ -1449,7 +1441,7 @@ public class ActionCollection {
 						if(ann instanceof Tegeval) {
 							Tegeval tv = (Tegeval) ann;
 							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getFunctions() != null)
-								for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 									if (f.getMetacyc() != null && f.getMetacyc().length() > 0) {
 										count++;
 										break;
@@ -1476,23 +1468,23 @@ public class ActionCollection {
 		rw = sh.createRow(rr++);
 		rw.createCell(k++).setCellValue("Protein coding genes connected to KEGG reactions");
 		fw.write("</tr><tr><td>Protein coding genes connected to KEGG reactions</td>");
-		for( String spec : selspecs) {
-			List<Sequence> lcont = speccontigMap.get(spec);
+		for( var spec : selspecs) {
+			var lcont = speccontigMap.get(spec);
 			int count = 0;
 			int total = 0;
 			if( lcont != null ) for( Sequence ct : lcont ) {
 				if( ct.getAnnotations() != null ) {
-					for( Annotation ann : ct.getAnnotations() ) {
+					for( var ann : ct.getAnnotations() ) {
 						if(ann instanceof Tegeval) {
-							Tegeval tv = (Tegeval) ann;
+							var tv = (Tegeval) ann;
 							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getFunctions() != null) {
-								for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 									boolean found = false;
 									if (f.getKegg() != null && f.getKegg().length() > 0) {
 										count++;
 										found = true;
 									}
-									if (!found && f.isa != null) for (String nid : f.isa) {
+									if (!found && f.getIsa() != null) for (var nid : f.getIsa()) {
 										Function nf = geneset.funcmap.get(nid);
 										if (nf != null && nf.getKegg() != null && nf.getKegg().length() > 0) {
 											count++;
@@ -1532,7 +1524,7 @@ public class ActionCollection {
 				if( ct.getAnnotations() != null ) {
 					for( Annotation ann : ct.getAnnotations() ) {
 						if(ann instanceof Tegeval) {
-							Tegeval tv = (Tegeval) ann;
+							var tv = (Tegeval) ann;
 							if (tv.getGene().getGeneGroup() != null && tv.getGene().getGeneGroup().getGenes() != null) {
 								boolean found = false;
 								for (Annotation a : tv.getGeneGroup().getGenes()) {
@@ -1576,7 +1568,7 @@ public class ActionCollection {
 								}*/
 								}
 
-								if (!found) for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								if (!found) for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 								/*boolean found = false;
 								if( f.kegg != null && f.kegg.length() > 0 ) {
 									count++;
@@ -1690,7 +1682,7 @@ public class ActionCollection {
 								}*/
 								}
 
-								if (!found) for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								if (!found) for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 								/*boolean found = false;
 								if( f.kegg != null && f.kegg.length() > 0 ) {
 									count++;
@@ -1809,7 +1801,7 @@ public class ActionCollection {
 								}*/
 								}
 
-								if (!found) for (Function f : tv.getGene().getGeneGroup().getFunctions()) {
+								if (!found) for (var f : tv.getGene().getGeneGroup().getFunctions()) {
 								/*boolean found = false;
 								if( f.kegg != null && f.kegg.length() > 0 ) {
 									count++;
@@ -1896,7 +1888,7 @@ public class ActionCollection {
 										}
 
 										if (g.funcentries != null) {
-											for (Function f : g.funcentries) {
+											for (var f : g.funcentries) {
 												if (f.getKo() != null && f.getKo().length() > 0) {
 													found = true;
 													break;
@@ -1916,7 +1908,7 @@ public class ActionCollection {
 									}
 
 									if (!found) {
-										for (Function f : tv.getGeneGroup().getFunctions()) {
+										for (var f : tv.getGeneGroup().getFunctions()) {
 											if (f.getKo() != null && f.getKo().length() > 0) {
 												found = true;
 												break;
@@ -1925,7 +1917,7 @@ public class ActionCollection {
 									}
 
 									if (!found) {
-										for (Function f : tv.getGeneGroup().getFunctions()) {
+										for (var f : tv.getGeneGroup().getFunctions()) {
 											for (String ko : geneset.ko2go.keySet()) {
 												Set<String> gos = geneset.ko2go.get(ko);
 												if (gos.contains(f.getGo())) {
@@ -2099,7 +2091,7 @@ public class ActionCollection {
 	public static void addAll( Menu menu,
 			final Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap,
 			final GeneSetHead genesethead, final Map<String,List<Sequence>> speccontigMap,
-			final TableView<GeneGroup> table, final Container comp, final ChatServer cs ) {
+			final TableView<FXGeneGroup> table, final Container comp, final ChatServer cs ) {
 		GeneSet geneset = genesethead.geneset;
 		//JButton matrixbutton = new JButton(matrixaction);
 
@@ -2467,7 +2459,7 @@ public class ActionCollection {
 		pangraphaction.setOnAction( actionEvent -> {
 			SwingUtilities.invokeLater(() -> {
 				var specs = genesethead.getSelspec(genesethead, geneset.specList, false, null);
-				List<GeneGroup> selgg;
+				List<? extends GeneGroup> selgg;
 				if (genesethead.splitpane.getItems().get(0) == genesethead.ggsplit) {
 					selgg = genesethead.table.getSelectionModel().getSelectedItems();
 				} else {
@@ -3020,7 +3012,7 @@ public class ActionCollection {
 					}
 
 					if( ecbtn.isSelected() ) {
-						for( Function f : gg.getFunctions() ) {
+						for( var f : gg.getFunctions() ) {
 							if( f.getEc() != null && f.getEc().length() > 1 ) ids.add( "E"+f.getEc() );
 						}
 					}
@@ -3459,7 +3451,7 @@ public class ActionCollection {
 						if( g != null ) {
 							GeneGroup gg = g.getGeneGroup();
 							int i = geneset.allgenegroups.indexOf( gg );
-							table.getSelectionModel().select( gg );
+							table.getSelectionModel().select( (FXGeneGroup) gg );
 						}
 					}
 				}
@@ -3482,7 +3474,7 @@ public class ActionCollection {
 						for( String gn : mltreemap ) {
 							if( koname.contains(gn) ) {
 								GeneGroup gg = g.getGeneGroup();
-								table.getSelectionModel().select( gg );
+								table.getSelectionModel().select( (FXGeneGroup) gg );
 
 								break;
 							}
@@ -4106,32 +4098,32 @@ public class ActionCollection {
 				}
 			}
 
-			Map<Function,Set<GeneGroup>> fggmap = new HashMap<Function,Set<GeneGroup>>();
+			var fggmap = new HashMap<SimpleFunction,Set<GeneGroup>>();
 			for( GeneGroup genegroup : includedGroups ) {
-				Set<Function>	funcset = genegroup.getFunctions();
-				for( Function f : funcset ) {
+				var	funcset = genegroup.getFunctions();
+				for( SimpleFunction f : funcset ) {
 					Set<GeneGroup>	sgg;
 					if( !fggmap.containsKey( f ) ) {
-						sgg = new HashSet<GeneGroup>();
+						sgg = new HashSet<>();
 						fggmap.put(f, sgg);
 					} else sgg = fggmap.get( f );
 					sgg.add( genegroup );
 				}
 			}
 
-			Set<Function> delset = new HashSet<Function>();
-			for( Function f1 : fggmap.keySet() ) {
-				Set<GeneGroup> sgg1 = fggmap.get(f1);
-				for( Function f2 : fggmap.keySet() ) {
+			var delset = new HashSet<SimpleFunction>();
+			for( var f1 : fggmap.keySet() ) {
+				var sgg1 = fggmap.get(f1);
+				for( var f2 : fggmap.keySet() ) {
 					if( !f1.equals(f2) ) {
-						Set<GeneGroup> sgg2 = fggmap.get(f2);
+						var sgg2 = fggmap.get(f2);
 						if( sgg1.containsAll( sgg2 ) ) {
 							delset.add( f2 );
 						}
 					}
 				}
 			}
-			for( Function f : delset ) {
+			for( var f : delset ) {
 				fggmap.remove( f );
 			}
 
@@ -4257,7 +4249,7 @@ public class ActionCollection {
 				}
 
 				for( GeneGroup gg : ggset ) {
-					table.getSelectionModel().select( gg );
+					table.getSelectionModel().select( (FXGeneGroup) gg );
 				}
 		});
 
@@ -4509,7 +4501,7 @@ public class ActionCollection {
 				final double[] b1;
 				final double[] b2;
 				final String[] names;
-			ObservableList<GeneGroup> lgg = genesethead.table.getSelectionModel().getSelectedItems();
+			var lgg = genesethead.table.getSelectionModel().getSelectedItems();
 
 			double[] mat = new double[ lgg.size()*lgg.size() ];
 			Arrays.fill( mat, 0.0 );

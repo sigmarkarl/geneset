@@ -24,6 +24,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import org.simmi.javafasta.shared.Annotation;
+import org.simmi.javafasta.shared.FXGeneGroup;
 import org.simmi.javafasta.shared.GeneGroup;
 import org.simmi.javafasta.shared.Sequence;
 
@@ -32,10 +33,10 @@ import javafx.scene.control.TableView;
 public class CodingRegions {
 	public void coderegPlot( GeneSetHead genesethead, Container comp ) {
 		GeneSet geneset = genesethead.geneset;
-		final TableView<GeneGroup> 	table = genesethead.getGeneGroupTable();
+		final TableView<FXGeneGroup> 	table = genesethead.getGeneGroupTable();
 		final Collection<String> 	specset = geneset.getSpecies(); //speciesFromCluster( clusterMap );
 		final List<String>			species = new ArrayList<String>( specset );
-		
+
 		TableModel model = new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -76,16 +77,16 @@ public class CodingRegions {
 			@Override
 			public void removeTableModelListener(TableModelListener l) {}
 		};
-		JTable table1 = new JTable( model );		
+		JTable table1 = new JTable( model );
 		table1.getSelectionModel().setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 		JScrollPane	scroll1 = new JScrollPane( table1 );
-		
+
 		JOptionPane.showMessageDialog(comp, scroll1);
-		
+
 		String spec = (String)table1.getValueAt( table1.getSelectedRow(), 0 );
 		final BufferedImage bimg = new BufferedImage( 2048, 2048, BufferedImage.TYPE_INT_ARGB );
 		final Graphics2D g2 = bimg.createGraphics();
-		
+
 		final List<Sequence> contigs = geneset.speccontigMap.get( spec );
 		draw( g2, spec, geneset, bimg.getWidth(), bimg.getHeight(), contigs );
 		JComponent cmp = new JComponent() {
@@ -95,12 +96,12 @@ public class CodingRegions {
 				g2.drawImage(bimg, 0, 0, this);
 			}
 		};
-		
+
 		Dimension dim = new Dimension( 2048, 2048 );
 		cmp.setPreferredSize( dim );
 		cmp.setSize( dim );
 		JScrollPane	scrollpane = new JScrollPane( cmp );
-		
+
 		JToolBar	toolbar = new JToolBar();
 		/*toolbar.add( specombo );
 		toolbar.add( relcol );
@@ -108,43 +109,43 @@ public class CodingRegions {
 		toolbar.add( syntcol );
 		toolbar.add( brcol );
 		toolbar.add( syntgrad );*/
-		
+
 		JComponent panel = new JComponent() {};
 		panel.setLayout( new BorderLayout() );
 		panel.add( toolbar, BorderLayout.NORTH );
 		panel.add( scrollpane );
-		
+
 		JFrame frame = new JFrame();
 		frame.add( panel );
 		frame.setSize( dim );
 		frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 		frame.setVisible( true );
 	}
-	
-	public void draw( Graphics2D g2, String spec1, GeneSet geneset, int w, int h, Collection<Sequence> contigs ) {		
+
+	public void draw( Graphics2D g2, String spec1, GeneSet geneset, int w, int h, Collection<Sequence> contigs ) {
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 		g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
         g2.setBackground( Color.white );
 		g2.clearRect( 0, 0, w, h );
 		g2.setColor( Color.black );
-		
+
 		int total = 0;
 		for( Sequence ctg : contigs ) {
 			total += ctg.length();
 		}
 		System.err.println( total );
-		
+
 		int count = 0;
 		for( Sequence ctg : contigs ) {
 			if( ctg.getAnnotations() != null ) {
-				for( Annotation tv : ctg.getAnnotations() ) {						
+				for( Annotation tv : ctg.getAnnotations() ) {
 					//double theta = count*Math.PI*2.0/total;
 					double theta = (count+(tv.stop+tv.start)/2.0)*Math.PI*2.0/total;
 					double theta1 = (count+tv.start)*Math.PI*2.0/total;
 					double theta2 = (count+tv.stop)*Math.PI*2.0/total;
-					
+
 					double val = (tv.stop-tv.start)*1440*Math.PI/total;
-					
+
 					//System.err.println( thetam );
 					//g2.fillArc(512, 512, 2048-1024, 2048-1024, theta1, theta2-theta1);
 					g2.translate( w/2, h/2 );
@@ -154,7 +155,7 @@ public class CodingRegions {
 					g2.rotate( -theta );
                     g2.translate( -w/2, -h/2 );
 				}
-			
+
 				g2.setColor( Color.black );
 				double theta = count*Math.PI*2.0/total;
 				g2.translate( w/2, h/2 );
@@ -166,7 +167,7 @@ public class CodingRegions {
 			}
 			count += ctg.length();
 		}
-		
+
 		g2.setColor( Color.black );
 		g2.setFont( g2.getFont().deriveFont( Font.ITALIC ).deriveFont(32.0f) );
 		String[] specsplit = spec1.split("_");

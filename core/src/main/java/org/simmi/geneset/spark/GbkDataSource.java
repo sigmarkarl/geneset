@@ -1,4 +1,4 @@
-package org.simmi.distann.spark;
+package org.simmi.geneset.spark;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.mapreduce.Job;

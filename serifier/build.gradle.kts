@@ -53,4 +53,5 @@ dependencies {
     }
     implementation(project(":javafasta"))
     implementation(project(":Treedraw"))
+    implementation(project(":core"))
 }

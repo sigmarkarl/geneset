@@ -4995,7 +4995,7 @@ public class GeneSet implements GenomeSet {
 	Map<Set<String>, Set<Map<String, Set<String>>>> clusterMap;
 	Map<String,Function> funcmap = new HashMap<>();
 
-	private void readGoInfo(BufferedReader br, Map<Function, Set<Gene>> gofilter, String outfile) throws IOException {
+	private void readGoInfo(BufferedReader br, Map<SimpleFunction, Set<Gene>> gofilter, String outfile) throws IOException {
 		FileWriter fw = null;
 		if (outfile != null)
 			fw = new FileWriter(outfile);
@@ -7059,10 +7059,10 @@ public class GeneSet implements GenomeSet {
 		}
 		if( genmap != null ) genmap.clear();
 
-		Map<Function, Set<Gene>> totalgo = new HashMap<>();
+		Map<SimpleFunction, Set<Gene>> totalgo = new HashMap<>();
 		for (Gene g : genelist) {
 			if (g.funcentries != null) {
-				for( Function f : g.funcentries) {
+				for( var f : g.funcentries) {
 					Set<Gene> set;
 					if (totalgo.containsKey(f)) {
 						set = totalgo.get(f);

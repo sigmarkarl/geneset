@@ -575,7 +575,7 @@ public class IGeneCompare {
 											break;
 										} else {
 											if (!genesethead.isGeneview()) {
-												genesethead.getGeneGroupTable().getSelectionModel().select(tv.getGene().getGeneGroup());
+												genesethead.getGeneGroupTable().getSelectionModel().select((FXGeneGroup) tv.getGene().getGeneGroup());
 											} else {
 												int ind = (int) ((rad - 250.0) / 15.0);
 												String spec = spec2s.get(ind);
@@ -1737,7 +1737,7 @@ public class IGeneCompare {
 		g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
 
 		if( spec1 == null || spec1.length() == 0 ) {
-			ObservableList<GeneGroup> lgg = genesethead.getGeneGroupTable().getItems();
+			var lgg = genesethead.getGeneGroupTable().getItems();
 			int rowcount = lgg.size();
 			for( int r = 0; r < rowcount; r++ ) {
 				//int i = genesethead.table.convertRowIndexToModel(r);

@@ -887,7 +887,7 @@ public class GeneSetHead {
 		return new SpeciesSelection(geneset).getSelspec(comp, specs, custom, contigs);
 	}
 
-	public TableView<GeneGroup> getGeneGroupTable() {
+	public TableView<FXGeneGroup> getGeneGroupTable() {
 		return table;
 	}
 
@@ -1110,7 +1110,7 @@ public class GeneSetHead {
 							int r = table.convertRowIndexToView( i );
 							table.addRowSelectionInterval(r, r);
 						}*/
-									Platform.runLater(() -> table.getSelectionModel().select(g.getGeneGroup()));
+									Platform.runLater(() -> table.getSelectionModel().select((FXGeneGroup) g.getGeneGroup()));
 								} else {
 						/*i = geneset.genelist.indexOf( g );
 						if( i != -1 && i < table.getRowCount() ) {
@@ -1410,7 +1410,7 @@ public class GeneSetHead {
                                                 int i = table.convertRowIndexToView( ggindex );
                                                 if( i != -1 ) table.addRowSelectionInterval(i, i);*/
 
-													table.getSelectionModel().select( gg );
+													table.getSelectionModel().select((FXGeneGroup) gg);
 												} else {
                                                 /*int gindex = geneset.genelist.indexOf( g );
                                                 int i = table.convertRowIndexToView( gindex );
@@ -3939,7 +3939,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 				Set<GeneGroup> genegroups = new HashSet<>();
 				int rr = 0;
 				if (!isGeneview()) {
-					ObservableList<GeneGroup> lgg = table.getSelectionModel().getSelectedItems();
+					ObservableList<FXGeneGroup> lgg = table.getSelectionModel().getSelectedItems();
 					genegroups.addAll(lgg);
 					rr = lgg.size();
 				} else {
@@ -4695,8 +4695,8 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		});
 		MenuItem aaiaction = new MenuItem("AAI");
 		aaiaction.setOnAction( actionEvent -> {
-			List<GeneGroup> agg = table.getSelectionModel().getSelectedItems();
-			List<GeneGroup> lagg = agg.isEmpty() ? geneset.allgenegroups : agg;
+			List<FXGeneGroup> agg = table.getSelectionModel().getSelectedItems();
+			var lagg = agg.isEmpty() ? geneset.allgenegroups : agg;
 			SwingUtilities.invokeLater(() -> {
 				JCheckBox all = new JCheckBox("Skip gaps");
 				Set<String> species = getSelspec(GeneSetHead.this, geneset.specList, true, all);
@@ -4715,9 +4715,10 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 			SwingUtilities.invokeLater(() -> {
 				Set<String> species = getSelspec(GeneSetHead.this, geneset.specList);
 				List<String> speclist = new ArrayList<>(species);
-				List<GeneGroup> agg = table.getSelectionModel().getSelectedItems();
-
-				ANIResult aniResult = JavaFasta.corr(speclist, agg, true, false);
+				var agg = table.getSelectionModel().getSelectedItems();
+				var agg2 = (Collection<? extends GeneGroup>)agg;
+				var agg3 = (Collection<GeneGroup>)agg2;
+				ANIResult aniResult = JavaFasta.corr(speclist, agg3, true, false);
 				org.simmi.shared.TreeUtil tu = new org.simmi.shared.TreeUtil();
 				geneset.corrInd.clear();
 				for (String spec : speclist) {
@@ -5555,14 +5556,14 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		});
 		MenuItem selhiAction = new MenuItem("Select hilighted");
 		selhiAction.setOnAction( actionEvent -> {
-			for (GeneGroup gg : table.getSelectionModel().getSelectedItems()) {
+			for (FXGeneGroup gg : table.getSelectionModel().getSelectedItems()) {
 				gg.setSelected(true);
 			}
 		});
 		MenuItem hiselAction = new MenuItem("Hilight selected");
 		hiselAction.setOnAction( actionEvent -> {
 			for (GeneGroup gg : geneset.allgenegroups) {
-				if(gg.isSelected()) table.getSelectionModel().select(gg);
+				if(((FXGeneGroup)gg).isSelected()) table.getSelectionModel().select((FXGeneGroup) gg);
 			}
 		});
 		select.getItems().add( breakpointselAction );
@@ -5583,7 +5584,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 				Set<Gene> selitems = new HashSet<>( gtable.getSelectionModel().getSelectedItems() );
 				gtable.geneFilteredList.setPredicate(selitems::contains);
 			} else {
-				Set<GeneGroup> selitems = geneset.allgenegroups.stream().filter(GeneGroup::isSelected).collect(Collectors.toSet()); //new HashSet<>( table.getSelectionModel().getSelectedItems() );
+				Set<GeneGroup> selitems = geneset.allgenegroups.stream().map(gg -> (FXGeneGroup)gg).filter(FXGeneGroup::isSelected).collect(Collectors.toSet()); //new HashSet<>( table.getSelectionModel().getSelectedItems() );
 				table.filteredData.setPredicate(selitems::contains);
 			}
 		});
@@ -5605,7 +5606,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 				Set<Gene> selitems = new HashSet<>( gtable.getSelectionModel().getSelectedItems() );
 				gtable.geneFilteredList.setPredicate( p -> !selitems.contains(p) );
 			} else {
-				Set<GeneGroup> selitems = geneset.allgenegroups.stream().filter(GeneGroup::isSelected).collect(Collectors.toSet());;
+				Set<GeneGroup> selitems = geneset.allgenegroups.stream().map(gg -> (FXGeneGroup)gg).filter(FXGeneGroup::isSelected).collect(Collectors.toSet());;
 				table.filteredData.setPredicate( p -> !selitems.contains(p) );
 			}
 				/*genefilterset.clear();
@@ -5637,7 +5638,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		select.getItems().add( croptoinvhil );
 		MenuItem removesel = new MenuItem("Remove selection");
 		removesel.setOnAction( actionEvent -> {
-			geneset.allgenegroups.forEach(p -> p.setSelected(false));
+			geneset.allgenegroups.stream().map(gg -> (FXGeneGroup)gg).forEach(p -> p.setSelected(false));
 				// genefilterset.clear();
 			//int[] rr = table.getSelectedRows();
 			/*if (genefilterset.isEmpty()) {
@@ -5664,17 +5665,17 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		select.getItems().add( removehilight );
 		MenuItem invsel = new MenuItem("Invert selection");
 		invsel.setOnAction( actionEvent -> {
-			geneset.allgenegroups.forEach(p -> p.setSelected(!p.isSelected()));
+			geneset.allgenegroups.stream().map(gg -> (FXGeneGroup)gg).forEach(p -> p.setSelected(!p.isSelected()));
 		});
 		select.getItems().add( invsel );
 		MenuItem invhil = new MenuItem("Invert hilight");
 		invhil.setOnAction( actionEvent -> {
-			ObservableList<GeneGroup> selitems = table.getSelectionModel().getSelectedItems();
+			ObservableList<FXGeneGroup> selitems = table.getSelectionModel().getSelectedItems();
 			List<GeneGroup> newsel = new ArrayList<>(table.filteredData);
 			newsel.removeAll( selitems );
 
 			table.getSelectionModel().clearSelection();
-			newsel.forEach(gg -> table.getSelectionModel().select(gg));
+			newsel.forEach(gg -> table.getSelectionModel().select((FXGeneGroup) gg));
 
 			// genefilterset.clear();
 			//int[] rr = table.getSelectedRows();
@@ -5701,7 +5702,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 					Set<String> checkspec = new HashSet<>( gg.species.keySet() );
 					checkspec.retainAll( specset );
 					if( gg.getCommonTag() == null && checkspec.size() > 1 && gg.getTegevals().size() == gg.species.size() ) {//gg.getTegevals(checkspec).size() == checkspec.size() ) {
-						table.getSelectionModel().select( gg );
+						table.getSelectionModel().select( (FXGeneGroup) gg );
 						//table.setro
 					}
 				}
@@ -5711,10 +5712,10 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		selsinglemultstrain.setOnAction( actionEvent -> {
 				Set<String> specset = getSelspec(GeneSetHead.this, geneset.specList);
 				for( GeneGroup gg : geneset.allgenegroups ) {
-					Set<String> checkspec = new HashSet<String>( gg.species.keySet() );
+					var checkspec = new HashSet<String>( gg.species.keySet() );
 					checkspec.retainAll( specset );
 					if( gg.getCommonTag() == null && checkspec.size() > 1 && checkspec.size() < specset.size() && gg.getTegevals().size() == gg.species.size() ) {//gg.getTegevals(checkspec).size() == checkspec.size() ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 						//table.setro
 					}
 				}
@@ -5736,7 +5737,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
                             }
                         }
                         if ( geneset.size() > 1 ) {
-                            table.getSelectionModel().select(gg);
+                            table.getSelectionModel().select((FXGeneGroup) gg);
                             total += geneset.size();
                         }
                     }
@@ -5761,7 +5762,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
                 Platform.runLater(() -> {
                     for (GeneGroup gg : geneset.allgenegroups) {
                         if (gg.getTegevals().size() == gg.species.size()) {
-                            table.getSelectionModel().select(gg);
+                            table.getSelectionModel().select((FXGeneGroup) gg);
                             //table.setro
                         }
                     }
@@ -5781,7 +5782,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 						}
 					}
 					if( (float)cnt / (float)gg.species.size() > 0.7 ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 					}
 				}
 		});
@@ -5799,7 +5800,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 						}
 					}
 					if( (float)cnt / (float)gg.species.size() > 0.7 ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 					}
 				}
 		});
@@ -5809,7 +5810,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		selplasmidgenes.setOnAction( actionEvent -> {
 				for( GeneGroup gg : geneset.allgenegroups ) {
 					if( gg.isOnAnyPlasmid() ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 					}
 					/*int cnt = 0;
 					for( String spec : gg.species.keySet() ) {
@@ -5831,7 +5832,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		selectphagegenes.setOnAction( actionEvent -> {
 				for( GeneGroup gg : geneset.allgenegroups ) {
 					if( gg.isInAnyPhage() ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 					}
 					/*int cnt = 0;
 					for( String spec : gg.species.keySet() ) {
@@ -5947,7 +5948,8 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 
 					Platform.runLater(() -> {
 						isTableSelectListenerEnabled = false;
-						for( GeneGroup gg : geneset.allgenegroups ) {
+						for( GeneGroup ggs : geneset.allgenegroups ) {
+							var gg = (FXGeneGroup) ggs;
 							if( blehbtn.isSelected() ) {
 								Set<String> ss = new HashSet<>(gg.species.keySet());
 								ss.removeAll(specs);
@@ -5989,7 +5991,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 			if( !isGeneview() ) {
 				for( GeneGroup gg : geneset.allgenegroups ) {
 					if( gg.containsDirty() ) {
-						table.getSelectionModel().select(gg);
+						table.getSelectionModel().select((FXGeneGroup) gg);
 					}
 				}
 			}
@@ -6009,7 +6011,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 					for( GeneGroup gg : geneset.allgenegroups ) {
 						if( gg.getGenes() != null ) for( Annotation a : gg.getGenes() ) {
 							if( seldes.equals(a.getDesignation()) ) {
-								table.getSelectionModel().select(gg);
+								table.getSelectionModel().select((FXGeneGroup) gg);
 							}
 						}
 						i++;
@@ -7618,9 +7620,9 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 					//if( searchcolcomb.getSelectionModel().getSelectedItem().equals("Symbol") ) updateFilter(0, text, table, genefilter, genefilterset, label, 8, 9, 10, 16 );
 					//else updateFilter(0, text, table, genefilter, genefilterset, label, 0 );
 				} else {
-					Optional<GeneGroup> ogg = table.filteredData.stream().filter(p).findFirst();
+					var ogg = table.filteredData.stream().filter(p).findFirst();
 					if (ogg.isPresent()) {
-						GeneGroup gg = ogg.get();
+						var gg = ogg.get();
 						table.getSelectionModel().select(gg);
 						table.scrollTo(gg);
 					}
@@ -7731,7 +7733,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 		MenuItem showshared = new MenuItem("Show shared function");
 		showshared.setOnAction( e -> {
 				table.filterset.clear();
-				Set<Function> startfunc = new HashSet<>();
+				var startfunc = new HashSet<SimpleFunction>();
 				if( isGeneview() ) {
 					for( Gene gg : gtable.getSelectionModel().getSelectedItems() ) {
 						if (gg.funcentries != null) {
@@ -7749,7 +7751,7 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 					}
 				} else {
 					for( GeneGroup gg : table.getSelectionModel().getSelectedItems() ) {
-						Set<Function> fset = gg.getFunctions();
+						var fset = gg.getFunctions();
 						if( startfunc.isEmpty() ) {
 							startfunc.addAll( fset );
 						} else {
@@ -7770,16 +7772,16 @@ sb.append( gs.substring(i, Math.min( i + 70, gs.length() )) + "\n");
 				if( isGeneview() ) {
 					for( Gene gg : gtable.getSelectionModel().getSelectedItems() ) {
 						if (gg.funcentries != null) {
-							for( Function f : gg.funcentries ) {
-								table.filterset.add( f.index );
+							for( var f : gg.funcentries ) {
+								table.filterset.add( f.getIndex() );
 							}
 						}
 					}
 				} else {
 					for( GeneGroup gg : table.getSelectionModel().getSelectedItems() ) {
-						Set<Function> fset = gg.getFunctions();
-						for( Function f : fset ) {
-							table.filterset.add( f.index );
+						var fset = gg.getFunctions();
+						for( var f : fset ) {
+							table.filterset.add( f.getIndex() );
 						}
 					}
 				}

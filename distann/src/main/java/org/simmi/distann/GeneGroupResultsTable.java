@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class GeneGroupResultsTable extends TableView<GeneGroup> {
+public class GeneGroupResultsTable extends TableView<FXGeneGroup> {
     GeneSetHead     geneSetHead;
     GeneGroupTable  table;
     FunctionTable   ftable;
@@ -37,7 +37,7 @@ public class GeneGroupResultsTable extends TableView<GeneGroup> {
         return "#"+red+green+blue;
     }
 
-    public void cellRender( TableCell<GeneGroup,Teginfo> cell, Teginfo ti, int row ) {
+    public void cellRender( TableCell<FXGeneGroup,Teginfo> cell, Teginfo ti, int row ) {
         cell.setStyle( "-fx-background-color: white" );
         String spec = geneSetHead.syncolorcomb.getSelectionModel().getSelectedItem();
         if( spec != null && spec.length() > 0 ) {
@@ -182,10 +182,10 @@ public class GeneGroupResultsTable extends TableView<GeneGroup> {
 
     public void populate(List<String> specList) {
         for (String spec : specList) {
-            TableColumn<GeneGroup, Teginfo> speccol = new TableColumn<>(spec);
+            TableColumn<FXGeneGroup, Teginfo> speccol = new TableColumn<>(spec);
             //speccol.getStyleClass().add("tabstyle");
             speccol.setCellFactory(cell -> {
-                final TableCell<GeneGroup, Teginfo> tc = new TableCell<>() {
+                final TableCell<FXGeneGroup, Teginfo> tc = new TableCell<>() {
                     @Override
                     protected void updateItem(Teginfo item, boolean empty) {
                         super.updateItem(item, empty);
@@ -245,14 +245,14 @@ public class GeneGroupResultsTable extends TableView<GeneGroup> {
                 int[] rows = sel.stream().mapToInt( gg -> table.sortedData.indexOf(gg) ).toArray();
                 if( rows.length > 0 ) table.getSelectionModel().selectIndices(rows[0], rows);
                 table.label.setText(table.getItems().size() + "/" + table.getSelectionModel().getSelectedIndices().size());
-                table.scrollTo( selgg );
+                table.scrollTo( (FXGeneGroup) selgg );
             }
         });
 
         results.setOnMousePressed( e -> {
             table.tableisselecting = true;
             if (!ftable.ftableisselecting && e.getClickCount() == 2) {
-                Set<Function> fset = new HashSet<>();
+                var fset = new HashSet<SimpleFunction>();
                 table.filterset.clear();
                 if( !geneSetHead.isGeneview() ) {
                     for (GeneGroup gg : table.getSelectionModel().getSelectedItems()) {
@@ -261,8 +261,8 @@ public class GeneGroupResultsTable extends TableView<GeneGroup> {
                 } else {
                     for (Gene g : gtable.getSelectionModel().getSelectedItems()) {
                         if (g.funcentries != null) {
-                            for( Function f : g.funcentries ) {
-                                table.filterset.add(f.index);
+                            for( var f : g.funcentries ) {
+                                table.filterset.add(f.getIndex());
                             }
                         }
                     }

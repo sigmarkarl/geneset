@@ -28,12 +28,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import javafx.application.Platform;
-import org.simmi.javafasta.shared.Annotation;
-import org.simmi.javafasta.shared.GeneGroup;
-import org.simmi.javafasta.shared.Teginfo;
-import org.simmi.javafasta.shared.Gene;
-import org.simmi.javafasta.shared.Sequence;
-import org.simmi.javafasta.shared.Tegeval;
+import org.simmi.javafasta.shared.*;
 
 public class SyntGrad {
 	JCheckBox	contcheck = new JCheckBox("Show contig lines");
@@ -412,7 +407,7 @@ public class SyntGrad {
 											Platform.runLater(() -> {
 												genesethead.getGeneGroupTable().getSelectionModel().clearSelection();
                                                 if (!genesethead.isGeneview()) {
-                                                    genesethead.getGeneGroupTable().getSelectionModel().select(tv.getGene().getGeneGroup());
+                                                    genesethead.getGeneGroupTable().getSelectionModel().select((FXGeneGroup) tv.getGene().getGeneGroup());
                                                 } else {
                                                     Teginfo ti = tv.getGene().getGeneGroup().getGenes(spec);
                                                     for (Annotation te : ti.tset) {

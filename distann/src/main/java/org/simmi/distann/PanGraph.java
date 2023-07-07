@@ -12,7 +12,7 @@ public class PanGraph {
     Set<String> specs;
     List<GeneGroup> geneGroupList = new ArrayList<>();
 
-    public PanGraph(Set<String> specList, List<GeneGroup> ggList) {
+    public PanGraph(Set<String> specList, List<? extends GeneGroup> ggList) {
         this.specs = specList;
         for (GeneGroup gg : ggList) {
             var ospec = gg.getSpecies().stream().filter(specList::contains).findAny();

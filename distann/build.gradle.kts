@@ -44,9 +44,9 @@ tasks {
                 sourcesMain.output
         from(contents)
     }
-    build {
+    /*build {
         dependsOn(fatJar) // Trigger fat jar creation during build
-    }
+    }*/
 }
 
 protobuf {
@@ -73,6 +73,7 @@ javafx {
 }
 
 dependencies {
+    implementation(project(":core"))
     implementation(project(":javafasta"))
     implementation(project(":serifier"))
     implementation(project(":spilling"))

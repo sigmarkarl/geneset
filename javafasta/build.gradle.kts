@@ -34,6 +34,7 @@ javafx {
 
 dependencies {
     implementation(project(":Treedraw"))
+    implementation(project(":core"))
     implementation(group = "org.apache.poi", name = "poi", version = "5.2.3")
     implementation(group = "org.apache.poi", name = "poi-ooxml", version = "5.2.3")
     implementation(group = "org.ejml", name = "ejml-all", version = "0.41")

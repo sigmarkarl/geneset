@@ -3245,9 +3245,9 @@ public class JavaFasta extends JPanel {
 		//return ret;
 	}
 
-	public static ANIResult corr(List<String> speclist, Collection<GeneGroup> agg, boolean diff, boolean all) {
+	public static ANIResult corr(List<String> speclist, Collection<? extends GeneGroup> agg, boolean diff, boolean all) {
 		Map<String, Integer> blosumap = getBlosumMap();
-		Collection<GeneGroup> allgg = Collections.synchronizedCollection(agg);
+		Collection<? extends GeneGroup> allgg = Collections.synchronizedCollection(agg);
 
 		ANIResult aniResult = new ANIResult(speclist.size());
 		IntStream.range(0,speclist.size()).parallel().forEach(where -> {
@@ -3573,7 +3573,7 @@ public class JavaFasta extends JPanel {
 						int end = Math.min(stop, seq.length());
 						if( end > start ) {
 							if( begin < 0 ) {
-								String val = String.format( "%"+c.selectedRect.width+"s", seq.getSubstring( start, end, 1 ) );
+								var val = String.format( "%"+c.selectedRect.width+"s", seq.getSubstring( start, end, 1 ) );
 								return val;
 							}
 							return seq.getSubstring( start, end, 1 );

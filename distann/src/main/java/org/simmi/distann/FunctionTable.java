@@ -9,6 +9,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
+import org.simmi.javafasta.shared.FXGeneGroup;
 import org.simmi.javafasta.shared.Function;
 import org.simmi.javafasta.shared.Gene;
 import org.simmi.javafasta.shared.GeneGroup;
@@ -109,7 +110,7 @@ public class FunctionTable extends TableView<Function> {
                 for (Function f : ftable.getSelectionModel().getSelectedItems()) {
                     if( f.getGeneentries() != null ) {
                         for( Gene g : f.getGeneentries() ) {
-                            table.getSelectionModel().select( g.getGeneGroup() );
+                            table.getSelectionModel().select( (FXGeneGroup) g.getGeneGroup() );
 
                             //Gene g = genemap.get(ref);
 							/*int i = g.getGroupIndex();

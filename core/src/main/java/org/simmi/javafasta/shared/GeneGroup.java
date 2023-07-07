@@ -1,7 +1,5 @@
 package org.simmi.javafasta.shared;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -29,7 +27,6 @@ public class GeneGroup extends Cassette implements Serializable {
 	Map<String,Cog>					cogmap;
 	Map<String,Cog>					pfammap;
 	Map<String,Set<String>>			biosystemsmap;
-	transient BooleanProperty selected = new SimpleBooleanProperty();
 
 	/*Map<String,String>				cazyaamap;
 	Map<String,String>				cazycemap;
@@ -57,24 +54,12 @@ public class GeneGroup extends Cassette implements Serializable {
 		this.cazyplmap = cazyplmap;
 	}*/
 
-	public boolean isSelected() {
-		return selected.get();
-	}
-
-	public BooleanProperty selectedProperty() {
-		return selected;
-	}
-
 	public Set<GeneGroup> getGeneGroups() {
 		return Set.of(this);
 	}
 
 	public String getConnections() {
 		return getFront() + " " + getBack();
-	}
-
-	public void setSelected(boolean selected) {
-		this.selected.set(selected);
 	}
 
 	public String toString() {
@@ -297,8 +282,8 @@ public class GeneGroup extends Cassette implements Serializable {
 		return set.size() > 0 ? set.toString() : "";
 	}
 
-	public Set<Function> getFunctions() {
-		Set<Function>	funcset = new HashSet();
+	public Set<SimpleFunction> getFunctions() {
+		Set<SimpleFunction>	funcset = new HashSet();
 		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g != null && g.funcentries != null && g.funcentries.size() > 0 ) {
@@ -309,13 +294,13 @@ public class GeneGroup extends Cassette implements Serializable {
 		return funcset;
 	}
 
-	public String getCommonGO( boolean breakb, boolean withinfo, Set<Function> allowedFunctions ) {
+	public String getCommonGO( boolean breakb, boolean withinfo, Set<SimpleFunction> allowedFunctions ) {
 		String ret = "";
 		Set<String> already = new HashSet<>();
 		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g.funcentries != null && g.funcentries.size() > 0 ) {
-				for( Function f : g.funcentries ) {
+				for( SimpleFunction f : g.funcentries ) {
 					//Function f = funcmap.get( go );
 
 					if( allowedFunctions == null || allowedFunctions.contains(f) ) {
@@ -335,12 +320,12 @@ public class GeneGroup extends Cassette implements Serializable {
 		return ret;
 	}
 
-	public String getCommonFunction( boolean breakb, Set<Function> allowedFunctions ) {
+	public String getCommonFunction( boolean breakb, Set<SimpleFunction> allowedFunctions ) {
 		StringBuilder ret = new StringBuilder();
 		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
 			if( g.funcentries != null && g.funcentries.size() > 0 ) {
-				for( Function f : g.funcentries ) {
+				for( SimpleFunction f : g.funcentries ) {
 					//Function f = funcmap.get( go );
 
 					if( allowedFunctions == null || allowedFunctions.contains(f) ) {
@@ -379,7 +364,7 @@ public class GeneGroup extends Cassette implements Serializable {
 		Set<String>	included = new HashSet<>();
 		for( Annotation a : getGenes() ) {
 			Gene g = a.getGene();
-			if( g.funcentries != null ) for( Function f : g.funcentries ) {
+			if( g.funcentries != null ) for( SimpleFunction f : g.funcentries ) {
 				//Function f = funcmap.get( go );
 				String namespace = f.getNamespace();
 				//System.err.println( g.getName() + "  " + go );

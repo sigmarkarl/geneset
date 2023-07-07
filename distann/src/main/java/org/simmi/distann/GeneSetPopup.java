@@ -95,7 +95,7 @@ public class GeneSetPopup extends ContextMenu {
         return sgg;
     }
 
-    public void saveGeneGroups(List<GeneGroup> gg, List<GeneGroup> c) {
+    public void saveGeneGroups(List<FXGeneGroup> gg, List<FXGeneGroup> c) {
         Map<String,String> env = new HashMap<>();
         env.put("create", "true");
         try(var zfsystem = FileSystems.newFileSystem( geneSetHead.geneset.zipuri, env )) {
@@ -199,7 +199,7 @@ public class GeneSetPopup extends ContextMenu {
         ContextMenu popup = this;
         MenuItem splitaction = new MenuItem("Split");
         splitaction.setOnAction( e -> {
-            Dialog<List<GeneGroup>> dialog = new Dialog<>();
+            Dialog<List<FXGeneGroup>> dialog = new Dialog<>();
             dialog.setResizable( true );
 
             GridPane grid = new GridPane();
@@ -217,11 +217,11 @@ public class GeneSetPopup extends ContextMenu {
             grid.add(new Label("%Identity:"), 0, 1);
             grid.add(id, 1, 1);
 
-            final ListView<GeneGroup> list = new ListView<>();
+            final ListView<FXGeneGroup> list = new ListView<>();
             list.setPrefWidth(400);
             grid.add(list, 0, 2, 2, 1);
 
-            final ObservableList<GeneGroup> gg = geneSetHead.table.getSelectionModel().getSelectedItems();
+            final ObservableList<FXGeneGroup> gg = geneSetHead.table.getSelectionModel().getSelectedItems();
             list.setItems( gg );
 
             Label groupsize = new Label(""/*+gg.getGenes().size()*/);
@@ -238,10 +238,12 @@ public class GeneSetPopup extends ContextMenu {
                     } catch( Exception ex ) { failed = true; }
 
                     if( !failed && l > 0 ) {
-                        List<GeneGroup> lgg = new ArrayList<>();
+                        List<FXGeneGroup> lgg = new ArrayList<>();
                         for(GeneGroup ggg : gg) {
-                            Set<GeneGroup> sgg = updateSplit(ggg, d, l);
-                            lgg.addAll(sgg);
+                            var sgg = updateSplit(ggg, d, l);
+                            var fsgg = (Set<? extends GeneGroup>)sgg;
+                            var fxgg = (Set<FXGeneGroup>)fsgg;
+                            lgg.addAll(fxgg);
                         }
 
                         list.setItems(FXCollections.observableList(lgg));
@@ -272,7 +274,7 @@ public class GeneSetPopup extends ContextMenu {
             dialog.getDialogPane().setContent( grid );
             dialog.getDialogPane().getButtonTypes().add( ButtonType.OK );
             dialog.getDialogPane().getButtonTypes().add( ButtonType.CANCEL );
-            Optional<List<GeneGroup>> ogg = dialog.showAndWait();
+            var ogg = dialog.showAndWait();
 
             ogg.ifPresent( c -> {
                 geneSetHead.geneset.allgenegroups.removeAll(gg);
@@ -284,7 +286,7 @@ public class GeneSetPopup extends ContextMenu {
         popup.getItems().add( splitaction );
         MenuItem joinaction = new MenuItem("Join");
         joinaction.setOnAction(event -> {
-            final ObservableList<GeneGroup> ogg = geneSetHead.table.getSelectionModel().getSelectedItems();
+            final var ogg = geneSetHead.table.getSelectionModel().getSelectedItems();
             var firstGG = ogg.get(0);
             for (int i = 1; i < ogg.size(); i++) {
                 var ngg = ogg.get(i);
@@ -297,7 +299,7 @@ public class GeneSetPopup extends ContextMenu {
 
         MenuItem mergejoinaction = new MenuItem("Merge join");
         mergejoinaction.setOnAction(event -> {
-            final ObservableList<GeneGroup> ogg = geneSetHead.table.getSelectionModel().getSelectedItems();
+            final var ogg = geneSetHead.table.getSelectionModel().getSelectedItems();
             var firstGG = ogg.get(0);
             for (int i = 1; i < ogg.size(); i++) {
                 var ngg = ogg.get(i);

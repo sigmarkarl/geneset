@@ -45,15 +45,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import javafx.application.Platform;
-import org.simmi.javafasta.shared.Annotation;
-import org.simmi.javafasta.shared.Cog;
-import org.simmi.javafasta.shared.Function;
-import org.simmi.javafasta.shared.Gene;
-import org.simmi.javafasta.shared.GeneGroup;
-import org.simmi.javafasta.shared.Sequence;
-import org.simmi.javafasta.shared.Serifier;
-import org.simmi.javafasta.shared.Tegeval;
-import org.simmi.javafasta.shared.Teginfo;
+import org.simmi.javafasta.shared.*;
 import org.simmi.javafasta.unsigned.JavaFasta;
 
 import javafx.scene.control.TableView;
@@ -607,7 +599,7 @@ public class Neighbour {
 							if( funcol.isSelected() ) {
 								g.setColor( Color.green );
 								GeneGroup gg = gene.getGeneGroup();
-								Set<Function> funcset = gg != null ? gg.getFunctions() : null;
+								Set<SimpleFunction> funcset = gg != null ? gg.getFunctions() : null;
 								if( funcset != null && funcset.size() > 0 ) {
 									if( funcMap.containsKey( funcset ) ) {
 										g.setColor( funcMap.get( funcset ) );
@@ -990,7 +982,7 @@ public class Neighbour {
 							if( funcol.isSelected() ) {
 								g.setColor( Color.green );
 								GeneGroup gg = gene.getGeneGroup();
-								Set<Function> funcset = gg != null ? gg.getFunctions() : null;
+								Set<SimpleFunction> funcset = gg != null ? gg.getFunctions() : null;
 								if( funcset != null && funcset.size() > 0 ) {
 									if( funcMap.containsKey( funcset ) ) {
 										g.setColor( funcMap.get( funcset ) );
@@ -1321,7 +1313,7 @@ public class Neighbour {
 									g.setColor( Color.green );
 									Gene gene = next.getGene();
 									GeneGroup gg = gene.getGeneGroup();
-									Set<Function> funcset = gg != null ? gg.getFunctions() : null;
+									Set<SimpleFunction> funcset = gg != null ? gg.getFunctions() : null;
 									if( funcset != null && funcset.size() > 0 ) {
 										if( funcMap.containsKey( funcset ) ) {
 											g.setColor( funcMap.get( funcset ) );
@@ -1854,7 +1846,7 @@ public class Neighbour {
 								g.setColor( Color.green );
 								Gene gene = prev.getGene();
 								GeneGroup gg = gene.getGeneGroup();
-								Set<Function> funcset = gg != null ? gg.getFunctions() : null;
+								Set<SimpleFunction> funcset = gg != null ? gg.getFunctions() : null;
 								if( funcset != null && funcset.size() > 0 ) {
 									if( funcMap.containsKey( funcset ) ) {
 										g.setColor( funcMap.get( funcset ) );
@@ -2343,7 +2335,7 @@ public class Neighbour {
 	final JRadioButtonMenuItem precol = new JRadioButtonMenuItem("Proximity preservation");
 	final JRadioButtonMenuItem designcol = new JRadioButtonMenuItem("Designation");
 
-	final Map<Set<Function>,Color>	funcMap = new HashMap<>();
+	final Map<Set<SimpleFunction>,Color>	funcMap = new HashMap<>();
 	final Random rand = new Random();
 	final JTable rowheader = new JTable();
 	final Map<String,Integer> blosumap = JavaFasta.getBlosumMap();
@@ -2457,7 +2449,7 @@ public class Neighbour {
 	public void neighbourMynd( final GeneSetHead genesethead, final Container comp, final List<Gene> genes, final Map<String,Sequence> contigmap ) throws IOException {
 		GeneSet geneset = genesethead.geneset;
 
-		final TableView<GeneGroup> sorting = genesethead.getGeneGroupTable();
+		final var sorting = genesethead.getGeneGroupTable();
 
 		final JButton	zoomIn = new JButton("+");
 		final JButton	zoomOut = new JButton("-");
@@ -3639,8 +3631,8 @@ public class Neighbour {
 							Platform.runLater(() -> {
 								if( !genesethead.isGeneview() ) {
 									var gg = te.getGene().getGeneGroup();
-									genesethead.getGeneGroupTable().getSelectionModel().select( gg );
-									genesethead.getGeneGroupTable().scrollTo( gg );
+									genesethead.getGeneGroupTable().getSelectionModel().select( (FXGeneGroup) gg );
+									genesethead.getGeneGroupTable().scrollTo( (FXGeneGroup) gg );
 								} else {
 									genesethead.getGeneTable().getSelectionModel().select( te.getGene() );
 								}

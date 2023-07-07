@@ -1,4 +1,4 @@
-package org.simmi.distann.spark;
+package org.simmi.geneset.spark;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
 import org.apache.spark.sql.connector.read.Batch;

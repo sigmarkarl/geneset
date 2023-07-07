@@ -36,10 +36,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.simmi.javafasta.shared.Annotation;
-import org.simmi.javafasta.shared.GeneGroup;
-import org.simmi.javafasta.shared.Sequence;
-import org.simmi.javafasta.shared.Gene;
+import org.simmi.javafasta.shared.*;
 
 import javafx.scene.control.TableView;
 
@@ -50,52 +47,52 @@ public class XYPlot {
 	int fsum2;
 	String spec1;
 	String spec2;
-	
+
 	public void initSpecConts( Map<String,List<Sequence>> speccontigMap, String spec1, String spec2 ) {
 		//spec1Conts.clear();
 		//spec2Conts.clear();
-		
+
 		/*for( String ctname : GeneSet.contigmap.keySet() ) {
 			Sequence ct = GeneSet.contigmap.get( ctname );
 			if( ct.getSpec().equals( spec1 ) ) {
 				spec1Conts.add( ct );
 			}
-			
+
 			if( ct.getSpec().equals( spec2 ) ) {
 				spec2Conts.add( ct );
 			}
 		}
-		
+
 		System.err.println( spec1Conts.size() + "  " + spec2Conts.size() );*/
 		spec1Conts = speccontigMap.get( spec1 );
 		spec2Conts = speccontigMap.get( spec2 );
-		
+
 		int sum1 = 0;
 		for( Sequence ct : spec1Conts ) {
 			//System.err.println( ct.getName() + "  " + ct.getAnnotationCount() + "  " + ct.getSequence().length() );
-			
+
 			sum1 += ct.getAnnotationCount();
 		}
 		fsum1 = sum1;
-		
+
 		int sum2 = 0;
 		for( Sequence ct : spec2Conts ) {
 			sum2 += ct.getAnnotationCount();
 		}
 		fsum2 = sum2;
-		
+
 		System.err.println( fsum1 + "  " + fsum2 );
 	}
-	
+
 	Sequence	contigx;
 	Sequence	contigy;
 	Point	mouseSel;
 	public void xyPlot( final GeneSetHead genesethead, final Container comp, final List<Gene> genelist, Map<Set<String>,Set<Map<String,Set<String>>>> clusterMap ) {
-		final TableView<GeneGroup> 	table = genesethead.getGeneGroupTable();
+		final var 	table = genesethead.getGeneGroupTable();
 		final Collection<String> 	specset = genesethead.geneset.getSpecies(); //speciesFromCluster( clusterMap );
 		final List<String>			species = new ArrayList<>( specset );
 		//final List<String>	specList = new ArrayList<String>( species );
-		
+
 		TableModel model = new TableModel() {
 			@Override
 			public int getRowCount() {
@@ -138,47 +135,47 @@ public class XYPlot {
 		};
 		JTable table1 = new JTable( model );
 		JTable table2 = new JTable( model );
-		
+
 		table1.getSelectionModel().setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 		table2.getSelectionModel().setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-		
+
 		JScrollPane	scroll1 = new JScrollPane( table1 );
 		JScrollPane	scroll2 = new JScrollPane( table2 );
-		
+
 		FlowLayout flowlayout = new FlowLayout();
 		JComponent c = new JComponent() {};
 		c.setLayout( flowlayout );
-		
+
 		c.add( scroll1 );
 		c.add( scroll2 );
-		
+
 		JOptionPane.showMessageDialog(comp, c);
-		
+
 		spec1 = (String)table1.getValueAt( table1.getSelectedRow(), 0 );
 		spec2 = (String)table2.getValueAt( table2.getSelectedRow(), 0 );
-		
+
 		initSpecConts( genesethead.geneset.speccontigMap, spec1, spec2 );
-		
+
 		final JRadioButton	oricolor = new JRadioButton("Orientation");
 		final JRadioButton	gccolor = new JRadioButton("GC%");
-		
+
 		ButtonGroup bg = new ButtonGroup();
 		bg.add( oricolor );
 		bg.add( gccolor );
-		
+
 		final JCheckBox	showgrid = new JCheckBox();
 		final JButton	swap = new JButton();
-		
+
 		final JComponent  drawc = new JComponent() {
 			public void paintComponent( Graphics g ) {
 				super.paintComponent( g );
-				
+
 				g.setColor( Color.white );
 				g.fillRect( 0, 0, this.getWidth(), this.getHeight() );
-				
+
 				Graphics2D g2 = (Graphics2D)g;
 				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-				
+
 				int count = 0;
 				for( Sequence ct : spec1Conts ) {
 					if( ct.getAnnotations() != null ) {
@@ -224,7 +221,7 @@ public class XYPlot {
 											g.fillOval((int) ((count - 1) * this.getWidth() / fsum1), (int) ((count2 - 1) * this.getHeight() / fsum2), 3, 3);
 										}
 									}
-								
+
 								/*Tegeval next = val.getNext();
 								if( next != null ) {
 									Sequence nextcontig = next.getContshort();
@@ -295,7 +292,7 @@ public class XYPlot {
 						//System.err.println( count );
 					}
 					//System.err.println( ct.getName() + "   " + count + "  " + ermcount );
-					
+
 					if( showgrid.isSelected() ) {
 						g.setColor( Color.gray );
 						int x = (int)(count*this.getWidth()/fsum1);
@@ -303,7 +300,7 @@ public class XYPlot {
 						g.drawLine( x, 0, x, this.getHeight() );
 					}
 				}
-				
+
 				if( showgrid.isSelected() ) {
 					g.setColor( Color.gray );
 					count = 0;
@@ -315,19 +312,19 @@ public class XYPlot {
 				}
 			}
 		};
-		
+
 		JPopupMenu	popup = new JPopupMenu();
 		popup.add( new AbstractAction("Reverse horizontal") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if( mouseSel != null ) {
 					int x = mouseSel.x;
-					
+
 					Sequence contig = null;
 					int count = 0;
 					for( Sequence ct : spec1Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( x < count*drawc.getWidth()/fsum1 ) {
 							contig = ct;
 							break;
@@ -345,12 +342,12 @@ public class XYPlot {
 			public void actionPerformed(ActionEvent e) {
 				if( mouseSel != null ) {
 					int y = mouseSel.y;
-					
+
 					Sequence contig = null;
 					int count = 0;
 					for( Sequence ct : spec2Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( y < count*drawc.getHeight()/fsum2 ) {
 							contig = ct;
 							break;
@@ -364,10 +361,10 @@ public class XYPlot {
 			}
 		});
 		drawc.setComponentPopupMenu( popup );
-		
+
 		final JComboBox<String>	comb1 = new JComboBox<String>();
 		final JComboBox<String>	comb2 = new JComboBox<String>();
-		
+
 		showgrid.setAction( new AbstractAction("Show grid") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -380,13 +377,13 @@ public class XYPlot {
 				List<Sequence>	tmpct = spec1Conts;
 				spec1Conts = spec2Conts;
 				spec2Conts = tmpct;
-				
+
 				String tmpit = (String)comb1.getSelectedItem();
 				comb1.setSelectedItem( comb2.getSelectedItem() );
 				comb2.setSelectedItem( tmpit );
 			}
 		});
-		
+
 		drawc.addMouseListener( new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -405,7 +402,7 @@ public class XYPlot {
 							tv = tv.getNext();
 						}
 					}
-					
+
 					for( Sequence ct : spec2Conts ) {
 						Annotation tv = ct.getFirst();
 						while( tv != null && tv.getContig().equals(ct) ) {
@@ -421,18 +418,18 @@ public class XYPlot {
 					int count = 0;
 					for( Sequence ct : spec1Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( x < count*drawc.getWidth()/fsum1 ) {
 							contigx = ct;
 							break;
 						}
 					}
-					
+
 					int y = mouseSel.y;
 					count = 0;
 					for( Sequence ct : spec2Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( y < count*drawc.getHeight()/fsum2 ) {
 							contigy = ct;
 							break;
@@ -458,18 +455,18 @@ public class XYPlot {
 							}
 						}
 						Annotation te = tct.getIndex( x-count );
-						
+
 						if( te != null ) {
 							te.setSelected( true );
-							
+
 							if( !genesethead.isGeneview() ) {
-								table.getSelectionModel().select( te.getGene().getGeneGroup() );
-								table.scrollTo( te.getGene().getGeneGroup() );
+								table.getSelectionModel().select( (FXGeneGroup) te.getGene().getGeneGroup() );
+								table.scrollTo( (FXGeneGroup) te.getGene().getGeneGroup() );
 							} else {
 								genesethead.getGeneTable().getSelectionModel().select( te.getGene() );
 								genesethead.getGeneTable().scrollTo( te.getGene() );
 							}
-							
+
 							/*int r = table.convertRowIndexToView(i);
 							if( te.isSelected() ) {
 								Neighbour.currentTe = te;
@@ -485,7 +482,7 @@ public class XYPlot {
 							}*/
 						}
 					}
-					
+
 					int ymin = Math.min( mouseSel.y, relmouse.y )*fsum2/drawc.getHeight();
 					int ymax = Math.max( mouseSel.y, relmouse.y )*fsum2/drawc.getHeight();
 					for( int y = ymin; y < ymax; y++ ) {
@@ -499,18 +496,18 @@ public class XYPlot {
 							}
 						}
 						Annotation te = tct.getIndex( y-count );
-						
+
 						if( te != null ) {
 							te.setSelected( true );
-							
+
 							if( !genesethead.isGeneview() ) {
-								table.getSelectionModel().select( te.getGene().getGeneGroup() );
-								table.scrollTo( te.getGene().getGeneGroup() );
+								table.getSelectionModel().select( (FXGeneGroup) te.getGene().getGeneGroup() );
+								table.scrollTo( (FXGeneGroup) te.getGene().getGeneGroup() );
 							} else {
 								genesethead.getGeneTable().getSelectionModel().select( te.getGene() );
 								genesethead.getGeneTable().scrollTo( te.getGene() );
 							}
-							
+
 							/*int r = table.convertRowIndexToView(i);
 							if( te.isSelected() ) {
 								Neighbour.currentTe = te;
@@ -526,7 +523,7 @@ public class XYPlot {
 							}*/
 						}
 					}
-					
+
 					drawc.repaint();
 				} else if( showgrid.isSelected() ) {
 					int x = relmouse.x;
@@ -534,45 +531,45 @@ public class XYPlot {
 					Sequence ctx = null;
 					for( Sequence ct : spec1Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( x < count*drawc.getWidth()/fsum1 ) {
 							ctx = ct;
 							break;
 						}
 					}
-					
+
 					int y = relmouse.y;
 					count = 0;
 					Sequence cty = null;
 					for( Sequence ct : spec2Conts ) {
 						count += ct.getAnnotationCount();
-						
+
 						if( y < count*drawc.getHeight()/fsum2 ) {
 							cty = ct;
 							break;
 						}
 					}
-					
+
 					if( contigy != null && cty != null && contigy != cty ) {
 						int i1 = spec2Conts.indexOf( contigy );
 						int i2 = spec2Conts.indexOf( cty );
-						
+
 						spec2Conts.remove( contigy );
 						spec2Conts.add(i2, contigy );
 						//if( i1 > i2 ) spec2Conts.add(i2, contigy );
 						//else spec2Conts.add(i2-1, contigy );
 					}
-					
+
 					if( contigx != null && ctx != null && contigx != ctx ) {
 						int i1 = spec1Conts.indexOf( contigx );
 						int i2 = spec1Conts.indexOf( ctx );
-						
+
 						spec1Conts.remove( contigx );
 						spec1Conts.add(i2, contigx );
 						//if( i1 > i2 ) spec1Conts.add(i2, contigx );
 						//else spec1Conts.add(i2-1, contigx );
 					}
-					
+
 					drawc.repaint();
 				}
 			}
@@ -608,13 +605,13 @@ public class XYPlot {
 				String ttstr = "<html>"+selcontx + "<br>" + selconty+"</html>";
 				if( !ttstr.equals( drawc.getToolTipText() ) ) drawc.setToolTipText( ttstr );
 			}
-			
+
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				
+
 			}
 		});
-						
+
 		Dimension dim = new Dimension( fsum1, fsum2 );
 		drawc.setPreferredSize( dim );
 		drawc.setSize( dim );
@@ -639,7 +636,7 @@ public class XYPlot {
 				drawc.setSize( dim );
 			}
 		});
-		
+
 		ComboBoxModel<String>	cbmodel1 = new ComboBoxModel<>() {
 			@Override
 			public int getSize() {
@@ -670,7 +667,7 @@ public class XYPlot {
 			}
 		};
 		comb1.setModel( cbmodel1 );
-		
+
 		ComboBoxModel<String>	cbmodel2 = new ComboBoxModel<>() {
 			@Override
 			public int getSize() {
@@ -701,10 +698,10 @@ public class XYPlot {
 			}
 		};
 		comb2.setModel( cbmodel2 );
-		
+
 		comb1.setSelectedItem( spec1 );
 		comb2.setSelectedItem( spec2 );
-		
+
 		comb1.addItemListener(e -> {
 			initSpecConts( genesethead.geneset.speccontigMap, (String)comb1.getSelectedItem(), (String)comb2.getSelectedItem() );
 			drawc.repaint();
@@ -713,16 +710,16 @@ public class XYPlot {
 			initSpecConts( genesethead.geneset.speccontigMap, (String)comb1.getSelectedItem(), (String)comb2.getSelectedItem() );
 			drawc.repaint();
 		});
-		
+
 		toolbox.add( comb1 );
 		toolbox.add( comb2 );
-		
+
 		toolbox.add( showgrid );
 		toolbox.add( swap );
-		
+
 		oricolor.addChangeListener(e -> drawc.repaint());
 		gccolor.addChangeListener(e -> drawc.repaint());
-		
+
 		JFrame frame = new JFrame();
 		frame.setLayout( new BorderLayout() );
 		frame.add( toolbox, BorderLayout.NORTH );

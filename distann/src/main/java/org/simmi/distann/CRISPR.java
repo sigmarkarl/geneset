@@ -21,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;*/
 import io.grpc.ManagedChannelBuilder;
 import org.simmi.GreeterGrpc;
 import org.simmi.HelloRequest;
+import org.simmi.javafasta.shared.FXGeneGroup;
 import org.simmi.javafasta.shared.GeneGroup;
 
 import javafx.collections.ObservableList;
@@ -35,14 +36,14 @@ public class CRISPR {
 	public static String longestCommonSubstring(String str1, String str2) {
 		if (str1 == null || str1.length() == 0 || str2 == null || str2.length() == 0 )
 			return "";
-	 
+
 		String ret = "";
 		for( int i = 0; i < str1.length(); i++ ) {
 			int count = 0;
 			for( int y = 0; y < Math.min(str2.length(),str1.length()-i); y++ ) {
 				char c1 = str1.charAt(i+y);
 				char c2 = str2.charAt(y);
-				
+
 				if( c1 == c2 ) {
 					count++;
 				} else {
@@ -52,18 +53,18 @@ public class CRISPR {
 					count = 0;
 				}
 			}
-			
+
 			if( count > ret.length() ) {
 				ret = str1.substring(i,count+i);
 			}
 		}
-		
+
 		for( int i = 0; i < str2.length(); i++ ) {
 			int count = 0;
 			for( int y = 0; y < Math.min(str1.length(),str2.length()-i); y++ ) {
 				char c1 = str2.charAt(i+y);
 				char c2 = str1.charAt(y);
-				
+
 				if( c1 == c2 ) {
 					count++;
 				} else {
@@ -73,17 +74,17 @@ public class CRISPR {
 					count = 0;
 				}
 			}
-			
+
 			if( count > ret.length() ) {
 				ret = str2.substring(i,count+i);
 			}
 		}
-		
+
 		return ret;
-		
+
 		/*int[][] num = new int[str1.length()][str2.length()];
 		String maxstr = "";
-	 
+
 		for (int i = 0; i < str1.length(); i++)
 		{
 			for (int j = 0; j < str2.length(); j++)
@@ -96,7 +97,7 @@ public class CRISPR {
 						num[i][j] = 1;
 					else
 						num[i][j] = 1 + num[i - 1][j - 1];
-	 
+
 					if (num[i][j] > maxstr.length()) {
 						maxstr = str1.substring(i,num[i][j]-i);
 					}
@@ -105,10 +106,10 @@ public class CRISPR {
 		}
 		return maxstr;*/
 	}
-	
+
 	public static void crispr( GeneSetHead genesethead ) {
 		GeneSet geneset = genesethead.geneset;
-		ObservableList<GeneGroup> lgg = genesethead.table.getSelectionModel().getSelectedItems();
+		ObservableList<FXGeneGroup> lgg = genesethead.table.getSelectionModel().getSelectedItems();
 		if( lgg.size() > 0 ) {
 			SwingUtilities.invokeLater(() -> {
                 Set<String> includeSpecs = genesethead.getSelspec(genesethead, geneset.specList, false, null);
