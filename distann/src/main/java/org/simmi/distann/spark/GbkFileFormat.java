@@ -32,7 +32,7 @@ public class GbkFileFormat extends TextBasedFileFormat implements DataSourceRegi
 
     public static void main(String[] args) {
         var spark = SparkSession.builder().master("local").getOrCreate();
-        var df = spark.read().format("org.simmi.distann.spark.GbkFileFormat").load("/Users/sigmar/Thermus_thermophilus_HB8.gbff");
+        var df = spark.read().format("gbk").load("/Users/sigmar/newthermus");
         System.err.println(df.schema());
         System.err.println(df.count());
     }

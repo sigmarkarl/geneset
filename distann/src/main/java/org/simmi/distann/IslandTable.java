@@ -33,6 +33,15 @@ public class IslandTable extends TableView<Cassette> {
         TableColumn<Cassette, String> islandsizecol = new TableColumn<>("Size");
         islandsizecol.setCellValueFactory( new PropertyValueFactory<>("size"));
         getColumns().add( islandsizecol );
+        TableColumn<Cassette, String> islandfrontsizecol = new TableColumn<>("FrontSize");
+        islandfrontsizecol.setCellValueFactory( new PropertyValueFactory<>("frontSize"));
+        getColumns().add( islandfrontsizecol );
+        TableColumn<Cassette, String> islandbacksizecol = new TableColumn<>("BackSize");
+        islandbacksizecol.setCellValueFactory( new PropertyValueFactory<>("backSize"));
+        getColumns().add( islandbacksizecol );
+        TableColumn<Cassette, String> islandnumsizecol = new TableColumn<>("IslandSize");
+        islandnumsizecol.setCellValueFactory( new PropertyValueFactory<>("islandSize"));
+        getColumns().add( islandnumsizecol );
 
         setOnKeyPressed( ke -> {
             if (ke.getCode() == KeyCode.ESCAPE) {

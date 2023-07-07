@@ -7682,14 +7682,14 @@ public class JavaFasta extends JPanel {
 							}
 							d[i] = (double)gctot/(double)tot;
 
-							XYChart.Data<Number,Number> dd = new XYChart.Data<Number,Number>( i, d[i] );
+							XYChart.Data<Number,Number> dd = new XYChart.Data<>(i, d[i]);
 				        	//Tooltip.install( d.getNode(), new Tooltip( names[i] ) );
 				        	series.getData().add( dd );
 						}
 
 						final NumberAxis xAxis = new NumberAxis();
 					    final NumberAxis yAxis = new NumberAxis();
-						final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
+						final LineChart<Number,Number> lineChart = new LineChart<>(xAxis, yAxis);
 						//Scene scene = createBarChartScene( names, data, xTitle, yTitle, start, stop, step, title );
 
 						Platform.runLater(new Runnable() {

@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class GbkDataSource extends TextBasedFileFormat implements RelationProvider, SchemaRelationProvider, TableProvider, DataSourceRegister {
 
-    static StructType schema = StructType.fromDDL("name string, seq string, tag string, value string");
+    static StructType schema = StructType.fromDDL("name string, seq string, tag string, value string, type string");
 
     public GbkDataSource() {
         super();
@@ -116,7 +116,7 @@ public class GbkDataSource extends TextBasedFileFormat implements RelationProvid
 
     public static void main(String[] args) {
         var spark = SparkSession.builder().master("local").getOrCreate();
-        var df = spark.read().format("org.simmi.distann.spark.GbkDataSource").load("/Users/sigmar/thermus/Thermus_aquaticus_YT-1.gbff");
+        var df = spark.read().format("gbff").load("/Users/sigmar/newthermus");
         System.out.println(df.schema());
         System.out.println(df.count());
         df.collectAsList().forEach(System.out::println);

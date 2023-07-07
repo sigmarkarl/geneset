@@ -19,7 +19,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api"
       },
@@ -27,11 +27,11 @@
         {
           "name": "spilling-1.0.0.jar",
           "url": "spilling-1.0.0.jar",
-          "size": 60566,
-          "sha512": "bbe3d296449b221b2d0d75167f96035d0ce2afb19e56887608ec44e0f1b4c376d2c2f81ef2ef043e1e2ed5deb2c73da0b85e95e32e4e186d6436ac69d5423dd4",
-          "sha256": "b3f247a02ada27e7efa2867734afc1eeb4b42059e2bf3de728d121e078c6c78d",
-          "sha1": "2a931f621355091fff138a5f56af2d1043b6059b",
-          "md5": "583c2764338a7d24cf46a4f07586ee8b"
+          "size": 60668,
+          "sha512": "4e39283e6ff198e442377acbfb5aa597c3add2bd46a33fcc1626f76c672f72d7c7f89d9891432f5047e3171b3f039d09ce1f95d05297faca0c92e047e39ccab3",
+          "sha256": "5dff56216d63f569812539362d18e17e59a70d3e8963659fe00892caff75c98b",
+          "sha1": "c9fc85d7dd642a119a053f0ba528cba50bbe42fb",
+          "md5": "9dbe40dba17ba92bcfee5aead46e76ad"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime"
       },
@@ -57,11 +57,11 @@
         {
           "name": "spilling-1.0.0.jar",
           "url": "spilling-1.0.0.jar",
-          "size": 60566,
-          "sha512": "bbe3d296449b221b2d0d75167f96035d0ce2afb19e56887608ec44e0f1b4c376d2c2f81ef2ef043e1e2ed5deb2c73da0b85e95e32e4e186d6436ac69d5423dd4",
-          "sha256": "b3f247a02ada27e7efa2867734afc1eeb4b42059e2bf3de728d121e078c6c78d",
-          "sha1": "2a931f621355091fff138a5f56af2d1043b6059b",
-          "md5": "583c2764338a7d24cf46a4f07586ee8b"
+          "size": 60668,
+          "sha512": "4e39283e6ff198e442377acbfb5aa597c3add2bd46a33fcc1626f76c672f72d7c7f89d9891432f5047e3171b3f039d09ce1f95d05297faca0c92e047e39ccab3",
+          "sha256": "5dff56216d63f569812539362d18e17e59a70d3e8963659fe00892caff75c98b",
+          "sha1": "c9fc85d7dd642a119a053f0ba528cba50bbe42fb",
+          "md5": "9dbe40dba17ba92bcfee5aead46e76ad"
         }
       ]
     }

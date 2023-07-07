@@ -19,7 +19,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api"
       },
@@ -27,11 +27,11 @@
         {
           "name": "javafasta-1.0.0.jar",
           "url": "javafasta-1.0.0.jar",
-          "size": 639464,
-          "sha512": "7dea12ab5264cb7fa861f2074252f1cbbaaa239ce4619e34f23832cf6e511d8cd83cbda59821bb934b04dd0358e25affd028cc0ad574e9c5f405d07954589066",
-          "sha256": "ea29364002a737ca47507c4ba59e0827056dc80ba580593ac6a10c9862e6ef19",
-          "sha1": "45ea393b7c32af3053853ccef9f0a6e8e954abb3",
-          "md5": "b91d531384bf532f9527312fba3ec0ab"
+          "size": 641751,
+          "sha512": "b9e4556a8a45a6a14127f258c05d72d5daa8c7c9172faa544137f2186b45461b1550c3c1557ea4b1945a2abd10357df3b3958a24e03cb86198de799ee291ae6d",
+          "sha256": "7026dae6ff1b6f0b07492dea3ef91ed2d69bb6aa2b170cbb3e840038f5aa64cf",
+          "sha1": "7b6754871aec84728ce63e50b2e2f0977e6b70e1",
+          "md5": "5bca5d669e416b05e49b57e467420630"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime"
       },
@@ -49,7 +49,7 @@
           "group": "org.openjfx",
           "module": "javafx-base",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -64,7 +64,7 @@
           "group": "org.openjfx",
           "module": "javafx-graphics",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -79,7 +79,7 @@
           "group": "org.openjfx",
           "module": "javafx-controls",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -94,7 +94,7 @@
           "group": "org.openjfx",
           "module": "javafx-fxml",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -109,7 +109,7 @@
           "group": "org.openjfx",
           "module": "javafx-media",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -124,7 +124,7 @@
           "group": "org.openjfx",
           "module": "javafx-swing",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -139,7 +139,7 @@
           "group": "org.openjfx",
           "module": "javafx-web",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -203,21 +203,21 @@
           "group": "org.apache.spark",
           "module": "spark-core_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           }
         },
         {
           "group": "org.apache.spark",
           "module": "spark-mllib_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           }
         },
         {
           "group": "org.apache.spark",
           "module": "spark-kubernetes_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           }
         },
         {
@@ -239,11 +239,11 @@
         {
           "name": "javafasta-1.0.0.jar",
           "url": "javafasta-1.0.0.jar",
-          "size": 639464,
-          "sha512": "7dea12ab5264cb7fa861f2074252f1cbbaaa239ce4619e34f23832cf6e511d8cd83cbda59821bb934b04dd0358e25affd028cc0ad574e9c5f405d07954589066",
-          "sha256": "ea29364002a737ca47507c4ba59e0827056dc80ba580593ac6a10c9862e6ef19",
-          "sha1": "45ea393b7c32af3053853ccef9f0a6e8e954abb3",
-          "md5": "b91d531384bf532f9527312fba3ec0ab"
+          "size": 641751,
+          "sha512": "b9e4556a8a45a6a14127f258c05d72d5daa8c7c9172faa544137f2186b45461b1550c3c1557ea4b1945a2abd10357df3b3958a24e03cb86198de799ee291ae6d",
+          "sha256": "7026dae6ff1b6f0b07492dea3ef91ed2d69bb6aa2b170cbb3e840038f5aa64cf",
+          "sha1": "7b6754871aec84728ce63e50b2e2f0977e6b70e1",
+          "md5": "5bca5d669e416b05e49b57e467420630"
         }
       ]
     }

@@ -19,7 +19,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api"
       },
@@ -27,11 +27,11 @@
         {
           "name": "serifier-1.0.0.jar",
           "url": "serifier-1.0.0.jar",
-          "size": 108798,
-          "sha512": "c21c3be960cd451ab91963f88ffd33ba5e324601ab99b683a333601e4c8366de26043a75b7d2b0523dc7faf5717dd54eee8ad6c18bea8b38f9ee1af163aba3d5",
-          "sha256": "5b99dbb4cf22cdad4d3a083dcdc18f4c8027b9484edf1255d3c0f15448c1b28d",
-          "sha1": "d16ebe02086bfe7ae826d5c0ec48ffe8c14d5a02",
-          "md5": "478388a1426aab96927d390bd9dc2a89"
+          "size": 108949,
+          "sha512": "5502b35d95319c3ad98d67c2c80f17ddd143ce69cb424fe940b4468b895e809997ba8eb558174784ff89d0fd6d16b7e7ddc2a7576c9557c5413776b123051de1",
+          "sha256": "b9982cd564a444b1f0a1e579ad7b41474b0b17fc1afc59a8ea55e7437bb4c592",
+          "sha1": "1b3a3b2a24985666695b80863befa2920ea68951",
+          "md5": "f9836ffe62be775f2bf93acbc1facc34"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime"
       },
@@ -49,7 +49,7 @@
           "group": "org.openjfx",
           "module": "javafx-base",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -64,7 +64,7 @@
           "group": "org.openjfx",
           "module": "javafx-graphics",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -79,7 +79,7 @@
           "group": "org.openjfx",
           "module": "javafx-controls",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -94,7 +94,7 @@
           "group": "org.openjfx",
           "module": "javafx-fxml",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -109,7 +109,7 @@
           "group": "org.openjfx",
           "module": "javafx-media",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -124,7 +124,7 @@
           "group": "org.openjfx",
           "module": "javafx-swing",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -139,7 +139,7 @@
           "group": "org.openjfx",
           "module": "javafx-web",
           "version": {
-            "requires": "20"
+            "requires": "20.0.1"
           },
           "thirdPartyCompatibility": {
             "artifactSelector": {
@@ -185,7 +185,7 @@
           "group": "org.apache.spark",
           "module": "spark-mllib_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           },
           "excludes": [
             {
@@ -202,7 +202,7 @@
           "group": "org.apache.spark",
           "module": "spark-sql_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           },
           "excludes": [
             {
@@ -219,7 +219,7 @@
           "group": "org.apache.spark",
           "module": "spark-kubernetes_2.13",
           "version": {
-            "requires": "3.4.0"
+            "requires": "3.4.1"
           },
           "excludes": [
             {
@@ -251,11 +251,11 @@
         {
           "name": "serifier-1.0.0.jar",
           "url": "serifier-1.0.0.jar",
-          "size": 108798,
-          "sha512": "c21c3be960cd451ab91963f88ffd33ba5e324601ab99b683a333601e4c8366de26043a75b7d2b0523dc7faf5717dd54eee8ad6c18bea8b38f9ee1af163aba3d5",
-          "sha256": "5b99dbb4cf22cdad4d3a083dcdc18f4c8027b9484edf1255d3c0f15448c1b28d",
-          "sha1": "d16ebe02086bfe7ae826d5c0ec48ffe8c14d5a02",
-          "md5": "478388a1426aab96927d390bd9dc2a89"
+          "size": 108949,
+          "sha512": "5502b35d95319c3ad98d67c2c80f17ddd143ce69cb424fe940b4468b895e809997ba8eb558174784ff89d0fd6d16b7e7ddc2a7576c9557c5413776b123051de1",
+          "sha256": "b9982cd564a444b1f0a1e579ad7b41474b0b17fc1afc59a8ea55e7437bb4c592",
+          "sha1": "1b3a3b2a24985666695b80863befa2920ea68951",
+          "md5": "f9836ffe62be775f2bf93acbc1facc34"
         }
       ]
     }

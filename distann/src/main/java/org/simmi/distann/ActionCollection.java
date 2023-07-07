@@ -2467,7 +2467,13 @@ public class ActionCollection {
 		pangraphaction.setOnAction( actionEvent -> {
 			SwingUtilities.invokeLater(() -> {
 				var specs = genesethead.getSelspec(genesethead, geneset.specList, false, null);
-				var selgg = genesethead.table.getSelectionModel().getSelectedItems();
+				List<GeneGroup> selgg;
+				if (genesethead.splitpane.getItems().get(0) == genesethead.ggsplit) {
+					selgg = genesethead.table.getSelectionModel().getSelectedItems();
+				} else {
+					var seli = genesethead.itable.getSelectionModel().getSelectedItems();
+					selgg = seli.stream().flatMap(gi -> gi.getGeneGroups().stream()).toList();
+				}
 				var panGraph = new PanGraph(specs, selgg.isEmpty() ? geneset.allgenegroups : selgg);
 				try {
 					panGraph.export(Path.of("/Users/sigmar/vert_gs.csv"), Path.of("/Users/sigmar/edge_gs.csv"));
@@ -2948,7 +2954,7 @@ public class ActionCollection {
 
 		MenuItem cazyexportaction = new MenuItem("Export cazy ids");
 		cazyexportaction.setOnAction( actionEvent -> {
-				Set<String> cz = new TreeSet<String>();
+				Set<String> cz = new TreeSet<>();
 				for( Gene g : geneset.genelist ) {
 					String cazy = geneset.cazymap.get( g.getRefid() );
 					if( cazy != null ) {
@@ -2982,7 +2988,7 @@ public class ActionCollection {
 				Object[] objs = new Object[] { kobtn, ecbtn, cogbtn, gibtn, tf, scroll };
 				JOptionPane.showMessageDialog( null, objs, "Select id types", JOptionPane.PLAIN_MESSAGE );
 
-				Set<String> ids = new HashSet<String>();
+				Set<String> ids = new HashSet<>();
 				//int[] rr = genesethead.table.getSelectedRows();
 				for( GeneGroup gg : genesethead.table.getSelectionModel().getSelectedItems() ) {
 					if( kobtn.isSelected() ) {
@@ -3785,7 +3791,7 @@ public class ActionCollection {
 				c2.add( scroll );
 				JOptionPane.showMessageDialog(comp, c2);
 
-				final List<Sequence> selclist = new ArrayList<Sequence>();
+				final List<Sequence> selclist = new ArrayList<>();
 				int[] rr = table2.getSelectedRows();
 				for( int row : rr ) {
 					int i = table2.convertRowIndexToModel( row );
@@ -4378,85 +4384,82 @@ public class ActionCollection {
 		}));
 
 		MenuItem showcontigsaction = new MenuItem("Show contigs");
-		showcontigsaction.setOnAction( actionEvent -> SwingUtilities.invokeLater( new Runnable() {
-			@Override
-			public void run() {
-				final List<Sequence>	allcontigs = new ArrayList();
-				for( String spec : speccontigMap.keySet() ) {
-					List<Sequence>	ctgs = speccontigMap.get( spec );
-					allcontigs.addAll( ctgs );
-				}
-
-				TableModel model = new TableModel() {
-					@Override
-					public int getRowCount() {
-						return allcontigs.size();
-					}
-
-					@Override
-					public int getColumnCount() {
-						return 1;
-					}
-
-					@Override
-					public String getColumnName(int columnIndex) {
-						return "Sequence";
-					}
-
-					@Override
-					public Class<?> getColumnClass(int columnIndex) {
-						return String.class;
-					}
-
-					@Override
-					public boolean isCellEditable(int rowIndex, int columnIndex) {
-						return false;
-					}
-
-					@Override
-					public Object getValueAt(int rowIndex, int columnIndex) {
-						return allcontigs.get( rowIndex ).getName();
-					}
-
-					@Override
-					public void setValueAt(Object aValue, int rowIndex, int columnIndex) {}
-
-					@Override
-					public void addTableModelListener(TableModelListener l) {}
-
-					@Override
-					public void removeTableModelListener(TableModelListener l) {}
-				};
-				JTable table2 = new JTable( model );
-				table2.setAutoCreateRowSorter( true );
-				table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-				JScrollPane	scroll = new JScrollPane( table2 );
-
-				FlowLayout flowlayout = new FlowLayout();
-				JComponent c1 = new JComponent() {};
-				c1.setLayout( flowlayout );
-				c1.add( scroll );
-
-				JOptionPane.showMessageDialog(comp, c1);
-
-				JFrame frame = new JFrame();
-				frame.setSize(800, 600);
-				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-				Serifier serifier = new Serifier();
-				JavaFasta jf = new JavaFasta( null, serifier, cs );
-				jf.initGui(frame);
-
-				int[] rr = table2.getSelectedRows();
-				for( int r : rr ) {
-					int i = table2.convertRowIndexToModel( r );
-					Sequence ctg = allcontigs.get( i );
-					serifier.addSequence( ctg );
-				}
-
-				jf.updateView();
-				frame.setVisible(true);
+		showcontigsaction.setOnAction( actionEvent -> SwingUtilities.invokeLater(() -> {
+			final List<Sequence>	allcontigs = new ArrayList();
+			for( String spec : speccontigMap.keySet() ) {
+				List<Sequence>	ctgs = speccontigMap.get( spec );
+				allcontigs.addAll( ctgs );
 			}
+
+			TableModel model = new TableModel() {
+				@Override
+				public int getRowCount() {
+					return allcontigs.size();
+				}
+
+				@Override
+				public int getColumnCount() {
+					return 1;
+				}
+
+				@Override
+				public String getColumnName(int columnIndex) {
+					return "Sequence";
+				}
+
+				@Override
+				public Class<?> getColumnClass(int columnIndex) {
+					return String.class;
+				}
+
+				@Override
+				public boolean isCellEditable(int rowIndex, int columnIndex) {
+					return false;
+				}
+
+				@Override
+				public Object getValueAt(int rowIndex, int columnIndex) {
+					return allcontigs.get( rowIndex ).getName();
+				}
+
+				@Override
+				public void setValueAt(Object aValue, int rowIndex, int columnIndex) {}
+
+				@Override
+				public void addTableModelListener(TableModelListener l) {}
+
+				@Override
+				public void removeTableModelListener(TableModelListener l) {}
+			};
+			JTable table2 = new JTable( model );
+			table2.setAutoCreateRowSorter( true );
+			table2.getSelectionModel().setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+			JScrollPane	scroll = new JScrollPane( table2 );
+
+			FlowLayout flowlayout = new FlowLayout();
+			JComponent c1 = new JComponent() {};
+			c1.setLayout( flowlayout );
+			c1.add( scroll );
+
+			JOptionPane.showMessageDialog(comp, c1);
+
+			JFrame frame = new JFrame();
+			frame.setSize(800, 600);
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+			Serifier serifier = new Serifier();
+			JavaFasta jf = new JavaFasta( null, serifier, cs );
+			jf.initGui(frame);
+
+			int[] rr = table2.getSelectedRows();
+			for( int r : rr ) {
+				int i = table2.convertRowIndexToModel( r );
+				Sequence ctg = allcontigs.get( i );
+				serifier.addSequence( ctg );
+			}
+
+			jf.updateView();
+			frame.setVisible(true);
 		}));
 
 		MenuItem showunresolved = new MenuItem("Show unresolved genes");

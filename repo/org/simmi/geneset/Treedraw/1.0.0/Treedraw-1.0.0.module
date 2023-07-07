@@ -19,7 +19,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api"
       },
@@ -27,11 +27,11 @@
         {
           "name": "Treedraw-1.0.0.jar",
           "url": "Treedraw-1.0.0.jar",
-          "size": 42953,
-          "sha512": "b9564e7d59de7d15546e9512e0f54dfc00901d555d463a2a61972943423c36b44622aeb674f3884a86b3e110a2679f936dfd861ff46255d95273981db228ef8f",
-          "sha256": "7de1830e38d77251f986f4012232cba4aa263ff4d69e8900df6e3facb59645b6",
-          "sha1": "76814a582da39d29b62a1175944cf2e41d7a0f20",
-          "md5": "cc7984b8851025445326420c6fb7001a"
+          "size": 42971,
+          "sha512": "6ef06168b2ec34169bbfb6db219202dbdac176d8a65f321360473311dcb8d2a241ee6c094cd6ebf9578400e1f2f9c9b46eb11af69b38026f70e21db9643a1253",
+          "sha256": "32d03d43408d379b913c84eb461704ba5834d7a60cd4bbc98e63b89b27e96e73",
+          "sha1": "9b514839a14ec2ebc0d52a0ac7d8a0fc179e1151",
+          "md5": "5ea2135dfd866ce0c6607f0707ad7e76"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "attributes": {
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
-        "org.gradle.jvm.version": 20,
+        "org.gradle.jvm.version": 17,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime"
       },
@@ -48,11 +48,11 @@
         {
           "name": "Treedraw-1.0.0.jar",
           "url": "Treedraw-1.0.0.jar",
-          "size": 42953,
-          "sha512": "b9564e7d59de7d15546e9512e0f54dfc00901d555d463a2a61972943423c36b44622aeb674f3884a86b3e110a2679f936dfd861ff46255d95273981db228ef8f",
-          "sha256": "7de1830e38d77251f986f4012232cba4aa263ff4d69e8900df6e3facb59645b6",
-          "sha1": "76814a582da39d29b62a1175944cf2e41d7a0f20",
-          "md5": "cc7984b8851025445326420c6fb7001a"
+          "size": 42971,
+          "sha512": "6ef06168b2ec34169bbfb6db219202dbdac176d8a65f321360473311dcb8d2a241ee6c094cd6ebf9578400e1f2f9c9b46eb11af69b38026f70e21db9643a1253",
+          "sha256": "32d03d43408d379b913c84eb461704ba5834d7a60cd4bbc98e63b89b27e96e73",
+          "sha1": "9b514839a14ec2ebc0d52a0ac7d8a0fc179e1151",
+          "md5": "5ea2135dfd866ce0c6607f0707ad7e76"
         }
       ]
     }

@@ -19,11 +19,11 @@ public class GBK2AminoFasta {
 		public Anno( String type ) {
 			this.type = type;
 		}
-		
+
 		public String getType() {
 			return type;
 		}
-		
+
 		String 			name;
 		String			gene;
 		String			id;
@@ -73,25 +73,25 @@ public class GBK2AminoFasta {
 			xref.clear();
 		}
 	}
-	
+
 	public static Map<String,List<Sequence>> handleText(Map<String,Stream<String>> filetextmap, Map<String,Path> annoset, Writer allout, Path path, String replace, boolean noseq ) throws IOException {
 		Map<String,List<Sequence>>	lseq = new HashMap<>();
-		
+
 		//List<Anno>	annolist = new ArrayList<Anno>();
 		for( String tag : filetextmap.keySet() ) {
 			//seq = new Sequence( tag, null );
 			//lseq.add( seq );
-			
+
 			Stream<String> filetext = filetextmap.get( tag );
 			String locus = null;
 			Iterator<String> fileit = filetext.iterator();
 			Annotation		anno = null;
-			
+
 			//int k = filename.indexOf('.');
 			//if( k == -1 ) k = filename.length();
 			String spec = replace != null ? replace : tag.replace(".gbk", ""); //filename.substring(0, k);
 
-			System.err.println("about to import gb " + tag);
+			//System.err.println("about to import gb " + tag);
 			Set<String>	xref = new TreeSet<>();
 			Sequence	strbuf = new Contig();
 			while( fileit.hasNext() ) {
@@ -101,7 +101,7 @@ public class GBK2AminoFasta {
                     if (line==null) line = fileit.next();
 					String trimline = line.trim();
 					line = null;
-					
+
 					if( trimline.startsWith("LOCUS") ) {
 						locus = trimline.split("[ \t]+")[1];
 					} else if( trimline.startsWith("SOURCE") ) {
@@ -123,7 +123,7 @@ public class GBK2AminoFasta {
 					}
 
 					//String[] split = trimline.split("[\t ]+");
-					
+
 					String banno = null;
 					for( String annostr : annoset.keySet() ) {
 						if( trimline.startsWith( annostr+"  " ) ) {
@@ -143,11 +143,11 @@ public class GBK2AminoFasta {
 					if( banno != null ) { //|| trimline.startsWith("gene ") ) {
 						anno = banno.equals("CDS") ? new Tegeval( "gene" ) : new Annotation( banno );
 						anno.setSeq(strbuf);
-						
+
 						//anno.spec = spec + (contignum > 0 ? "_contig"+(contignum+1) : "");
 						//if( locus == null ) strbuf.setName( spec );
 						//else strbuf.setName( locus.contains(spec) ? locus : spec+ "_"+locus );
-						
+
 						String[] split = trimline.split("[\t ]+");
 						if( split.length > 1 ) {
 							if( split[1].startsWith("compl") ) {
@@ -170,11 +170,11 @@ public class GBK2AminoFasta {
 										iof = substr.lastIndexOf(")");
 									}
 									osv = substr.indexOf('(');
-									
-									if( iof < osv+1 ) {
+
+									/*if( iof < osv+1 ) {
 										System.err.println();
-									}
-									
+									}*/
+
 									substr = substr.substring(osv+1, iof);
 									String[] sepstr = substr.split(",");
 
@@ -190,12 +190,12 @@ public class GBK2AminoFasta {
 											anno.stop = Math.max( anno.stop, Integer.parseInt( nsplit[nsplit.length-1] ) );
 											anno.ori = -1;
 										} else {
-											System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
+											//System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
 											anno = null;
 											break;
 										}
 									}
-									
+
 									if( anno != null && anno.stop-anno.start > 100000 ) {
 										anno = null;
 									}
@@ -208,7 +208,7 @@ public class GBK2AminoFasta {
 										anno.stop = Integer.parseInt( nsplit[nsplit.length-1] );
 										anno.ori = -1;
 									} else {
-										System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
+										//System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
 										anno = null;
 									}
 								}
@@ -221,14 +221,14 @@ public class GBK2AminoFasta {
 									iof = split[1].lastIndexOf(")");
 								}
 								int osv = split[1].indexOf('(');
-								
-								if( iof < osv+1 ) {
+
+								/*if( iof < osv+1 ) {
 									System.err.println();
-								}
-								
+								}*/
+
 								String substr = split[1].substring(osv+1, iof);
 								String[] sepstr = substr.split(",");
-								
+
 								anno.start = Integer.MAX_VALUE;
 								anno.stop = Integer.MIN_VALUE;
 								for( String sp : sepstr ) {
@@ -241,12 +241,12 @@ public class GBK2AminoFasta {
 										anno.stop = Math.max( anno.stop, Integer.parseInt( nsplit[nsplit.length-1] ) );
 										anno.ori = 1;
 									} else {
-										System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
+										//System.err.println( nsplit[0] + " n " + nsplit[nsplit.length-1] );
 										anno = null;
 										break;
 									}
 								}
-								
+
 								if( anno != null && anno.stop-anno.start > 10000 ) {
 									anno = null;
 								}
@@ -262,11 +262,11 @@ public class GBK2AminoFasta {
 										anno.stop = Integer.parseInt( nsplit[1] );
 										anno.ori = 1;
 									} else {
-										System.err.println( nsplit[0] + " n " + nsplit[1] );
+										//System.err.println( nsplit[0] + " n " + nsplit[1] );
 										anno = null;
 									}
 								} else {
-									System.err.println("nono2");
+									//System.err.println("nono2");
 									anno = null;
 								}
 							}
@@ -352,7 +352,7 @@ public class GBK2AminoFasta {
 					} else if( trimline.startsWith("ORIGIN") ) {
 						if( anno != null ) {
 							doAnnoStuff(anno, xref);
-							
+
 							/*if( anno.spec.contains("MAT4699") || anno.spec.contains("MAT4721") || anno.spec.contains("MAT4725") || anno.spec.contains("MAT4726") ) {
 								anno.start--;
 								anno.stop--;
@@ -389,12 +389,12 @@ public class GBK2AminoFasta {
 						allout.write( strbuf.getSubstring( i, Math.min( strbuf.length(), i+70 ), 1 ) + "\n" );
 					}*/
 				}
-				
+
 				strbuf = new Contig();
 			}
 			filetext.close();
 		}
-		
+
 		/*Map<String,String> nameMap = new HashMap<>();
 		Map<Path,Writer>	urifile = new HashMap<>();
 		for( Sequence seq : lseq ) {
@@ -403,13 +403,13 @@ public class GBK2AminoFasta {
 				if( ao.getName() != null ) {
 					Sequence	strbuf = ao.seq;
 					Path uri = annoset.get( ao.getType() );
-					
+
 					if( uri != null ) {
 						Writer out;
 						if( !urifile.containsKey( uri ) ) {
 							Writer fw = Files.newBufferedWriter(uri, StandardOpenOption.CREATE);
 							urifile.put( uri, fw );
-							
+
 							out = fw;
 						} else {
 							out = urifile.get( uri );
@@ -417,7 +417,7 @@ public class GBK2AminoFasta {
 
 						boolean amino = ao.getType().contains("CDS");
 						if( ao.id != null && ao.group != null && !ao.id.contains("..") ) nameMap.put(ao.id, ao.group);
-						
+
 						String end = amino ? " # " + ao.start + " # " + ao.stop + " # " + ao.ori + " #\n" : "\n";
 						if( out != null ) {
 							/*if( replace != null ) {
@@ -429,23 +429,23 @@ public class GBK2AminoFasta {
 							//}
 						}
 						//strbuf.
-						
+
 						//System.err.println(val);
 						//String	ami = "";
-						
+
 						int t = 0;
 						if( amino ) {
 							int sstart = Math.max(0, ao.start-1);
 							int sstop = Math.min( ao.stop, strbuf.length() );
-							
+
 							/*if( !(sstart >= 0 && sstop <= strbuf.length()) ) {
 								System.err.println();
 							}*
-							
+
 							String 	val = strbuf.getSubstring( sstart, sstop, 1 );
 							if( ao.ori == -1 ) {
 								for( int i = val.length()-3; i >= 0; i-=3 ) {
-									//ami += 
+									//ami +=
 									String first = val.substring(i, i+3).toUpperCase();
 									String second = Sequence.revcom.get( first );
 									Character str = Sequence.amimap.get( second );
@@ -457,7 +457,7 @@ public class GBK2AminoFasta {
 								}
 							} else {
 								for( int i = 0; i < val.length(); i+=3 ) {
-									//ami += 
+									//ami +=
 									String first = val.substring( i, Math.min(val.length(), i+3) ).toUpperCase();
 									Character str = Sequence.amimap.get( first );
 									if( str != null ) {
@@ -491,7 +491,7 @@ public class GBK2AminoFasta {
 				}
 			}
 		}
-		
+
 		if( path != null ) {
 			Path p = path.getParent().resolve(path.getFileName()+".namemap"); //new File( new URI(path+".namemap") );
 			//FileWriter mfw = new FileWriter( f );
@@ -504,7 +504,7 @@ public class GBK2AminoFasta {
 				mfw.close();
 			}
 		}
-		
+
 		for( Path uri : urifile.keySet() ) {
 			Writer w = urifile.get( uri );
 			if( w != null ) w.close();
@@ -515,12 +515,12 @@ public class GBK2AminoFasta {
 			//console( "dataurl length: "+dataurl.length() );
 			//ta.setText( sb.toString() );
 			//Window.Location.assign( dataurl );
-		
+
 		return lseq;
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		/*try {
 			File f = new File("/home/sigmar/ami57/ami.gb");
 			FileReader fr = new FileReader( f );
@@ -533,7 +533,7 @@ public class GBK2AminoFasta {
 			}
 			br.close();
 			fr.close();
-			
+
 			StringBuilder sb = handleText("filename.aa", filetext.toString());
 			FileWriter fw = new FileWriter("/home/sigmar/filename.aa");
 			fw.write( sb.toString() );
@@ -549,7 +549,7 @@ public class GBK2AminoFasta {
 		}*/
 		String basesave = "/home/sigmar/ftpncbi/";
 		//ftpExtract( basesave );
-		
+
 		try {
 			File file = new File( basesave );
 			File[] ff = file.listFiles();
@@ -564,18 +564,18 @@ public class GBK2AminoFasta {
 				}
 				br.close();
 				fr.close();
-				
+
 				String fname = f.getName();
 				String fstr = fname.substring(0, fname.length()-4);
-				System.err.println( "about to "+fstr );
-				
+				//System.err.println( "about to "+fstr );
+
 				boolean amino = false;
 				String[] annoarray = {"tRNA", "rRNA"};//{"CDS", "tRNA", "rRNA", "mRNA"};
 				//Arrays.asList( annoarray )
 				Map<String,URI>	map = new HashMap<>();
 				map.put( "tRNA", null );
 				map.put( "rRNA", null );
-				
+
 				StringWriter sb = new StringWriter();
 				//handleText( fstr, filetext, map, null );
 				// appengine out: FileWriter fw = new FileWriter( "/home/sigmar/ncbiaas/nn2/"+fstr+(amino ? ".aa" : ".nn") );

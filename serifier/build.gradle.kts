@@ -4,6 +4,12 @@ plugins {
     id("maven-publish")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -22,7 +28,7 @@ publishing {
 }
 
 javafx {
-    version = "20"
+    version = "20.0.1"
     modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.fxml","javafx.swing","javafx.web")
 }
 
@@ -33,15 +39,15 @@ dependencies {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-mllib_2.13:3.4.0") {
+    implementation ("org.apache.spark:spark-mllib_2.13:3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-sql_2.13:3.4.0") {
+    implementation ("org.apache.spark:spark-sql_2.13:3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation ("org.apache.spark:spark-kubernetes_2.13:3.4.0") {
+    implementation ("org.apache.spark:spark-kubernetes_2.13:3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }

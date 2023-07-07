@@ -30,9 +30,20 @@ public class GbkPartitionReader implements PartitionReader<InternalRow> {
         var path = Path.of(gbkFile);
         Map<String, Stream<String>> filetextmap = new HashMap<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
-            String fileName = path.getFileName().toString();
-            filetextmap.put(fileName, br.lines());
-
+            if (Files.isDirectory(path)) {
+                try (var files = Files.list(path)) {
+                    files.filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".gbk") || p.getFileName().toString().endsWith("gbff")).forEach(f -> {
+                        try {
+                            filetextmap.put(f.getFileName().toString(), Files.lines(f));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            } else {
+                String fileName = path.getFileName().toString();
+                filetextmap.put(fileName, br.lines());
+            }
             var seqmap = GBK2AminoFasta.handleText(filetextmap, annoset, null, null, null, false);
             subit = seqmap.entrySet().stream().flatMap(e -> e.getValue().stream()).filter(s -> s.annset != null).flatMap(s -> s.annset.stream()).iterator();
         }
@@ -46,7 +57,7 @@ public class GbkPartitionReader implements PartitionReader<InternalRow> {
     @Override
     public InternalRow get() {
         var n = subit.next();
-        return new GenericInternalRow(new Object[]{UTF8String.fromString(n.getName()), UTF8String.fromString(n.getProteinSequence().getSequenceString()), UTF8String.fromString(n.getTag()), UTF8String.fromString(n.getId())});
+        return new GenericInternalRow(new Object[]{UTF8String.fromString(n.getName()), UTF8String.fromString(n.getProteinSequence().getSequenceString()), UTF8String.fromString(n.getTag()), UTF8String.fromString(n.getId()), UTF8String.fromString(n.getType())});
     }
 
     @Override

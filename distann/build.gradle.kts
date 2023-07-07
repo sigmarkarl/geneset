@@ -8,6 +8,12 @@ plugins {
     id("maven-publish")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -62,7 +68,7 @@ protobuf {
 }
 
 javafx {
-    version = "20"
+    version = "20.0.1"
     modules("javafx.base", "javafx.graphics", "javafx.controls", "javafx.fxml", "javafx.swing", "javafx.web")
 }
 
@@ -104,35 +110,35 @@ dependencies {
 
     //implementation("com.github.fommil.netlib:all:1.1.2")
 
-    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-core_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-mllib_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-kubernetes_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-graphx_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-sql_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-sql_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-connect_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-connect_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-hive_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-hive_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }
-    implementation (group = "org.apache.spark", name = "spark-hive-thriftserver_2.13", version = "3.4.0") {
+    implementation (group = "org.apache.spark", name = "spark-hive-thriftserver_2.13", version = "3.4.1") {
         exclude(group = "avro-mapred")
         exclude(group = "com.fasterxml.jackson")
     }

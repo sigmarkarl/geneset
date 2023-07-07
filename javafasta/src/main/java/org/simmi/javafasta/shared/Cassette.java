@@ -95,6 +95,14 @@ public class Cassette extends BaseGeneGroup implements Serializable {
         return prevIslands.stream().mapToInt(Cassette::getSize).sum();
     }
 
+    public int getBackSize() {
+    	return back.stream().mapToInt(Cassette::getSize).sum();
+    }
+
+    public int getFrontSize() {
+    	return front.stream().mapToInt(Cassette::getSize).sum();
+    }
+
     public int getIslandSize() {
         return parent != null ? parent.getIslandSize() : getSize();
     }
